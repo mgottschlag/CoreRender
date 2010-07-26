@@ -1,0 +1,6 @@
+relre:Makefile
+relre:CMakeFiles
+relre:CoreRender/docs/html/*
+relre:.*\.so
+relre:.*\..*~
+relre:cmake_install.cmake
