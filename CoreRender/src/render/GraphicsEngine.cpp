@@ -23,6 +23,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/core/StandardFileSystem.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
 
+#include "opengl/RenderContextGLCML.hpp"
+
 namespace cr
 {
 namespace render
@@ -76,7 +78,6 @@ namespace render
 			}
 			else
 			{
-				// TODO: Log entry
 				log->warning("Could not clone the rendering context. "
 				             "Continuing single-threaded.");
 				multithreaded = false;
@@ -148,7 +149,21 @@ namespace render
 	                                                 unsigned int height,
 	                                                 bool fullscreen)
 	{
-		return 0;
+		if (type == VideoDriverType::OpenGL)
+		{
+			opengl::RenderContextGLCML *newctx;
+			newctx = new opengl::RenderContextGLCML();
+			if (!newctx->create(width, height, fullscreen))
+			{
+				delete newctx;
+				return 0;
+			}
+			return newctx;
+		}
+		else
+		{
+			return 0;
+		}
 	}
 }
 }

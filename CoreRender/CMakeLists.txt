@@ -56,6 +56,10 @@ set(SRC
 	src/core/Thread.cpp
 	src/core/Time.cpp
 	src/render/GraphicsEngine.cpp
+	src/render/opengl/RenderContextGLCML.cpp
+	src/render/opengl/RenderContextGLCML.hpp
+	src/render/opengl/RenderWindowGLCML.cpp
+	src/render/opengl/RenderWindowGLCML.hpp
 	src/render/RenderContextReuseOpenGL.cpp
 	src/res/Resource.cpp
 	src/res/ResourceManager.cpp
@@ -64,4 +68,9 @@ set(SRC
 include_directories(include)
 
 add_library(CoreRender SHARED ${SRC})
-target_link_libraries(CoreRender tbb GL freeimageplus)
+target_link_libraries(CoreRender tbb pthread GL freeimageplus glcml)
+
+install(DIRECTORY include/CoreRender DESTINATION include/CoreRender FILES_MATCHING PATTERN *.hpp)
+install(FILES include/CoreRender.hpp DESTINATION include)
+install(TARGETS CoreRender LIBRARY DESTINATION lib)
+

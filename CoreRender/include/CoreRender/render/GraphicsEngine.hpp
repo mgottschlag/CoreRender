@@ -55,6 +55,9 @@ namespace render
 			            bool fullscreen);
 			bool shutdown();
 
+			bool beginFrame();
+			bool endFrame();
+
 			void setFileSystem(core::FileSystem::Ptr fs);
 			core::FileSystem::Ptr getFileSystem()
 			{

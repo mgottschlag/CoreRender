@@ -19,38 +19,54 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_CORE_HARDWARE_HPP_INCLUDED_
-#define _CORERENDER_CORE_HARDWARE_HPP_INCLUDED_
+#include "RenderWindowGLCML.hpp"
 
-#include <string>
+#include <glcml.h>
 
 namespace cr
 {
-namespace core
+namespace render
 {
-	class Hardware
+namespace opengl
+{
+	RenderWindowGLCML::RenderWindowGLCML() : handle(-1)
 	{
-		public:
-			/**
-			 * Returns the global hardware object.
-			 */
-			static Hardware &get();
-			/**
-			 * Destructor.
-			 */
-			~Hardware();
+	}
+	RenderWindowGLCML::~RenderWindowGLCML()
+	{
+		if (handle != -1)
+		{
+			// Close window again
+			glcml_window_destroy(handle);
+		}
+	}
 
-			unsigned int getMemory();
-			unsigned int getFreeMemory();
-
-			unsigned int getLogicalProcessors();
-			unsigned int getPhysicalProcessors();
-			unsigned int getProcessorFrequency();
-			std::string getProcessorName();
-		private:
-			Hardware();
-	};
+	bool RenderWindowGLCML::open(unsigned int width,
+	                             unsigned int height,
+	                             bool fullscreen)
+	{
+		// Create a 32bit render window
+		handle = glcml_window_create(width,
+		                             height,
+		                             8,
+		                             8,
+		                             8,
+		                             8,
+		                             24,
+		                             8,
+		                             fullscreen,
+		                             0);
+		if (handle == -1)
+			return false;
+		return true;
+	}
+	bool RenderWindowGLCML::resize(unsigned int width,
+	                               unsigned int height,
+	                               bool fullscreen)
+	{
+		// TODO
+		return false;
+	}
 }
 }
-
-#endif
+}

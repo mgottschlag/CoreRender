@@ -19,37 +19,44 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_CORE_HARDWARE_HPP_INCLUDED_
-#define _CORERENDER_CORE_HARDWARE_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_OPENGL_RENDERCONTEXTGLCML_HPP_INCLUDED_
+#define _CORERENDER_RENDER_OPENGL_RENDERCONTEXTGLCML_HPP_INCLUDED_
 
-#include <string>
+#include "CoreRender/render/RenderContextOpenGL.hpp"
+
+#include "RenderWindowGLCML.hpp"
 
 namespace cr
 {
-namespace core
+namespace render
 {
-	class Hardware
+namespace opengl
+{
+	class RenderContextGLCML : public RenderContextOpenGL
 	{
 		public:
-			/**
-			 * Returns the global hardware object.
-			 */
-			static Hardware &get();
-			/**
-			 * Destructor.
-			 */
-			~Hardware();
+			RenderContextGLCML();
+			virtual ~RenderContextGLCML();
 
-			unsigned int getMemory();
-			unsigned int getFreeMemory();
+			bool create(unsigned int width,
+			            unsigned int height,
+			            bool fullscreen);
 
-			unsigned int getLogicalProcessors();
-			unsigned int getPhysicalProcessors();
-			unsigned int getProcessorFrequency();
-			std::string getProcessorName();
+			virtual bool resize(unsigned int width,
+			                    unsigned int height,
+			                    bool fullscreen);
+
+			virtual void makeCurrent(bool current = true);
+			virtual void swapBuffers();
+
+			virtual RenderContext::Ptr clone();
+
+			virtual void update();
 		private:
-			Hardware();
+			RenderWindowGLCML::Ptr window;
+			int handle;
 	};
+}
 }
 }
 
