@@ -19,84 +19,83 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "CoreRender/res/Resource.hpp"
+#include "CoreRender/render/RenderResource.hpp"
+#include "CoreRender/render/Renderer.hpp"
 #include "CoreRender/core/ConditionVariable.hpp"
-#include "CoreRender/res/ResourceManager.hpp"
 
 namespace cr
 {
-namespace res
+namespace render
 {
-	Resource::Resource()
-		: loaded(false), rmgr(0)
+	RenderResource::RenderResource(Renderer *renderer)
+		: renderer(renderer), uploading(false), waitvar(0)
 	{
 	}
-	Resource::~Resource()
+	RenderResource::~RenderResource()
 	{
-	}
-	
-	void Resource::setName(const std::string &name)
-	{
-		this->name = name;
-	}
-	std::string Resource::getName()
-	{
-		return name;
 	}
 
-	void Resource::queueForLoading()
+	bool RenderResource::create()
 	{
-		if (rmgr)
-			rmgr->queueForLoading(this);
+		return true;
 	}
-
-	bool Resource::load()
-	{
-		finishLoading(false);
-		return false;
-	}
-	bool Resource::unload()
+	bool RenderResource::destroy()
 	{
 		return false;
 	}
-	void Resource::prioritizeLoading()
+	bool RenderResource::upload()
 	{
-		if (rmgr)
-			rmgr->prioritize(this);
+		uploadFinished();
+		return true;
 	}
-	bool Resource::waitForLoading(bool recursive,
-	                              bool highpriority)
+
+	void RenderResource::registerUpload()
 	{
-		// Shortcut
-		if (isLoaded())
-			return true;
-		// Set priority
-		prioritizeLoading();
-		// Wait for resource to be loaded
+		{
+			tbb::spin_mutex::scoped_lock lock(uploadmutex);
+			// Do not submit this several times
+			if (uploading)
+				return;
+			uploading = true;
+		}
+		renderer->registerUpload(this);
+	}
+	void RenderResource::uploadFinished()
+	{
+		core::ConditionVariable *wait = 0;
+		{
+			tbb::spin_mutex::scoped_lock lock(uploadmutex);
+			uploading = false;
+			wait = waitvar;
+		}
+		if (wait)
+		{
+			wait->lock();
+			wait->signal();
+			wait->unlock();
+		}
+	}
+
+	void RenderResource::waitForUpload()
+	{
+		if (!uploading)
+			return;
 		core::ConditionVariable waitvar;
 		{
-			tbb::spin_mutex::scoped_lock lock(statemutex);
-			if (isLoaded())
-				return true;
+			tbb::spin_mutex::scoped_lock lock(uploadmutex);
+			if (!uploading)
+				return;
 			waitvar.lock();
-			waiting.push_back(&waitvar);
+			this->waitvar = &waitvar;
 		}
 		waitvar.wait();
 		waitvar.unlock();
-		return isLoaded();
 	}
 
-	void Resource::finishLoading(bool loaded)
+	void RenderResource::onDelete()
 	{
-		tbb::spin_mutex::scoped_lock lock(statemutex);
-		this->loaded = loaded;
-		for (unsigned int i = 0; i < waiting.size(); i++)
-		{
-			waiting[i]->lock();
-			waiting[i]->signal();
-			waiting[i]->unlock();
-		}
-		waiting.clear();
+		// We probably cannot free GPU resources here
+		renderer->registerDelete(this);
 	}
 }
 }

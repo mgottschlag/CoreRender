@@ -19,68 +19,58 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RES_RESOURCE_HPP_INCLUDED_
-#define _CORERENDER_RES_RESOURCE_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_RENDERER_HPP_INCLUDED_
+#define _CORERENDER_RENDER_RENDERER_HPP_INCLUDED_
 
-#include "../core/ReferenceCounted.hpp"
-
-#include <string>
-#include <tbb/spin_mutex.h>
-#include <vector>
+#include "RenderResource.hpp"
+#include "RenderContext.hpp"
+#include "../core/Log.hpp"
 
 namespace cr
 {
 namespace core
 {
-	class ConditionVariable;
+	class MemoryPool;
 }
-namespace res
+namespace render
 {
-	class ResourceManager;
-
-	class Resource : public core::ReferenceCounted
+	class Renderer
 	{
 		public:
-			Resource();
-			virtual ~Resource();
+			Renderer(RenderContext::Ptr primary,
+			         RenderContext::Ptr secondary,
+			         core::Log::Ptr log);
+			~Renderer();
 
-			void setName(const std::string &name);
-			std::string getName();
+			void registerNew(RenderResource::Ptr res);
+			void registerUpload(RenderResource::Ptr res);
+			void registerDelete(RenderResource *res);
 
-			void queueForLoading();
+			void enterThread();
+			void exitThread();
 
-			virtual bool load();
-			virtual bool unload();
-			bool isLoaded()
+			void uploadNewObjects();
+			void prepareRendering();
+
+			void render();
+
+			core::Log::Ptr getLog()
 			{
-				return loaded;
+				return log;
 			}
-			void prioritizeLoading();
-			virtual bool waitForLoading(bool recursive,
-			                            bool highpriority = false);
-
-			virtual const std::string &getType() = 0;
-
-			void setManager(ResourceManager *rmgr)
+			core::MemoryPool *getNextFrameMemory()
 			{
-				this->rmgr = rmgr;
+				return memory[0];
 			}
-			ResourceManager *getManager()
+			core::MemoryPool *getCurrentFrameMemory()
 			{
-				return rmgr;
+				return memory[1];
 			}
-
-			typedef core::SharedPointer<Resource> Ptr;
-		protected:
-			void finishLoading(bool loaded);
 		private:
-			tbb::spin_mutex statemutex;
-			bool loaded;
-			std::vector<core::ConditionVariable*> waiting;
-
-			std::string name;
-
-			ResourceManager *rmgr;
+			RenderContext::Ptr primary;
+			RenderContext::Ptr secondary;
+			core::Log::Ptr log;
+			core::MemoryPool *memory[2];
 	};
 }
 }

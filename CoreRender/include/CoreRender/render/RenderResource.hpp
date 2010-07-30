@@ -28,10 +28,35 @@ namespace cr
 {
 namespace render
 {
+	class Renderer;
+
 	class RenderResource : public res::Resource
 	{
 		public:
+			RenderResource(Renderer *renderer);
+			~RenderResource();
+
+			void waitForUpload();
+
+			virtual bool create();
+			virtual bool destroy();
+			virtual bool upload();
+		protected:
+			Renderer *getRenderer()
+			{
+				return renderer;
+			}
+
+			void registerUpload();
+			void uploadFinished();
+
+			virtual void onDelete();
 		private:
+			Renderer *renderer;
+
+			tbb::spin_mutex uploadmutex;
+			bool uploading;
+			core::ConditionVariable *waitvar;
 	};
 }
 }

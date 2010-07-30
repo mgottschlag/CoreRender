@@ -37,6 +37,9 @@ namespace render
 {
 	class RenderContext;
 	class InputEvent;
+	class Renderer;
+	class RenderThread;
+	class VideoDriver;
 
 	class GraphicsEngine
 	{
@@ -81,6 +84,7 @@ namespace render
 			                                 unsigned int width,
 			                                 unsigned int height,
 			                                 bool fullscreen);
+			VideoDriver *createDriver(VideoDriverType::List type);
 
 			res::ResourceManager *rmgr;
 			core::FileSystem::Ptr fs;
@@ -89,6 +93,10 @@ namespace render
 			bool multithreaded;
 			RenderContext::Ptr context;
 			RenderContext::Ptr secondcontext;
+
+			Renderer *renderer;
+			VideoDriver *driver;
+			RenderThread *renderthread;
 	};
 }
 }

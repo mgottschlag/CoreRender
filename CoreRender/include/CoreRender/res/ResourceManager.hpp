@@ -45,6 +45,7 @@ namespace res
 			void removeResource(Resource *res);
 
 			void queueForLoading(Resource::Ptr res);
+			void prioritize(Resource::Ptr res);
 
 			std::string getInternalName();
 

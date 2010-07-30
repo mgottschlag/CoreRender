@@ -23,8 +23,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/core/StandardFileSystem.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
 #include "CoreRender/render/RenderContextNull.hpp"
+#include "CoreRender/render/Renderer.hpp"
+#include "CoreRender/render/RenderThread.hpp"
 
 #include "opengl/RenderContextGLCML.hpp"
+#include "opengl/VideoDriverOpenGL.hpp"
+#include "null/VideoDriverNull.hpp"
 
 #include <glcml.h>
 
@@ -33,7 +37,7 @@ namespace cr
 namespace render
 {
 	GraphicsEngine::GraphicsEngine()
-		: multithreaded(true)
+		: multithreaded(true), renderer(0), renderthread(0)
 	{
 		// TODO: Should be done when creating windows?
 		glcml_init();
@@ -73,7 +77,6 @@ namespace render
 			return false;
 		}
 		this->context = context;
-		context->makeCurrent();
 		if (multithreaded)
 		{
 			// Create second context for the rendering thread
@@ -89,19 +92,49 @@ namespace render
 				multithreaded = false;
 			}
 		}
-		// Use the context in this thread
-		context->makeCurrent();
 		// Initialize resource manager
 		rmgr = new res::ResourceManager(fs);
 		if (!rmgr->init())
 		{
 			log->error("Could not initialize resource manager.");
+			delete rmgr;
+			rmgr = 0;
 			context = 0;
 			secondcontext = 0;
 			return false;
 		}
+		// Create renderer
+		context->makeCurrent();
+		driver = createDriver(type);
+		context->makeCurrent(false);
+		if (!driver)
+		{
+			log->error("Could not create video driver.");
+			delete rmgr;
+			rmgr = 0;
+			context = 0;
+			secondcontext = 0;
+			return false;
+		}
+		renderer = new Renderer(context, secondcontext, log);
 		// Create render thread
-		// TODO
+		if (multithreaded)
+		{
+			renderthread = new RenderThread(renderer);
+			if (!renderthread->start())
+			{
+				log->error("Could not start render thread.");
+				delete renderthread;
+				renderthread = 0;
+				delete renderer;
+				renderer = 0;
+				delete rmgr;
+				rmgr = 0;
+				context = 0;
+				secondcontext = 0;
+				return false;
+			}
+		}
 		return true;
 	}
 	bool GraphicsEngine::resize(unsigned int width,
@@ -114,12 +147,21 @@ namespace render
 	bool GraphicsEngine::shutdown()
 	{
 		// Stop and destroy render thread
-		// TODO
+		if (multithreaded)
+		{
+			renderthread->stop();
+			delete renderthread;
+			renderthread = 0;
+		}
 		// Clean up render resources
 		// TODO
+		// Destroy renderer
+		delete renderer;
+		renderer = 0;
 		// Stop resource manager
 		rmgr->shutdown();
 		delete rmgr;
+		rmgr = 0;
 		// Close log
 		log = 0;
 		// Destroy file system
@@ -127,6 +169,7 @@ namespace render
 		// Delete contexts
 		secondcontext = 0;
 		context = 0;
+		return true;
 	}
 
 	void GraphicsEngine::setFileSystem(core::FileSystem::Ptr fs)
@@ -169,6 +212,28 @@ namespace render
 		else if (type == VideoDriverType::Null)
 		{
 			return new RenderContextNull();
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	VideoDriver *GraphicsEngine::createDriver(VideoDriverType::List type)
+	{
+		if (type == VideoDriverType::OpenGL)
+		{
+			opengl::VideoDriverOpenGL *driver;
+			driver = new opengl::VideoDriverOpenGL();
+			if (!driver->init())
+			{
+				delete driver;
+				return 0;
+			}
+			return driver;
+		}
+		else if (type == VideoDriverType::OpenGL)
+		{
+			return new null::VideoDriverNull();
 		}
 		else
 		{

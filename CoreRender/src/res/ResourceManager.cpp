@@ -75,6 +75,10 @@ namespace res
 	{
 		// TODO
 	}
+	void ResourceManager::prioritize(Resource::Ptr res)
+	{
+		// TODO
+	}
 
 	std::string ResourceManager::getInternalName()
 	{

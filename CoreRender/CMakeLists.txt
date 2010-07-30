@@ -6,22 +6,23 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -Woverloaded-virtual")
 
 set(SRC
 	include/CoreRender.hpp
-	include/CoreRender/core/Functor.hpp
-	include/CoreRender/core/StandardFile.hpp
+	include/CoreRender/core/Buffer.hpp
+	include/CoreRender/core/Color.hpp
+	include/CoreRender/core/ConditionVariable.hpp
+	include/CoreRender/core/File.hpp
 	include/CoreRender/core/FileList.hpp
+	include/CoreRender/core/FileSystem.hpp
 	include/CoreRender/core/FrameLimiter.hpp
+	include/CoreRender/core/Functor.hpp
+	include/CoreRender/core/Hardware.hpp
+	include/CoreRender/core/Log.hpp
 	include/CoreRender/core/MemoryPool.hpp
 	include/CoreRender/core/ReferenceCounted.hpp
-	include/CoreRender/core/File.hpp
 	include/CoreRender/core/Semaphore.hpp
-	include/CoreRender/core/Thread.hpp
-	include/CoreRender/core/FileSystem.hpp
-	include/CoreRender/core/Buffer.hpp
-	include/CoreRender/core/Hardware.hpp
+	include/CoreRender/core/StandardFile.hpp
 	include/CoreRender/core/StandardFileSystem.hpp
-	include/CoreRender/core/ConditionVariable.hpp
+	include/CoreRender/core/Thread.hpp
 	include/CoreRender/core/Time.hpp
-	include/CoreRender/core/Log.hpp
 	include/CoreRender/math/Vector3.hpp
 	include/CoreRender/math/Alignment.hpp
 	include/CoreRender/math/Quaternion.hpp
@@ -50,6 +51,7 @@ set(SRC
 	include/CoreRender/render/RenderTarget.hpp
 	include/CoreRender/render/GraphicsEngine.hpp
 	src/core/Buffer.cpp
+	src/core/ConditionVariable.cpp
 	src/core/FrameLimiter.cpp
 	src/core/Log.cpp
 	src/core/Semaphore.cpp
@@ -58,11 +60,17 @@ set(SRC
 	src/core/Thread.cpp
 	src/core/Time.cpp
 	src/render/GraphicsEngine.cpp
+	src/render/null/VideoDriverNull.hpp
 	src/render/opengl/RenderContextGLCML.cpp
 	src/render/opengl/RenderContextGLCML.hpp
 	src/render/opengl/RenderWindowGLCML.cpp
 	src/render/opengl/RenderWindowGLCML.hpp
+	src/render/opengl/VideoDriverOpenGL.cpp
+	src/render/opengl/VideoDriverOpenGL.hpp
 	src/render/RenderContextReuseOpenGL.cpp
+	src/render/Renderer.cpp
+	src/render/RenderResource.cpp
+	src/render/RenderThread.cpp
 	src/res/Resource.cpp
 	src/res/ResourceManager.cpp
 )

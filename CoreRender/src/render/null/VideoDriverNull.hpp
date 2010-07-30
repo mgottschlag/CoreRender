@@ -19,69 +19,62 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RES_RESOURCE_HPP_INCLUDED_
-#define _CORERENDER_RES_RESOURCE_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_NULL_VIDEODRIVER_HPP_INCLUDED_
+#define _CORERENDER_RENDER_NULL_VIDEODRIVER_HPP_INCLUDED_
 
-#include "../core/ReferenceCounted.hpp"
-
-#include <string>
-#include <tbb/spin_mutex.h>
-#include <vector>
+#include "CoreRender/render/VideoDriver.hpp"
 
 namespace cr
 {
-namespace core
+namespace render
 {
-	class ConditionVariable;
-}
-namespace res
+namespace null
 {
-	class ResourceManager;
-
-	class Resource : public core::ReferenceCounted
+	class VideoDriverNull : public VideoDriver
 	{
 		public:
-			Resource();
-			virtual ~Resource();
-
-			void setName(const std::string &name);
-			std::string getName();
-
-			void queueForLoading();
-
-			virtual bool load();
-			virtual bool unload();
-			bool isLoaded()
+			VideoDriverNull()
 			{
-				return loaded;
 			}
-			void prioritizeLoading();
-			virtual bool waitForLoading(bool recursive,
-			                            bool highpriority = false);
-
-			virtual const std::string &getType() = 0;
-
-			void setManager(ResourceManager *rmgr)
+			virtual ~VideoDriverNull()
 			{
-				this->rmgr = rmgr;
-			}
-			ResourceManager *getManager()
-			{
-				return rmgr;
 			}
 
-			typedef core::SharedPointer<Resource> Ptr;
-		protected:
-			void finishLoading(bool loaded);
+			virtual bool init()
+			{
+				return true;
+			}
+			virtual bool shutdown()
+			{
+				return true;
+			}
+
+			virtual void setRenderTarget(int handle)
+			{
+			}
+			virtual void clear(bool colorbuffer,
+			                   bool zbuffer,
+			                   core::Color color = core::Color(0, 0, 0, 0),
+			                   float depth = 0.0f)
+			{
+			}
+
+			virtual void draw(RenderBatch *batch)
+			{
+			}
+
+			virtual void endFrame()
+			{
+			}
+
+			virtual VideoDriverType::List getType()
+			{
+				return VideoDriverType::Null;
+			}
 		private:
-			tbb::spin_mutex statemutex;
-			bool loaded;
-			std::vector<core::ConditionVariable*> waiting;
-
-			std::string name;
-
-			ResourceManager *rmgr;
 	};
+
+}
 }
 }
 

@@ -19,68 +19,40 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RES_RESOURCE_HPP_INCLUDED_
-#define _CORERENDER_RES_RESOURCE_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_VIDEODRIVER_HPP_INCLUDED_
+#define _CORERENDER_RENDER_VIDEODRIVER_HPP_INCLUDED_
 
-#include "../core/ReferenceCounted.hpp"
-
-#include <string>
-#include <tbb/spin_mutex.h>
-#include <vector>
+#include "VideoDriverType.hpp"
+#include "../core/Color.hpp"
 
 namespace cr
 {
-namespace core
+namespace render
 {
-	class ConditionVariable;
-}
-namespace res
-{
-	class ResourceManager;
+	class RenderBatch;
 
-	class Resource : public core::ReferenceCounted
+	class VideoDriver
 	{
 		public:
-			Resource();
-			virtual ~Resource();
-
-			void setName(const std::string &name);
-			std::string getName();
-
-			void queueForLoading();
-
-			virtual bool load();
-			virtual bool unload();
-			bool isLoaded()
+			virtual ~VideoDriver()
 			{
-				return loaded;
-			}
-			void prioritizeLoading();
-			virtual bool waitForLoading(bool recursive,
-			                            bool highpriority = false);
-
-			virtual const std::string &getType() = 0;
-
-			void setManager(ResourceManager *rmgr)
-			{
-				this->rmgr = rmgr;
-			}
-			ResourceManager *getManager()
-			{
-				return rmgr;
 			}
 
-			typedef core::SharedPointer<Resource> Ptr;
-		protected:
-			void finishLoading(bool loaded);
+			virtual bool init() = 0;
+			virtual bool shutdown() = 0;
+
+			virtual void setRenderTarget(int handle) = 0;
+			virtual void clear(bool colorbuffer,
+			                   bool zbuffer,
+			                   core::Color color = core::Color(0, 0, 0, 0),
+			                   float depth = 0.0f) = 0;
+
+			virtual void draw(RenderBatch *batch) = 0;
+
+			virtual void endFrame() = 0;
+
+			virtual VideoDriverType::List getType() = 0;
 		private:
-			tbb::spin_mutex statemutex;
-			bool loaded;
-			std::vector<core::ConditionVariable*> waiting;
-
-			std::string name;
-
-			ResourceManager *rmgr;
 	};
 }
 }

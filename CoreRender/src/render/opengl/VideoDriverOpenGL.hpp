@@ -19,69 +19,44 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RES_RESOURCE_HPP_INCLUDED_
-#define _CORERENDER_RES_RESOURCE_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_OPENGL_VIDEODRIVER_HPP_INCLUDED_
+#define _CORERENDER_RENDER_OPENGL_VIDEODRIVER_HPP_INCLUDED_
 
-#include "../core/ReferenceCounted.hpp"
-
-#include <string>
-#include <tbb/spin_mutex.h>
-#include <vector>
+#include "CoreRender/render/VideoDriver.hpp"
 
 namespace cr
 {
-namespace core
+namespace render
 {
-	class ConditionVariable;
-}
-namespace res
+namespace opengl
 {
-	class ResourceManager;
-
-	class Resource : public core::ReferenceCounted
+	class VideoDriverOpenGL : public VideoDriver
 	{
 		public:
-			Resource();
-			virtual ~Resource();
+			VideoDriverOpenGL();
+			virtual ~VideoDriverOpenGL();
 
-			void setName(const std::string &name);
-			std::string getName();
+			virtual bool init();
+			virtual bool shutdown();
 
-			void queueForLoading();
+			virtual void setRenderTarget(int handle);
+			virtual void clear(bool colorbuffer,
+			                   bool zbuffer,
+			                   core::Color color = core::Color(0, 0, 0, 0),
+			                   float depth = 0.0f);
 
-			virtual bool load();
-			virtual bool unload();
-			bool isLoaded()
+			virtual void draw(RenderBatch *batch);
+
+			virtual void endFrame();
+
+			virtual VideoDriverType::List getType()
 			{
-				return loaded;
+				return VideoDriverType::OpenGL;
 			}
-			void prioritizeLoading();
-			virtual bool waitForLoading(bool recursive,
-			                            bool highpriority = false);
-
-			virtual const std::string &getType() = 0;
-
-			void setManager(ResourceManager *rmgr)
-			{
-				this->rmgr = rmgr;
-			}
-			ResourceManager *getManager()
-			{
-				return rmgr;
-			}
-
-			typedef core::SharedPointer<Resource> Ptr;
-		protected:
-			void finishLoading(bool loaded);
 		private:
-			tbb::spin_mutex statemutex;
-			bool loaded;
-			std::vector<core::ConditionVariable*> waiting;
-
-			std::string name;
-
-			ResourceManager *rmgr;
 	};
+
+}
 }
 }
 

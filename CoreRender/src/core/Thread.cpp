@@ -41,7 +41,12 @@ namespace core
 
 	bool Thread::create(Functor *code)
 	{
-		return pthread_create(&thread, NULL, threadProxy, code) == 0;
+		if (pthread_create(&thread, NULL, threadProxy, code) != 0)
+		{
+			delete code;
+			return false;
+		}
+		return true;
 	}
 	void Thread::wait()
 	{

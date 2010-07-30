@@ -19,41 +19,47 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERTHREAD_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERTHREAD_HPP_INCLUDED_
-
-#include "../core/Thread.hpp"
-#include "../core/Semaphore.hpp"
+#include "VideoDriverOpenGL.hpp"
 
 namespace cr
 {
 namespace render
 {
-	class Renderer;
-
-	class RenderThread
+namespace opengl
+{
+	VideoDriverOpenGL::VideoDriverOpenGL()
 	{
-		public:
-			RenderThread(Renderer *renderer);
-			~RenderThread();
+	}
+	VideoDriverOpenGL::~VideoDriverOpenGL()
+	{
+	}
 
-			bool start();
-			bool stop();
+	bool VideoDriverOpenGL::init()
+	{
+		return true;
+	}
+	bool VideoDriverOpenGL::shutdown()
+	{
+		return true;
+	}
 
-			void startFrame();
-			void waitForFrame();
-		private:
-			void entry();
+	void VideoDriverOpenGL::setRenderTarget(int handle)
+	{
+	}
+	void VideoDriverOpenGL::clear(bool colorbuffer,
+	                              bool zbuffer,
+	                              core::Color color,
+	                              float depth)
+	{
+	}
 
-			core::Thread thread;
-			bool stopping;
+	void VideoDriverOpenGL::draw(RenderBatch *batch)
+	{
+	}
 
-			core::Semaphore framestart;
-			core::Semaphore frameend;
-
-			Renderer *renderer;
-	};
+	void VideoDriverOpenGL::endFrame()
+	{
+	}
 }
 }
-
-#endif
+}
