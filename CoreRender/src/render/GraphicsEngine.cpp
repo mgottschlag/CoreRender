@@ -93,7 +93,7 @@ namespace render
 			}
 		}
 		// Initialize resource manager
-		rmgr = new res::ResourceManager(fs);
+		rmgr = new res::ResourceManager(fs, log);
 		if (!rmgr->init())
 		{
 			log->error("Could not initialize resource manager.");

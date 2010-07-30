@@ -23,6 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_RES_RESOURCEMANAGER_HPP_INCLUDED_
 
 #include "../core/FileSystem.hpp"
+#include "../core/Log.hpp"
 #include "Resource.hpp"
 
 #include <map>
@@ -32,10 +33,12 @@ namespace cr
 {
 namespace res
 {
+	class LoadingThread;
+
 	class ResourceManager
 	{
 		public:
-			ResourceManager(core::FileSystem::Ptr fs);
+			ResourceManager(core::FileSystem::Ptr fs, core::Log::Ptr log);
 			~ResourceManager();
 
 			bool init();
@@ -43,6 +46,8 @@ namespace res
 
 			void addResource(Resource *res);
 			void removeResource(Resource *res);
+
+			Resource::Ptr getResource(const std::string &name);
 
 			void queueForLoading(Resource::Ptr res);
 			void prioritize(Resource::Ptr res);
@@ -54,6 +59,10 @@ namespace res
 			{
 				return fs;
 			}
+			core::Log::Ptr getLog()
+			{
+				return log;
+			}
 		private:
 			typedef std::map<std::string, Resource*> ResourceMap;
 			ResourceMap resources;
@@ -61,6 +70,9 @@ namespace res
 			unsigned int namecounter;
 
 			core::FileSystem::Ptr fs;
+			core::Log::Ptr log;
+
+			LoadingThread *thread;
 
 			tbb::mutex mutex;
 	};

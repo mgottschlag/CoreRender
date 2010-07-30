@@ -71,6 +71,7 @@ set(SRC
 	src/render/Renderer.cpp
 	src/render/RenderResource.cpp
 	src/render/RenderThread.cpp
+	src/res/LoadingThread.cpp
 	src/res/Resource.cpp
 	src/res/ResourceManager.cpp
 )

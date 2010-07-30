@@ -20,6 +20,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/res/ResourceManager.hpp"
+#include "CoreRender/res/LoadingThread.hpp"
 
 #include <iostream>
 #include <cstdio>
@@ -29,12 +30,18 @@ namespace cr
 {
 namespace res
 {
-	ResourceManager::ResourceManager(core::FileSystem::Ptr fs)
-		: namecounter(0), fs(fs)
+	ResourceManager::ResourceManager(core::FileSystem::Ptr fs,
+		core::Log::Ptr log)
+		: namecounter(0), fs(fs), log(log)
 	{
+		// Start loading thread
+		thread = new LoadingThread(log);
+		thread->start();
 	}
 	ResourceManager::~ResourceManager()
 	{
+		thread->stop();
+		delete thread;
 	}
 
 	bool ResourceManager::init()
@@ -69,6 +76,15 @@ namespace res
 			return;
 		}
 		resources.erase(it);
+	}
+
+	Resource::Ptr ResourceManager::getResource(const std::string &name)
+	{
+		tbb::mutex::scoped_lock lock(mutex);
+		ResourceMap::iterator it = resources.find(name);
+		if (it == resources.end())
+			return 0;
+		return it->second;
 	}
 
 	void ResourceManager::queueForLoading(Resource::Ptr res)
