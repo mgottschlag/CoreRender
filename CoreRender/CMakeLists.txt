@@ -2,6 +2,8 @@
 project(CoreRender)
 cmake_minimum_required(VERSION 2.6.0)
 
+set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -Woverloaded-virtual")
+
 set(SRC
 	include/CoreRender.hpp
 	include/CoreRender/core/Functor.hpp

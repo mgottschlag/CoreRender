@@ -22,6 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "RenderContextGLCML.hpp"
 
 #include <glcml.h>
+#include <iostream>
 
 namespace cr
 {
@@ -52,7 +53,7 @@ namespace opengl
 			return false;
 		}
 		// Create context
-		handle = glcml_context_create(window);
+		handle = glcml_context_create(window->getHandle());
 		if (handle == -1)
 		{
 			window = 0;

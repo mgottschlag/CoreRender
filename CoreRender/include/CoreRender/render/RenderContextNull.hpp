@@ -19,22 +19,44 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "CoreRender.hpp"
+#ifndef _CORERENDER_RENDER_RENDERCONTEXTNULL_HPP_INCLUDED_
+#define _CORERENDER_RENDER_RENDERCONTEXTNULL_HPP_INCLUDED_
 
-#include <iostream>
-#include <GL/glfw.h>
+#include "RenderContext.hpp"
 
-int main(int argc, char **argv)
+namespace cr
 {
-	// Initialize CoreRender
-	cr::render::GraphicsEngine graphics;
-	if (!graphics.init(cr::render::VideoDriverType::OpenGL, 800, 600, false))
+namespace render
+{
+	class RenderContextNull : public RenderContext
 	{
-		std::cerr << "Graphics engine failed to initialize!" << std::endl;
-		return -1;
-	}
-	cr::res::ResourceManager *rmgr = graphics.getResourceManager();
+		public:
+			RenderContextNull()
+			{
+			}
+			virtual ~RenderContextNull()
+			{
+			}
 
-	graphics.shutdown();
-	return 0;
+			virtual void makeCurrent(bool current = true)
+			{
+			}
+			virtual void swapBuffers()
+			{
+			}
+
+			virtual RenderContext::Ptr clone()
+			{
+				return 0;
+			}
+
+			virtual VideoDriverType::List getDriverType()
+			{
+				return VideoDriverType::Null;
+			}
+		private:
+	};
 }
+}
+
+#endif

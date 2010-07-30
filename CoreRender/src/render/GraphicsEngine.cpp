@@ -22,8 +22,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/GraphicsEngine.hpp"
 #include "CoreRender/core/StandardFileSystem.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
+#include "CoreRender/render/RenderContextNull.hpp"
 
 #include "opengl/RenderContextGLCML.hpp"
+
+#include <glcml.h>
 
 namespace cr
 {
@@ -32,9 +35,12 @@ namespace render
 	GraphicsEngine::GraphicsEngine()
 		: multithreaded(true)
 	{
+		// TODO: Should be done when creating windows?
+		glcml_init();
 	}
 	GraphicsEngine::~GraphicsEngine()
 	{
+		glcml_terminate();
 	}
 
 	bool GraphicsEngine::init(VideoDriverType::List type,
@@ -159,6 +165,10 @@ namespace render
 				return 0;
 			}
 			return newctx;
+		}
+		else if (type == VideoDriverType::Null)
+		{
+			return new RenderContextNull();
 		}
 		else
 		{
