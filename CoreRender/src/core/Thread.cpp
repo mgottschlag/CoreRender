@@ -25,7 +25,11 @@ namespace cr
 {
 namespace core
 {
+#if defined(CORERENDER_UNIX)
 	static void *threadProxy(void *param)
+#elif defined(CORERENDER_WINDOWS)
+	static DWORD WINAPI threadProxy(LPVOID param)
+#endif
 	{
 		Functor *functor = (Functor*)param;
 		functor->call();
@@ -33,24 +37,45 @@ namespace core
 		return 0;
 	}
 	Thread::Thread()
+#if defined(CORERENDER_WINDOWS)
+		: thread(NULL)
+#endif
 	{
 	}
 	Thread::~Thread()
 	{
+#if defined(CORERENDER_WINDOWS)
+		if (thread != NULL)
+		{
+			CloseHandle(thread);
+		}
+#endif
 	}
 
 	bool Thread::create(Functor *code)
 	{
+#if defined(CORERENDER_UNIX)
 		if (pthread_create(&thread, NULL, threadProxy, code) != 0)
 		{
 			delete code;
 			return false;
 		}
+#elif defined(CORERENDER_WINDOWS)
+		thread = CreateThread (0, 0, threadProxy, code, 0, &threadid);
+		if (thread == NULL)
+			return false;
+#endif
 		return true;
 	}
 	void Thread::wait()
 	{
+#if defined(CORERENDER_UNIX)
 		pthread_join(thread, 0);
+#elif defined(CORERENDER_WINDOWS)
+		WaitForSingleObject(thread, INFINITE);
+		CloseHandle(thread);
+		thread = NULL;
+#endif
 	}
 }
 }

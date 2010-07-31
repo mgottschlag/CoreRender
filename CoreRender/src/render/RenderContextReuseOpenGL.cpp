@@ -20,11 +20,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/render/RenderContextReuseOpenGL.hpp"
+#include "CoreRender/core/Platform.hpp"
 
-#ifdef __unix__
-#include <GL/glx.h>
+#if defined(CORERENDER_UNIX)
+	#include <GL/glx.h>
+#elif defined(CORERENDER_WINDOWS)
 #else
-#error Not implemented!
+	#error Not implemented!
 #endif
 
 

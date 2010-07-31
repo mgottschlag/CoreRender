@@ -2,8 +2,12 @@
 project(CoreRender)
 cmake_minimum_required(VERSION 2.6.0)
 
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -Woverloaded-virtual")
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -Woverloaded-virtual")
+
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 set(SRC
 	include/CoreRender.hpp
 	include/CoreRender/core/Buffer.hpp
@@ -83,5 +87,7 @@ target_link_libraries(CoreRender tbb pthread GL freeimageplus glcml)
 
 install(DIRECTORY include/CoreRender DESTINATION include/CoreRender FILES_MATCHING PATTERN *.hpp)
 install(FILES include/CoreRender.hpp DESTINATION include)
-install(TARGETS CoreRender LIBRARY DESTINATION lib)
-
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	install(TARGETS CoreRender LIBRARY DESTINATION lib)
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")

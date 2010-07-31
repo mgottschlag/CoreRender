@@ -21,10 +21,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "CoreRender/res/ResourceManager.hpp"
 #include "CoreRender/res/LoadingThread.hpp"
+#include "CoreRender/core/Platform.hpp"
 
 #include <iostream>
 #include <cstdio>
 #include <FreeImagePlus.h>
+
+#if defined(CORERENDER_WINDOWS)
+	#define snprintf sprintf_s
+#endif
 
 namespace cr
 {

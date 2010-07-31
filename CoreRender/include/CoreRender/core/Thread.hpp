@@ -23,8 +23,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_CORE_THREAD_HPP_INCLUDED_
 
 #include "Functor.hpp"
+#include "Platform.hpp"
 
-#include <pthread.h>
+#if defined(CORERENDER_UNIX)
+	#include <pthread.h>
+#elif defined(CORERENDER_WINDOWS)
+	#include <Windows.h>
+#endif
 
 namespace cr
 {
@@ -39,7 +44,12 @@ namespace core
 			bool create(Functor *code);
 			void wait();
 		private:
+#if defined(CORERENDER_UNIX)
 			pthread_t thread;
+#elif defined(CORERENDER_WINDOWS)
+			HANDLE thread;
+			DWORD threadid;
+#endif
 	};
 }
 }

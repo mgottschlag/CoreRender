@@ -22,7 +22,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_CORE_CONDITIONVARIABLE_HPP_INCLUDED_
 #define _CORERENDER_CORE_CONDITIONVARIABLE_HPP_INCLUDED_
 
-#include <pthread.h>
+#if defined(CORERENDER_UNIX)
+	#include <pthread.h>
+#else
+	#error Unimplemented
+#endif
 
 namespace cr
 {
@@ -94,8 +98,11 @@ namespace core
 			 */
 			void wait();
 		private:
+#if defined(CORERENDER_UNIX)
 			pthread_mutex_t mutex;
 			pthread_cond_t cond;
+#else
+#endif
 	};
 }
 }

@@ -17,7 +17,13 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef _CORERENDER_CORE_SEMAPHORE_HPP_INCLUDED_
 #define _CORERENDER_CORE_SEMAPHORE_HPP_INCLUDED_
 
-#include <semaphore.h>
+#include "Platform.hpp"
+
+#if defined(CORERENDER_UNIX)
+	#include <semaphore.h>
+#elif defined(CORERENDER_WINDOWS)
+	#include <Windows.h>
+#endif
 
 namespace cr
 {
@@ -34,7 +40,11 @@ namespace core
 
 			int get();
 		private:
+#if defined(CORERENDER_UNIX)
 			sem_t sem;
+#elif defined(CORERENDER_WINDOWS)
+			HANDLE sem;
+#endif
 	};
 }
 }

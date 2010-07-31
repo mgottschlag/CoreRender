@@ -20,11 +20,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/core/StandardFile.hpp"
+#include "CoreRender/core/Platform.hpp"
 
 #include <cstring>
 
-#ifdef __unix__
+#if defined(CORERENDER_UNIX)
 #include <sys/stat.h>
+#elif  defined(CORERENDER_WINDOWS)
+#include <Windows.h>
 #else
 #error Unimplemented.
 #endif
@@ -62,15 +65,25 @@ namespace core
 		}
 		else
 		{
-			#ifdef __unix__
+#if defined(CORERENDER_UNIX)
 			int fd = fileno(file);
 			struct stat buf;
 			fstat(fd, &buf);
 			size = buf.st_size;
-			#else
-			#error Unimplemented.
-			// TODO
-			#endif
+#elif defined(CORERENDER_WINDOWS)
+			WIN32_FIND_DATA finddata;
+			HANDLE find = FindFirstFile((LPCSTR)abspath.c_str(), &finddata);
+			if (find == INVALID_HANDLE_VALUE)
+				size = 0;
+			else
+			{
+				// TODO: 64bit size?
+				size = finddata.nFileSizeLow;
+				FindClose(find);
+			}
+#else
+	#error Unimplemented.
+#endif
 		}
 	}
 	StandardFile::~StandardFile()
@@ -159,11 +172,11 @@ namespace core
 	}
 	bool StandardFile::eof()
 	{
-		return feof(file);
+		return feof(file) != 0;
 	}
 	bool StandardFile::error()
 	{
-		return ferror(file);
+		return ferror(file) != 0;
 	}
 
 	void StandardFile::flush()

@@ -21,12 +21,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "CoreRender/core/StandardFileSystem.hpp"
 #include "CoreRender/core/StandardFile.hpp"
+#include "CoreRender/core/Platform.hpp"
 
 #include <iostream>
 #include <cstring>
 
-#ifdef __unix__
-#include <dirent.h>
+#if defined(CORERENDER_UNIX)
+	#include <dirent.h>
+#elif defined(CORERENDER_WINDOWS)
+	#include <Windows.h>
 #endif
 
 namespace cr
@@ -128,7 +131,7 @@ namespace core
 			if (mountinfo[i].dest == directory.substr(0, mountinfo[i].dest.size()))
 			{
 				std::string abspath = mountinfo[i].src + directory.substr(mountinfo[i].dest.size());
-				#ifdef __unix__
+#ifdef CORERENDER_UNIX
 				DIR *dir = opendir(abspath.c_str());
 				if (!dir)
 					continue;
@@ -148,9 +151,26 @@ namespace core
 					entries.push_back(entry);
 				}
 				closedir(dir);
-				#else
-				#error Unimplemented
-				#endif
+#elif defined(CORERENDER_WINDOWS)
+				WIN32_FIND_DATA finddata;
+				HANDLE find = FindFirstFile((LPCSTR)(abspath + "\\*").c_str(), &finddata);
+				if (find == INVALID_HANDLE_VALUE)
+					continue;
+				do
+				{
+					FileList::Entry entry;
+					entry.name = finddata.cFileName;
+					entry.path = directory + "/" + finddata.cFileName;
+					if (finddata.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+						entry.directory = true;
+					else
+						entry.directory = true;
+					entries.push_back(entry);
+				} while (FindNextFile(find, &finddata) != 0);
+				FindClose(find);
+#else
+	#error Unimplemented
+#endif
 			}
 		}
 		FileList *list = new FileList(&entries[0], entries.size());
@@ -174,16 +194,21 @@ namespace core
 			if (mountinfo[i].dest == path.substr(0, mountinfo[i].dest.size()))
 			{
 				std::string abspath = mountinfo[i].src + path.substr(mountinfo[i].dest.size());
-				#ifdef __unix__
+#if defined(CORERENDER_UNIX)
 				DIR *dir = opendir(abspath.c_str());
 				if (dir)
 				{
 					closedir(dir);
 					return true;
 				}
-				#else
+#elif defined(CORERENDER_WINDOWS)
+				DWORD attribs = GetFileAttributes(abspath.c_str());
+				if (attribs != INVALID_FILE_ATTRIBUTES
+				    && (attribs & FILE_ATTRIBUTE_DIRECTORY))
+					return true;
+#else
 				#error Unimplemented
-				#endif
+#endif
 			}
 		}
 		return false;
