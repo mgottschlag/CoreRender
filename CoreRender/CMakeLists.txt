@@ -103,7 +103,7 @@ if(CORERENDER_USE_GLFW)
 	)
 	set(LIB
 		${LIB}
-		glfwdll
+		glfw
 	)
 	add_definitions(-DCORERENDER_USE_GLFW -DGLFW_BUILD_DLL)
 elseif(CORERENDER_USE_GLCML)
@@ -126,7 +126,7 @@ include_directories(include)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	add_library(CoreRender STATIC ${SRC})
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	add_library(CoreRender SHARED ${SRC})
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 

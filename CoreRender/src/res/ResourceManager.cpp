@@ -94,7 +94,7 @@ namespace res
 
 	void ResourceManager::queueForLoading(Resource::Ptr res)
 	{
-		// TODO
+		thread->queueForLoading(res);
 	}
 	void ResourceManager::prioritize(Resource::Ptr res)
 	{
