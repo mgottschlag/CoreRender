@@ -51,6 +51,11 @@ set(SRC
 	include/CoreRender/render/Material.hpp
 	include/CoreRender/render/RenderTarget.hpp
 	include/CoreRender/render/GraphicsEngine.hpp
+	include/CoreRender/render/Texture.hpp
+	include/CoreRender/render/Texture1D.hpp
+	include/CoreRender/render/Texture2D.hpp
+	include/CoreRender/render/Texture3D.hpp
+	include/CoreRender/render/TextureCube.hpp
 	src/core/Buffer.cpp
 	src/core/FrameLimiter.cpp
 	src/core/Log.cpp
@@ -67,6 +72,8 @@ set(SRC
 	src/render/Renderer.cpp
 	src/render/RenderResource.cpp
 	src/render/RenderThread.cpp
+	src/render/Texture.cpp
+	src/render/Texture2D.cpp
 	src/res/LoadingThread.cpp
 	src/res/Resource.cpp
 	src/res/ResourceManager.cpp

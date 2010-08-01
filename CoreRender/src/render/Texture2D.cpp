@@ -19,80 +19,52 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_TEXTURE_HPP_INCLUDED_
-#define _CORERENDER_RENDER_TEXTURE_HPP_INCLUDED_
-
-#include "RenderResource.hpp"
-
-#include <tbb/spin_mutex.h>
+#include "CoreRender/render/Texture2D.hpp"
+#include "CoreRender/render/Renderer.hpp"
 
 namespace cr
 {
 namespace render
 {
-	class RenderCaps;
-
-	struct TextureFormat
+	Texture2D::Texture2D(Renderer *renderer,
+	                 res::ResourceManager *rmgr,
+	                 const std::string &name)
+		: Texture(renderer, rmgr, name, TextureType::Texture2D), width(0),
+		height(0), internalformat(TextureFormat::Invalid),
+		format(TextureFormat::Invalid), data(0)
 	{
-		enum List
-		{
-			Invalid,
-			RGBA8,
-			RGBA16F,
-			RGBA32F,
-			RG8,
-			RG16,
-			RG32,
-			RG16F,
-			RG32F,
-			RGB_DXT1,
-			RGBA_DXT1,
-			RGBA_DXT3,
-			RGBA_DXT5,
-			Depth24Stencil8,
-			Depth16,
-			Depth24
-		};
-
-		static bool supported(RenderCaps *caps,
-		                      List internalformat,
-		                      List format = Invalid);
-	};
-	struct TextureType
+	}
+	Texture2D::~Texture2D()
 	{
-		enum List
-		{
-			Texture1D,
-			Texture2D,
-			Texture3D,
-			TextureCube
-		};
-	};
+	}
 
-	class Texture : public RenderResource
+	bool Texture2D::set(unsigned int width,
+	                    unsigned int height,
+	                    TextureFormat::List internalformat,
+	                    TextureFormat::List format,
+	                    void *data)
 	{
-		public:
-			Texture(Renderer *renderer,
-			        res::ResourceManager *rmgr,
-			        const std::string &name,
-			        TextureType::List type);
-			virtual ~Texture();
-
-			int getHandle()
-			{
-				return handle;
-			}
-			TextureType::List getTextureType()
-			{
-				return type;
-			}
-
-			typedef core::SharedPointer<Texture> Ptr;
-		protected:
-			int handle;
-			TextureType::List type;
-	};
+		// TODO
+		return false;
+	}
+	bool Texture2D::update(TextureFormat::List format,
+	                       void *data)
+	{
+		// TODO
+		return false;
+	}
+	bool Texture2D::update(unsigned int x,
+	                       unsigned int y,
+	                       unsigned int width,
+	                       unsigned int height,
+	                       TextureFormat::List format,
+	                       void *data)
+	{
+		// TODO
+		return false;
+	}
+	void Texture2D::discardImageData()
+	{
+	}
 }
 }
-
-#endif

@@ -33,7 +33,9 @@ namespace render
 	class RenderResource : public res::Resource
 	{
 		public:
-			RenderResource(Renderer *renderer);
+			RenderResource(Renderer *renderer,
+			               res::ResourceManager *rmgr,
+			               const std::string &name);
 			~RenderResource();
 
 			void waitForUpload();

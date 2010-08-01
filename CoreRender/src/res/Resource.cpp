@@ -27,12 +27,14 @@ namespace cr
 {
 namespace res
 {
-	Resource::Resource()
-		: loaded(false), rmgr(0)
+	Resource::Resource(ResourceManager *rmgr, const std::string &name)
+		: loaded(false), name(name), rmgr(rmgr)
 	{
+		rmgr->addResource(this);
 	}
 	Resource::~Resource()
 	{
+		rmgr->removeResource(this);
 	}
 	
 	void Resource::setName(const std::string &name)

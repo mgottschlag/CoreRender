@@ -22,14 +22,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/RenderResource.hpp"
 #include "CoreRender/render/Renderer.hpp"
 #include "CoreRender/core/Semaphore.hpp"
+#include "CoreRender/res/ResourceManager.hpp"
 
 namespace cr
 {
 namespace render
 {
-	RenderResource::RenderResource(Renderer *renderer)
-		: renderer(renderer), uploading(false), waiting(0)
+	RenderResource::RenderResource(Renderer *renderer,
+	                               res::ResourceManager *rmgr,
+	                               const std::string &name)
+		: Resource(rmgr, name), renderer(renderer), uploading(false), waiting(0)
 	{
+		renderer->registerNew(this);
 	}
 	RenderResource::~RenderResource()
 	{
@@ -91,6 +95,7 @@ namespace render
 	void RenderResource::onDelete()
 	{
 		// We probably cannot free GPU resources here
+		getManager()->removeResource(this);
 		renderer->registerDelete(this);
 	}
 }

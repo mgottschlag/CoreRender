@@ -19,64 +19,60 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RES_RESOURCE_HPP_INCLUDED_
-#define _CORERENDER_RES_RESOURCE_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_TEXTURE2D_HPP_INCLUDED_
+#define _CORERENDER_RENDER_TEXTURE2D_HPP_INCLUDED_
 
-#include "../core/ReferenceCounted.hpp"
+#include "Texture.hpp"
 
-#include <string>
 #include <tbb/spin_mutex.h>
-#include <vector>
 
 namespace cr
 {
-namespace core
+namespace render
 {
-	class Semaphore;
-}
-namespace res
-{
-	class ResourceManager;
-
-	class Resource : public core::ReferenceCounted
+	class Texture2D : public Texture
 	{
 		public:
-			Resource(ResourceManager *rmgr, const std::string &name);
-			virtual ~Resource();
+			Texture2D(Renderer *renderer,
+			        res::ResourceManager *rmgr,
+			        const std::string &name);
+			virtual ~Texture2D();
 
-			void setName(const std::string &name);
-			std::string getName();
+			bool set(unsigned int width,
+			         unsigned int height,
+			         TextureFormat::List internalformat,
+			         TextureFormat::List format = TextureFormat::Invalid,
+			         void *data = 0);
+			bool update(TextureFormat::List format,
+			            void *data);
+			bool update(unsigned int x,
+			            unsigned int y,
+			            unsigned int width,
+			            unsigned int height,
+			            TextureFormat::List format,
+			            void *data);
+			void discardImageData();
 
-			void queueForLoading();
-
-			virtual bool load();
-			virtual bool unload();
-			bool isLoaded()
+			unsigned int getWidth()
 			{
-				return loaded;
+				return width;
 			}
-			void prioritizeLoading();
-			virtual bool waitForLoading(bool recursive,
-			                            bool highpriority = false);
-
-			virtual const std::string &getType() = 0;
-
-			ResourceManager *getManager()
+			unsigned int getHeight()
 			{
-				return rmgr;
+				return height;
 			}
 
-			typedef core::SharedPointer<Resource> Ptr;
+			typedef core::SharedPointer<Texture2D> Ptr;
 		protected:
-			void finishLoading(bool loaded);
-		private:
-			tbb::spin_mutex statemutex;
-			bool loaded;
-			std::vector<core::Semaphore*> waiting;
+			bool discarddata;
 
-			std::string name;
+			tbb::spin_mutex imagemutex;
 
-			ResourceManager *rmgr;
+			unsigned int width;
+			unsigned int height;
+			TextureFormat::List internalformat;
+			TextureFormat::List format;
+			void *data;
 	};
 }
 }
