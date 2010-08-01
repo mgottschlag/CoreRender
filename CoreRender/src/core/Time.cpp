@@ -45,7 +45,7 @@ namespace core
 
 	unsigned int Time::getTime()
 	{
-		return getSystemTime() - starttime;
+		return(unsigned int)(getSystemTime() - starttime);
 	}
 	uint64_t Time::getSystemTime()
 	{

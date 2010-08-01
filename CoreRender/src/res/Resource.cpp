@@ -20,7 +20,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/res/Resource.hpp"
-#include "CoreRender/core/ConditionVariable.hpp"
+#include "CoreRender/core/Semaphore.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
 
 namespace cr
@@ -73,16 +73,14 @@ namespace res
 		// Set priority
 		prioritizeLoading();
 		// Wait for resource to be loaded
-		core::ConditionVariable waitvar;
+		core::Semaphore waiting;
 		{
 			tbb::spin_mutex::scoped_lock lock(statemutex);
 			if (isLoaded())
 				return true;
-			waitvar.lock();
-			waiting.push_back(&waitvar);
+			this->waiting.push_back(&waiting);
 		}
-		waitvar.wait();
-		waitvar.unlock();
+		waiting.wait();
 		return isLoaded();
 	}
 
@@ -92,9 +90,7 @@ namespace res
 		this->loaded = loaded;
 		for (unsigned int i = 0; i < waiting.size(); i++)
 		{
-			waiting[i]->lock();
-			waiting[i]->signal();
-			waiting[i]->unlock();
+			waiting[i]->post();
 		}
 		waiting.clear();
 	}

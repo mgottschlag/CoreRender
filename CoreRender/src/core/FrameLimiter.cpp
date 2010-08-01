@@ -52,7 +52,7 @@ namespace core
 		if (currenttime < lasttime)
 		{
 			// TODO: Statistics
-			Time::sleep(lasttime - currenttime);
+			Time::sleep((unsigned int)(lasttime - currenttime));
 		}
 		else
 		{

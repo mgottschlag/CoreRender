@@ -56,7 +56,7 @@ namespace render
 
 			tbb::spin_mutex uploadmutex;
 			bool uploading;
-			core::ConditionVariable *waitvar;
+			core::Semaphore *waiting;
 	};
 }
 }

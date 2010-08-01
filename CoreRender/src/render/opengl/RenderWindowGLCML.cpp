@@ -31,6 +31,9 @@ namespace opengl
 {
 	RenderWindowGLCML::RenderWindowGLCML() : handle(-1)
 	{
+		// It is safe to call init/terminate here even if other windows exist
+		// as glcml uses reference counting here
+		glcml_init();
 	}
 	RenderWindowGLCML::~RenderWindowGLCML()
 	{
@@ -39,6 +42,7 @@ namespace opengl
 			// Close window again
 			glcml_window_destroy(handle);
 		}
+		glcml_terminate();
 	}
 
 	bool RenderWindowGLCML::open(unsigned int width,

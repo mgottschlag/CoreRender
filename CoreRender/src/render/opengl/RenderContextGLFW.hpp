@@ -19,69 +19,38 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RES_RESOURCE_HPP_INCLUDED_
-#define _CORERENDER_RES_RESOURCE_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_OPENGL_RENDERCONTEXTGLFW_HPP_INCLUDED_
+#define _CORERENDER_RENDER_OPENGL_RENDERCONTEXTGLFW_HPP_INCLUDED_
 
-#include "../core/ReferenceCounted.hpp"
-
-#include <string>
-#include <tbb/spin_mutex.h>
-#include <vector>
+#include "CoreRender/render/RenderContextOpenGL.hpp"
 
 namespace cr
 {
-namespace core
+namespace render
 {
-	class Semaphore;
-}
-namespace res
+namespace opengl
 {
-	class ResourceManager;
-
-	class Resource : public core::ReferenceCounted
+	class RenderContextGLFW : public RenderContextOpenGL
 	{
 		public:
-			Resource();
-			virtual ~Resource();
+			RenderContextGLFW();
+			virtual ~RenderContextGLFW();
 
-			void setName(const std::string &name);
-			std::string getName();
+			bool create(unsigned int width,
+			            unsigned int height,
+			            bool fullscreen);
 
-			void queueForLoading();
+			virtual bool resize(unsigned int width,
+			                    unsigned int height,
+			                    bool fullscreen);
 
-			virtual bool load();
-			virtual bool unload();
-			bool isLoaded()
-			{
-				return loaded;
-			}
-			void prioritizeLoading();
-			virtual bool waitForLoading(bool recursive,
-			                            bool highpriority = false);
+			virtual void makeCurrent(bool current = true);
+			virtual void swapBuffers();
 
-			virtual const std::string &getType() = 0;
-
-			void setManager(ResourceManager *rmgr)
-			{
-				this->rmgr = rmgr;
-			}
-			ResourceManager *getManager()
-			{
-				return rmgr;
-			}
-
-			typedef core::SharedPointer<Resource> Ptr;
-		protected:
-			void finishLoading(bool loaded);
+			virtual void update();
 		private:
-			tbb::spin_mutex statemutex;
-			bool loaded;
-			std::vector<core::Semaphore*> waiting;
-
-			std::string name;
-
-			ResourceManager *rmgr;
 	};
+}
 }
 }
 

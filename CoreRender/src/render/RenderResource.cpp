@@ -21,14 +21,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "CoreRender/render/RenderResource.hpp"
 #include "CoreRender/render/Renderer.hpp"
-#include "CoreRender/core/ConditionVariable.hpp"
+#include "CoreRender/core/Semaphore.hpp"
 
 namespace cr
 {
 namespace render
 {
 	RenderResource::RenderResource(Renderer *renderer)
-		: renderer(renderer), uploading(false), waitvar(0)
+		: renderer(renderer), uploading(false), waiting(0)
 	{
 	}
 	RenderResource::~RenderResource()
@@ -62,17 +62,15 @@ namespace render
 	}
 	void RenderResource::uploadFinished()
 	{
-		core::ConditionVariable *wait = 0;
+		core::Semaphore *wait = 0;
 		{
 			tbb::spin_mutex::scoped_lock lock(uploadmutex);
 			uploading = false;
-			wait = waitvar;
+			wait = waiting;
 		}
 		if (wait)
 		{
-			wait->lock();
-			wait->signal();
-			wait->unlock();
+			wait->post();
 		}
 	}
 
@@ -80,16 +78,14 @@ namespace render
 	{
 		if (!uploading)
 			return;
-		core::ConditionVariable waitvar;
+		core::Semaphore waiting;
 		{
 			tbb::spin_mutex::scoped_lock lock(uploadmutex);
 			if (!uploading)
 				return;
-			waitvar.lock();
-			this->waitvar = &waitvar;
+			this->waiting = &waiting;
 		}
-		waitvar.wait();
-		waitvar.unlock();
+		waiting.wait();
 	}
 
 	void RenderResource::onDelete()

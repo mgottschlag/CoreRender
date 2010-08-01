@@ -4,3 +4,4 @@ relre:CoreRender/docs/html/*
 relre:.*\.so
 relre:.*\..*~
 relre:cmake_install.cmake
+glob:build

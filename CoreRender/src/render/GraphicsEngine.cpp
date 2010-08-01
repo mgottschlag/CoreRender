@@ -26,11 +26,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/Renderer.hpp"
 #include "CoreRender/render/RenderThread.hpp"
 
-#include "opengl/RenderContextGLCML.hpp"
+#if defined(CORERENDER_USE_GLCML)
+	#include "opengl/RenderContextGLCML.hpp"
+#elif defined(CORERENDER_USE_GLFW)
+	#include "opengl/RenderContextGLFW.hpp"
+#endif
 #include "opengl/VideoDriverOpenGL.hpp"
 #include "null/VideoDriverNull.hpp"
-
-#include <glcml.h>
 
 namespace cr
 {
@@ -39,12 +41,9 @@ namespace render
 	GraphicsEngine::GraphicsEngine()
 		: multithreaded(true), renderer(0), renderthread(0)
 	{
-		// TODO: Should be done when creating windows?
-		glcml_init();
 	}
 	GraphicsEngine::~GraphicsEngine()
 	{
-		glcml_terminate();
 	}
 
 	bool GraphicsEngine::init(VideoDriverType::List type,
@@ -90,6 +89,7 @@ namespace render
 				log->warning("Could not clone the rendering context. "
 				             "Continuing single-threaded.");
 				multithreaded = false;
+				this->multithreaded = false;
 			}
 		}
 		// Initialize resource manager
@@ -191,6 +191,8 @@ namespace render
 	}
 	InputEvent *GraphicsEngine::getInput()
 	{
+		// TODO
+		return 0;
 	}
 
 	RenderContext::Ptr GraphicsEngine::createContext(VideoDriverType::List type,
@@ -200,6 +202,7 @@ namespace render
 	{
 		if (type == VideoDriverType::OpenGL)
 		{
+#if defined(CORERENDER_USE_GLCML)
 			opengl::RenderContextGLCML *newctx;
 			newctx = new opengl::RenderContextGLCML();
 			if (!newctx->create(width, height, fullscreen))
@@ -208,6 +211,16 @@ namespace render
 				return 0;
 			}
 			return newctx;
+#elif defined(CORERENDER_USE_GLFW)
+			opengl::RenderContextGLFW *newctx;
+			newctx = new opengl::RenderContextGLFW();
+			if (!newctx->create(width, height, fullscreen))
+			{
+				delete newctx;
+				return 0;
+			}
+			return newctx;
+#endif
 		}
 		else if (type == VideoDriverType::Null)
 		{

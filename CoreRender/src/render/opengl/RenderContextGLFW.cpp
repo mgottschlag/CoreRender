@@ -19,43 +19,56 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "CoreRender/core/ConditionVariable.hpp"
+#include "RenderContextGLFW.hpp"
+
+#include <GL/glfw.h>
 
 namespace cr
 {
-namespace core
+namespace render
 {
-	ConditionVariable::ConditionVariable()
+namespace opengl
+{
+	RenderContextGLFW::RenderContextGLFW()
 	{
-		pthread_mutex_init(&mutex, 0);
-		pthread_cond_init(&cond, 0);
+		glfwInit();
 	}
-	ConditionVariable::~ConditionVariable()
+	RenderContextGLFW::~RenderContextGLFW()
 	{
-		pthread_mutex_destroy(&mutex);
-		pthread_cond_destroy(&cond);
-	}
-
-	void ConditionVariable::lock()
-	{
-		pthread_mutex_lock(&mutex);
-	}
-	void ConditionVariable::unlock()
-	{
-		pthread_mutex_unlock(&mutex);
+		glfwTerminate();
 	}
 
-	void ConditionVariable::signal()
+	bool RenderContextGLFW::create(unsigned int width,
+	                                unsigned int height,
+	                                bool fullscreen)
 	{
-		pthread_cond_signal(&cond);
+		int mode = fullscreen ? GLFW_FULLSCREEN : GLFW_WINDOW;
+		if (glfwOpenWindow(width, height, 8, 8, 8, 8, 24, 8, mode) == GL_FALSE)
+			return false;
+		// TODO: Input
+		return true;
 	}
-	void ConditionVariable::broadcast()
+
+	bool RenderContextGLFW::resize(unsigned int width,
+	                                unsigned int height,
+	                                bool fullscreen)
 	{
-		pthread_cond_broadcast(&cond);
+		// TODO
+		return false;
 	}
-	void ConditionVariable::wait()
+
+	void RenderContextGLFW::makeCurrent(bool current)
 	{
-		pthread_cond_wait(&cond, &mutex);
 	}
+	void RenderContextGLFW::swapBuffers()
+	{
+		glfwSwapBuffers();
+	}
+
+	void RenderContextGLFW::update()
+	{
+		glfwPollEvents();
+	}
+}
 }
 }

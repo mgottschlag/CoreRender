@@ -3,16 +3,13 @@ project(CoreRender)
 cmake_minimum_required(VERSION 2.6.0)
 
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -Woverloaded-virtual")
+option(CORERENDER_USE_GLFW "Use GLFW single-threaded OpenGL contexts." ON)
+option(CORERENDER_USE_GLCML "Use GLCML multi-threaded OpenGL contexts." OFF)
 
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 set(SRC
 	include/CoreRender.hpp
 	include/CoreRender/core/Buffer.hpp
 	include/CoreRender/core/Color.hpp
-	include/CoreRender/core/ConditionVariable.hpp
 	include/CoreRender/core/File.hpp
 	include/CoreRender/core/FileList.hpp
 	include/CoreRender/core/FileSystem.hpp
@@ -55,7 +52,6 @@ set(SRC
 	include/CoreRender/render/RenderTarget.hpp
 	include/CoreRender/render/GraphicsEngine.hpp
 	src/core/Buffer.cpp
-	src/core/ConditionVariable.cpp
 	src/core/FrameLimiter.cpp
 	src/core/Log.cpp
 	src/core/Semaphore.cpp
@@ -65,10 +61,6 @@ set(SRC
 	src/core/Time.cpp
 	src/render/GraphicsEngine.cpp
 	src/render/null/VideoDriverNull.hpp
-	src/render/opengl/RenderContextGLCML.cpp
-	src/render/opengl/RenderContextGLCML.hpp
-	src/render/opengl/RenderWindowGLCML.cpp
-	src/render/opengl/RenderWindowGLCML.hpp
 	src/render/opengl/VideoDriverOpenGL.cpp
 	src/render/opengl/VideoDriverOpenGL.hpp
 	src/render/RenderContextReuseOpenGL.cpp
@@ -80,10 +72,65 @@ set(SRC
 	src/res/ResourceManager.cpp
 )
 
+set(LIB
+	tbb
+	freeimage
+	freeimageplus
+)
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	set(LIB
+		${LIB}
+		OpenGL32
+		ws2_32
+	)
+else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -Woverloaded-virtual")
+
+	set(LIB
+		${LIB}
+		pthread
+		GL
+	)
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+
+if(CORERENDER_USE_GLFW)
+	set(SRC
+		${SRC}
+		src/render/opengl/RenderContextGLFW.cpp
+		src/render/opengl/RenderContextGLFW.hpp
+	)
+	set(LIB
+		${LIB}
+		glfwdll
+	)
+	add_definitions(-DCORERENDER_USE_GLFW -DGLFW_BUILD_DLL)
+elseif(CORERENDER_USE_GLCML)
+	set (SRC
+		${SRC}
+		src/render/opengl/RenderContextGLCML.cpp
+		src/render/opengl/RenderContextGLCML.hpp
+		src/render/opengl/RenderWindowGLCML.cpp
+		src/render/opengl/RenderWindowGLCML.hpp
+	)
+	set(LIB
+		${LIB}
+		glcml
+	)
+	add_definitions(-DCORERENDER_USE_GLCML)
+endif(CORERENDER_USE_GLFW)
+
+
 include_directories(include)
 
-add_library(CoreRender SHARED ${SRC})
-target_link_libraries(CoreRender tbb pthread GL freeimageplus glcml)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	add_library(CoreRender STATIC ${SRC})
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	add_library(CoreRender SHARED ${SRC})
+endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+target_link_libraries(CoreRender ${LIB})
 
 install(DIRECTORY include/CoreRender DESTINATION include/CoreRender FILES_MATCHING PATTERN *.hpp)
 install(FILES include/CoreRender.hpp DESTINATION include)

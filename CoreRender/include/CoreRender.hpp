@@ -35,7 +35,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/core/Buffer.hpp"
 #include "CoreRender/core/Hardware.hpp"
 #include "CoreRender/core/StandardFileSystem.hpp"
-#include "CoreRender/core/ConditionVariable.hpp"
 #include "CoreRender/core/Time.hpp"
 #include "CoreRender/core/Log.hpp"
 #include "CoreRender/math/Vector3.hpp"
