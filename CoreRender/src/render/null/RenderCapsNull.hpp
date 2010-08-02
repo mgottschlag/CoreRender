@@ -19,69 +19,47 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERER_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERER_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_NULL_RENDERCAPSNULL_HPP_INCLUDED_
+#define _CORERENDER_RENDER_NULL_RENDERCAPSNULL_HPP_INCLUDED_
 
-#include "RenderResource.hpp"
-#include "RenderContext.hpp"
-#include "../core/Log.hpp"
+#include "CoreRender/render/RenderCaps.hpp"
 
 namespace cr
 {
-namespace core
-{
-	class MemoryPool;
-}
 namespace render
 {
-	class VideoDriver;
-
-	class Renderer
+namespace null
+{
+	class RenderCapsNull : public RenderCaps
 	{
 		public:
-			Renderer(RenderContext::Ptr primary,
-			         RenderContext::Ptr secondary,
-			         core::Log::Ptr log,
-			         VideoDriver *driver);
-			~Renderer();
-
-			void registerNew(RenderResource::Ptr res);
-			void registerUpload(RenderResource::Ptr res);
-			void registerDelete(RenderResource *res);
-
-			void enterThread();
-			void exitThread();
-
-			void uploadNewObjects();
-			void prepareRendering();
-			void uploadObjects();
-			void deleteObjects();
-
-			void render();
-
-			core::Log::Ptr getLog()
+			RenderCapsNull()
 			{
-				return log;
+				// Support a reasonable amount of features
+				flags |= 1 << Flag::TextureFloat;
+				flags |= 1 << Flag::TextureDepthStencil;
+				flags |= 1 << Flag::TextureCompression;
+				flags |= 1 << Flag::TextureDXT1;
+				flags |= 1 << Flag::VertexHalfFloat;
+				flags |= 1 << Flag::PointSprite;
+				flags |= 1 << Flag::TextureRG;
+				maxtexsize1d = 4096;
+				maxtexsize2d[0] = 4096;
+				maxtexsize2d[1] = 4096;
+				maxtexsize3d[0] = 128;
+				maxtexsize3d[1] = 128;
+				maxtexsize3d[2] = 128;
+				maxtexsizecube[0] = 4096;
+				maxtexsizecube[1] = 4096;
+				maxpointsize = 256.0f;
+				minpointsize = 0.1f;
 			}
-			core::MemoryPool *getNextFrameMemory()
+			virtual ~RenderCapsNull()
 			{
-				return memory[0];
-			}
-			core::MemoryPool *getCurrentFrameMemory()
-			{
-				return memory[1];
-			}
-			VideoDriver *getDriver()
-			{
-				return driver;
 			}
 		private:
-			RenderContext::Ptr primary;
-			RenderContext::Ptr secondary;
-			core::Log::Ptr log;
-			core::MemoryPool *memory[2];
-			VideoDriver *driver;
 	};
+}
 }
 }
 

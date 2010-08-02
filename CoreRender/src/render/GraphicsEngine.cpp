@@ -116,7 +116,7 @@ namespace render
 			secondcontext = 0;
 			return false;
 		}
-		renderer = new Renderer(context, secondcontext, log);
+		renderer = new Renderer(context, secondcontext, log, driver);
 		// Create render thread
 		if (multithreaded)
 		{
@@ -170,6 +170,72 @@ namespace render
 		secondcontext = 0;
 		context = 0;
 		return true;
+	}
+
+	bool GraphicsEngine::beginFrame()
+	{
+		renderer->uploadNewObjects();
+		// TODO: Setup the rendering pipeline?
+		return true;
+	}
+	bool GraphicsEngine::endFrame()
+	{
+		// TODO: This still deadlocks on the first frame already
+		if (multithreaded)
+			renderthread->waitForFrame();
+		renderer->prepareRendering();
+		if (multithreaded)
+			renderthread->startFrame();
+		else
+			renderer->render();
+		return true;
+	}
+
+	Texture2D::Ptr GraphicsEngine::getTexture2D(const std::string &name)
+	{
+		return 0;
+	}
+	Texture2D::Ptr GraphicsEngine::loadTexture2D(const std::string &path,
+	                                             const std::string &name)
+	{
+		Texture2D::Ptr texture;
+		if (name.size() == 0)
+			texture = createTexture2D(path);
+		else
+			texture = createTexture2D(name);
+		texture->loadFromFile(path);
+		return texture;
+	}
+	Texture2D::Ptr GraphicsEngine::createTexture2D(const std::string &name)
+	{
+		if (name == "")
+			return driver->createTexture2D(renderer, rmgr, rmgr->getInternalName());
+		else
+		{
+			// TODO: Check whether a resource with that name already exists
+			return driver->createTexture2D(renderer, rmgr, name);
+		}
+	}
+	VertexBuffer::Ptr GraphicsEngine::createVertexBuffer(const std::string &name,
+	                                                     VertexBufferUsage::List usage)
+	{
+		if (name == "")
+			return driver->createVertexBuffer(renderer, rmgr, rmgr->getInternalName(), usage);
+		else
+		{
+			// TODO: Check whether a resource with that name already exists
+			return driver->createVertexBuffer(renderer, rmgr, name, usage);
+		}
+	}
+	IndexBuffer::Ptr GraphicsEngine::createIndexBuffer(const std::string &name)
+	{
+		if (name == "")
+			return driver->createIndexBuffer(renderer, rmgr, rmgr->getInternalName());
+		else
+		{
+			// TODO: Check whether a resource with that name already exists
+			return driver->createIndexBuffer(renderer, rmgr, name);
+		}
 	}
 
 	void GraphicsEngine::setFileSystem(core::FileSystem::Ptr fs)
@@ -236,7 +302,7 @@ namespace render
 		if (type == VideoDriverType::OpenGL)
 		{
 			opengl::VideoDriverOpenGL *driver;
-			driver = new opengl::VideoDriverOpenGL();
+			driver = new opengl::VideoDriverOpenGL(log);
 			if (!driver->init())
 			{
 				delete driver;

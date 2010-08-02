@@ -22,6 +22,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/Texture2D.hpp"
 #include "CoreRender/render/Renderer.hpp"
 
+#include <cstring>
+#include <cstdlib>
+
 namespace cr
 {
 namespace render
@@ -36,22 +39,79 @@ namespace render
 	}
 	Texture2D::~Texture2D()
 	{
+		if (data)
+			free(data);
 	}
 
 	bool Texture2D::set(unsigned int width,
 	                    unsigned int height,
 	                    TextureFormat::List internalformat,
 	                    TextureFormat::List format,
-	                    void *data)
+	                    void *data,
+	                    bool copy)
 	{
-		// TODO
-		return false;
+		// Allocate image data
+		void *datacopy;
+		if (copy)
+		{
+			unsigned int datasize = TextureFormat::getSize(format,
+			                                               width * height);
+			datacopy = malloc(datasize);
+			memcpy(datacopy, data, datasize);
+		}
+		else
+		{
+			datacopy = data;
+		}
+		void *prevdata = 0;
+		// Fill in info
+		{
+			tbb::spin_mutex::scoped_lock lock(imagemutex);
+			prevdata = this->data;
+			this->width = width;
+			this->height = height;
+			this->internalformat = internalformat;
+			this->format = format;
+			this->data = datacopy;
+		}
+		// Delete old data
+		if (prevdata)
+			free(prevdata);
+		// Register for uploading
+		registerUpload();
+		return true;
 	}
 	bool Texture2D::update(TextureFormat::List format,
-	                       void *data)
+	                       void *data,
+	                       bool copy)
 	{
-		// TODO
-		return false;
+		// Allocate image data
+		void *datacopy;
+		if (copy)
+		{
+			unsigned int datasize = TextureFormat::getSize(format,
+			                                               width * height);
+			datacopy = malloc(datasize);
+			memcpy(datacopy, data, datasize);
+		}
+		else
+		{
+			datacopy = data;
+		}
+		void *prevdata = 0;
+		// Fill in info
+		{
+			tbb::spin_mutex::scoped_lock lock(imagemutex);
+			prevdata = this->data;
+			this->format = format;
+			this->data = datacopy;
+		}
+		// Delete old data
+		if (prevdata)
+			free(prevdata);
+		// Register for uploading
+		registerUpload();
+		return true;
 	}
 	bool Texture2D::update(unsigned int x,
 	                       unsigned int y,
@@ -65,6 +125,19 @@ namespace render
 	}
 	void Texture2D::discardImageData()
 	{
+		discarddata = true;
+		// TODO: Actually delete the data
+	}
+
+	bool Texture2D::load()
+	{
+		// TODO
+		return false;
+	}
+	bool Texture2D::unload()
+	{
+		discardImageData();
+		return true;
 	}
 }
 }

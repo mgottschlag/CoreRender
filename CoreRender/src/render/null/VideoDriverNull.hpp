@@ -23,6 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_RENDER_NULL_VIDEODRIVER_HPP_INCLUDED_
 
 #include "CoreRender/render/VideoDriver.hpp"
+#include "RenderCapsNull.hpp"
 
 namespace cr
 {
@@ -49,6 +50,26 @@ namespace null
 				return true;
 			}
 
+			virtual Texture2D::Ptr createTexture2D(Renderer *renderer,
+			                                       res::ResourceManager *rmgr,
+			                                       const std::string &name)
+			{
+				return new Texture2D(renderer, rmgr, name);
+			}
+			virtual IndexBuffer::Ptr createIndexBuffer(Renderer *renderer,
+			                                           res::ResourceManager *rmgr,
+			                                           const std::string &name)
+			{
+				return new IndexBuffer(renderer, rmgr, name);
+			}
+			virtual VertexBuffer::Ptr createVertexBuffer(Renderer *renderer,
+			                                             res::ResourceManager *rmgr,
+			                                             const std::string &name,
+	                                                     VertexBufferUsage::List usage)
+			{
+				return new VertexBuffer(renderer, rmgr, name, usage);
+			}
+
 			virtual void setRenderTarget(int handle)
 			{
 			}
@@ -71,7 +92,12 @@ namespace null
 			{
 				return VideoDriverType::Null;
 			}
+			virtual const RenderCaps &getCaps()
+			{
+				return caps;
+			}
 		private:
+			RenderCapsNull caps;
 	};
 
 }

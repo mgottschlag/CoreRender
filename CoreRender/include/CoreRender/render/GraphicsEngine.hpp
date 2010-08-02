@@ -26,6 +26,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "RenderContext.hpp"
 #include "../core/FileSystem.hpp"
 #include "../core/Log.hpp"
+#include "Texture2D.hpp"
+#include "VertexBuffer.hpp"
+#include "IndexBuffer.hpp"
 
 namespace cr
 {
@@ -60,6 +63,15 @@ namespace render
 
 			bool beginFrame();
 			bool endFrame();
+
+			Texture2D::Ptr getTexture2D(const std::string &name);
+			Texture2D::Ptr loadTexture2D(const std::string &path,
+			                           const std::string &name = "");
+			Texture2D::Ptr createTexture2D(const std::string &name = "");
+
+			VertexBuffer::Ptr createVertexBuffer(const std::string &name = "",
+				VertexBufferUsage::List usage = VertexBufferUsage::Static);
+			IndexBuffer::Ptr createIndexBuffer(const std::string &name = "");
 
 			void setFileSystem(core::FileSystem::Ptr fs);
 			core::FileSystem::Ptr getFileSystem()

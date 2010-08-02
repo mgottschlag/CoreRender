@@ -19,69 +19,32 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERER_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERER_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_OPENGL_VERTEXBUFFEROPENGL_HPP_INCLUDED_
+#define _CORERENDER_RENDER_OPENGL_VERTEXBUFFEROPENGL_HPP_INCLUDED_
 
-#include "RenderResource.hpp"
-#include "RenderContext.hpp"
-#include "../core/Log.hpp"
+#include "CoreRender/render/VertexBuffer.hpp"
 
 namespace cr
 {
-namespace core
-{
-	class MemoryPool;
-}
 namespace render
 {
-	class VideoDriver;
-
-	class Renderer
+namespace opengl
+{
+	class VertexBufferOpenGL : public VertexBuffer
 	{
 		public:
-			Renderer(RenderContext::Ptr primary,
-			         RenderContext::Ptr secondary,
-			         core::Log::Ptr log,
-			         VideoDriver *driver);
-			~Renderer();
+			VertexBufferOpenGL(Renderer *renderer,
+			                   res::ResourceManager *rmgr,
+			                   const std::string &name,
+			                   VertexBufferUsage::List usage);
+			virtual ~VertexBufferOpenGL();
 
-			void registerNew(RenderResource::Ptr res);
-			void registerUpload(RenderResource::Ptr res);
-			void registerDelete(RenderResource *res);
-
-			void enterThread();
-			void exitThread();
-
-			void uploadNewObjects();
-			void prepareRendering();
-			void uploadObjects();
-			void deleteObjects();
-
-			void render();
-
-			core::Log::Ptr getLog()
-			{
-				return log;
-			}
-			core::MemoryPool *getNextFrameMemory()
-			{
-				return memory[0];
-			}
-			core::MemoryPool *getCurrentFrameMemory()
-			{
-				return memory[1];
-			}
-			VideoDriver *getDriver()
-			{
-				return driver;
-			}
+			virtual bool create();
+			virtual bool destroy();
+			virtual bool upload();
 		private:
-			RenderContext::Ptr primary;
-			RenderContext::Ptr secondary;
-			core::Log::Ptr log;
-			core::MemoryPool *memory[2];
-			VideoDriver *driver;
 	};
+}
 }
 }
 

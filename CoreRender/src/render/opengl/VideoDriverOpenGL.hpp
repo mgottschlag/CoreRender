@@ -23,6 +23,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_RENDER_OPENGL_VIDEODRIVER_HPP_INCLUDED_
 
 #include "CoreRender/render/VideoDriver.hpp"
+#include "RenderCapsOpenGL.hpp"
+#include "CoreRender/core/Log.hpp"
 
 namespace cr
 {
@@ -33,11 +35,22 @@ namespace opengl
 	class VideoDriverOpenGL : public VideoDriver
 	{
 		public:
-			VideoDriverOpenGL();
+			VideoDriverOpenGL(core::Log::Ptr log);
 			virtual ~VideoDriverOpenGL();
 
 			virtual bool init();
 			virtual bool shutdown();
+
+			virtual Texture2D::Ptr createTexture2D(Renderer *renderer,
+			                                       res::ResourceManager *rmgr,
+			                                       const std::string &name);
+			virtual IndexBuffer::Ptr createIndexBuffer(Renderer *renderer,
+			                                           res::ResourceManager *rmgr,
+			                                           const std::string &name);
+			virtual VertexBuffer::Ptr createVertexBuffer(Renderer *renderer,
+			                                             res::ResourceManager *rmgr,
+			                                             const std::string &name,
+	                                                     VertexBufferUsage::List usage);
 
 			virtual void setRenderTarget(int handle);
 			virtual void clear(bool colorbuffer,
@@ -53,7 +66,14 @@ namespace opengl
 			{
 				return VideoDriverType::OpenGL;
 			}
+			virtual const RenderCaps &getCaps()
+			{
+				return caps;
+			}
 		private:
+			RenderCapsOpenGL caps;
+
+			core::Log::Ptr log;
 	};
 
 }

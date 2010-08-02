@@ -27,9 +27,10 @@ namespace cr
 namespace render
 {
 	Renderer::Renderer(RenderContext::Ptr primary,
-	         RenderContext::Ptr secondary,
-	         core::Log::Ptr log)
-		: primary(primary), secondary(secondary), log(log)
+	                   RenderContext::Ptr secondary,
+	                   core::Log::Ptr log,
+	                   VideoDriver *driver)
+		: primary(primary), secondary(secondary), log(log), driver(driver)
 	{
 		// Make context active for this thread
 		if (secondary)
@@ -82,13 +83,25 @@ namespace render
 		memory[1] = memory[0];
 		memory[0] = pool;
 	}
+	void Renderer::uploadObjects()
+	{
+		// TODO
+	}
+	void Renderer::deleteObjects()
+	{
+		// TODO
+	}
 
 	void Renderer::render()
 	{
+		// Upload changed objects
+		uploadObjects();
 		// Render passes
 		// TODO
 		// Reset memory pool
 		// TODO
+		// Delete unused objects
+		deleteObjects();
 	}
 }
 }

@@ -47,6 +47,11 @@ namespace res
 			void setName(const std::string &name);
 			std::string getName();
 
+			void loadFromFile(const std::string &path);
+
+			/**
+			 * @todo Can this be private?
+			 */
 			void queueForLoading();
 
 			virtual bool load();
@@ -59,7 +64,7 @@ namespace res
 			virtual bool waitForLoading(bool recursive,
 			                            bool highpriority = false);
 
-			virtual const std::string &getType() = 0;
+			virtual const char *getType() = 0;
 
 			ResourceManager *getManager()
 			{
@@ -69,12 +74,15 @@ namespace res
 			typedef core::SharedPointer<Resource> Ptr;
 		protected:
 			void finishLoading(bool loaded);
+
+			const std::string &getPath();
 		private:
 			tbb::spin_mutex statemutex;
 			bool loaded;
 			std::vector<core::Semaphore*> waiting;
 
 			std::string name;
+			std::string path;
 
 			ResourceManager *rmgr;
 	};

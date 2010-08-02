@@ -19,38 +19,64 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "CoreRender/render/Texture.hpp"
-#include "CoreRender/render/Renderer.hpp"
+#include "CoreRender/render/VertexBuffer.hpp"
+
+#include <cstring>
+#include <cstdlib>
 
 namespace cr
 {
 namespace render
 {
-	bool TextureFormat::supported(RenderCaps *caps,
-	                              TextureFormat::List internalformat,
-	                              TextureFormat::List format)
+	VertexBuffer::VertexBuffer(Renderer *renderer,
+	             res::ResourceManager *rmgr,
+	             const std::string &name,
+	             VertexBufferUsage::List usage)
+		: RenderResource(renderer, rmgr, name), usage(usage), size(0), data(0)
+	{
+	}
+	VertexBuffer::~VertexBuffer()
+	{
+		if (data)
+			free(data);
+	}
+
+	void VertexBuffer::set(unsigned int size,
+	                       void *data,
+	                       bool copy)
+	{
+		// Copy the data
+		void *datacopy;
+		if (copy)
+		{
+			datacopy = malloc(size);
+			memcpy(datacopy, data, size);
+		}
+		else
+			datacopy = data;
+		void *prevdata = 0;
+		// Fill in info
+		{
+			tbb::spin_mutex::scoped_lock lock(imagemutex);
+			prevdata = this->data;
+			this->size = size;
+			this->data = datacopy;
+		}
+		// Delete old data
+		if (prevdata)
+			free(prevdata);
+		// Register for uploading
+		registerUpload();
+	}
+	void VertexBuffer::update(unsigned int offset,
+	                          unsigned int size,
+	                          const void *data)
 	{
 		// TODO
-		return false;
 	}
-
-	unsigned int TextureFormat::getSize(TextureFormat::List format,
-	                                     unsigned int texels)
+	void VertexBuffer::discardData()
 	{
 		// TODO
-		return 0;
 	}
-
-	Texture::Texture(Renderer *renderer,
-	                 res::ResourceManager *rmgr,
-	                 const std::string &name,
-	                 TextureType::List type)
-		: RenderResource(renderer, rmgr, name), handle(0), type(type)
-	{
-	}
-	Texture::~Texture()
-	{
-	}
-
 }
 }

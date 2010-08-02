@@ -19,38 +19,70 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "CoreRender/render/Texture.hpp"
-#include "CoreRender/render/Renderer.hpp"
+#include "RenderCapsOpenGL.hpp"
+
+#include <GL/glew.h>
 
 namespace cr
 {
 namespace render
 {
-	bool TextureFormat::supported(RenderCaps *caps,
-	                              TextureFormat::List internalformat,
-	                              TextureFormat::List format)
-	{
-		// TODO
-		return false;
-	}
-
-	unsigned int TextureFormat::getSize(TextureFormat::List format,
-	                                     unsigned int texels)
-	{
-		// TODO
-		return 0;
-	}
-
-	Texture::Texture(Renderer *renderer,
-	                 res::ResourceManager *rmgr,
-	                 const std::string &name,
-	                 TextureType::List type)
-		: RenderResource(renderer, rmgr, name), handle(0), type(type)
+namespace opengl
+{
+	RenderCapsOpenGL::RenderCapsOpenGL()
 	{
 	}
-	Texture::~Texture()
+	RenderCapsOpenGL::~RenderCapsOpenGL()
 	{
 	}
 
+	bool RenderCapsOpenGL::init()
+	{
+		if (GLEW_ARB_texture_float)
+		{
+			flags |= 1 << Flag::TextureFloat;
+		}
+		if (GLEW_EXT_texture_compression_s3tc)
+		{
+			flags |= 1 << Flag::TextureCompression;
+			flags |= 1 << Flag::TextureDXT1;
+		}
+		else if (GLEW_EXT_texture_compression_dxt1)
+		{
+			flags |= 1 << Flag::TextureDXT1;
+		}
+		if (GLEW_EXT_packed_depth_stencil)
+		{
+			flags |= 1 << Flag::TextureDepthStencil;
+		}
+		if (GLEW_ARB_point_sprite)
+		{
+			flags |= 1 << Flag::PointSprite;
+		}
+		flags |= 1 << Flag::OcclusionQuery;
+		/*if (GLEW_ARB_timer_query)
+		{
+			flags |= 1 << Flag::TimerQuery;
+		}*/
+		if (GLEW_EXT_timer_query)
+		{
+			flags |= 1 << Flag::TimerQuery;
+		}
+		if (GLEW_ARB_half_float_vertex)
+		{
+			flags |= 1 << Flag::VertexHalfFloat;
+		}
+		if (GLEW_ARB_texture_rg)
+		{
+			flags |= 1 << Flag::TextureRG;
+		}
+		if (GLEW_ARB_geometry_shader4)
+		{
+			flags |= 1 << Flag::GeometryShader;
+		}
+		// TODO: Tesselation shader?
+		return true;
+	}
+}
 }
 }

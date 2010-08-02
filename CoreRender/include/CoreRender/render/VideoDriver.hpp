@@ -23,13 +23,22 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_RENDER_VIDEODRIVER_HPP_INCLUDED_
 
 #include "VideoDriverType.hpp"
+#include "RenderCaps.hpp"
 #include "../core/Color.hpp"
+#include "Texture2D.hpp"
+#include "IndexBuffer.hpp"
+#include "VertexBuffer.hpp"
 
 namespace cr
 {
+namespace res
+{
+	class ResourceManager;
+}
 namespace render
 {
 	class RenderBatch;
+	class Renderer;
 
 	class VideoDriver
 	{
@@ -40,6 +49,17 @@ namespace render
 
 			virtual bool init() = 0;
 			virtual bool shutdown() = 0;
+
+			virtual Texture2D::Ptr createTexture2D(Renderer *renderer,
+			                                       res::ResourceManager *rmgr,
+			                                       const std::string &name) = 0;
+			virtual IndexBuffer::Ptr createIndexBuffer(Renderer *renderer,
+			                                           res::ResourceManager *rmgr,
+			                                           const std::string &name) = 0;
+			virtual VertexBuffer::Ptr createVertexBuffer(Renderer *renderer,
+			                                             res::ResourceManager *rmgr,
+			                                             const std::string &name,
+	                                                     VertexBufferUsage::List usage) = 0;
 
 			virtual void setRenderTarget(int handle) = 0;
 			virtual void clear(bool colorbuffer,
@@ -52,6 +72,7 @@ namespace render
 			virtual void endFrame() = 0;
 
 			virtual VideoDriverType::List getType() = 0;
+			virtual const RenderCaps &getCaps() = 0;
 		private:
 	};
 }

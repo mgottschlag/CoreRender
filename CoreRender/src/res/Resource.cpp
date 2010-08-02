@@ -46,6 +46,12 @@ namespace res
 		return name;
 	}
 
+	void Resource::loadFromFile(const std::string &path)
+	{
+		this->path = path;
+		queueForLoading();
+	}
+
 	void Resource::queueForLoading()
 	{
 		if (rmgr)

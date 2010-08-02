@@ -35,6 +35,7 @@ set(SRC
 	include/CoreRender/res/LoadingThread.hpp
 	include/CoreRender/res/Resource.hpp
 	include/CoreRender/res/ResourceManager.hpp
+	include/CoreRender/render/IndexBuffer.hpp
 	include/CoreRender/render/RenderBatch.hpp
 	include/CoreRender/render/RenderResource.hpp
 	include/CoreRender/render/RenderThread.hpp
@@ -56,6 +57,7 @@ set(SRC
 	include/CoreRender/render/Texture2D.hpp
 	include/CoreRender/render/Texture3D.hpp
 	include/CoreRender/render/TextureCube.hpp
+	include/CoreRender/render/VertexBuffer.hpp
 	src/core/Buffer.cpp
 	src/core/FrameLimiter.cpp
 	src/core/Log.cpp
@@ -65,7 +67,16 @@ set(SRC
 	src/core/Thread.cpp
 	src/core/Time.cpp
 	src/render/GraphicsEngine.cpp
+	src/render/IndexBuffer.cpp
 	src/render/null/VideoDriverNull.hpp
+	src/render/opengl/IndexBufferOpenGL.cpp
+	src/render/opengl/IndexBufferOpenGL.hpp
+	src/render/opengl/RenderCapsOpenGL.cpp
+	src/render/opengl/RenderCapsOpenGL.hpp
+	src/render/opengl/Texture2DOpenGL.cpp
+	src/render/opengl/Texture2DOpenGL.hpp
+	src/render/opengl/VertexBufferOpenGL.cpp
+	src/render/opengl/VertexBufferOpenGL.hpp
 	src/render/opengl/VideoDriverOpenGL.cpp
 	src/render/opengl/VideoDriverOpenGL.hpp
 	src/render/RenderContextReuseOpenGL.cpp
@@ -74,6 +85,7 @@ set(SRC
 	src/render/RenderThread.cpp
 	src/render/Texture.cpp
 	src/render/Texture2D.cpp
+	src/render/VertexBuffer.cpp
 	src/res/LoadingThread.cpp
 	src/res/Resource.cpp
 	src/res/ResourceManager.cpp
@@ -83,6 +95,7 @@ set(LIB
 	tbb
 	freeimage
 	freeimageplus
+	GLEW
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")

@@ -20,6 +20,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "VideoDriverOpenGL.hpp"
+#include "Texture2DOpenGL.hpp"
+#include "IndexBufferOpenGL.hpp"
+#include "VertexBufferOpenGL.hpp"
+
+#include <GL/glew.h>
 
 namespace cr
 {
@@ -27,7 +32,8 @@ namespace render
 {
 namespace opengl
 {
-	VideoDriverOpenGL::VideoDriverOpenGL()
+	VideoDriverOpenGL::VideoDriverOpenGL(core::Log::Ptr log)
+		: log(log)
 	{
 	}
 	VideoDriverOpenGL::~VideoDriverOpenGL()
@@ -36,11 +42,46 @@ namespace opengl
 
 	bool VideoDriverOpenGL::init()
 	{
+		if (glewInit() != GLEW_OK)
+		{
+			log->error("Could not initialize GLEW.");
+			return false;
+		}
+		if (!GLEW_VERSION_2_0)
+		{
+			log->error("OpenGL 2.0 not available.");
+			return false;
+		}
+		if (!caps.init())
+		{
+			log->error("Could not initialize capabilities.");
+			return false;
+		}
 		return true;
 	}
 	bool VideoDriverOpenGL::shutdown()
 	{
 		return true;
+	}
+
+	Texture2D::Ptr VideoDriverOpenGL::createTexture2D(Renderer *renderer,
+	                                                  res::ResourceManager *rmgr,
+	                                                  const std::string &name)
+	{
+		return new Texture2DOpenGL(renderer, rmgr, name);
+	}
+	IndexBuffer::Ptr VideoDriverOpenGL::createIndexBuffer(Renderer *renderer,
+	                                           res::ResourceManager *rmgr,
+	                                           const std::string &name)
+	{
+		return new IndexBufferOpenGL(renderer, rmgr, name);
+	}
+	VertexBuffer::Ptr VideoDriverOpenGL::createVertexBuffer(Renderer *renderer,
+	                                             res::ResourceManager *rmgr,
+	                                             const std::string &name,
+	                                             VertexBufferUsage::List usage)
+	{
+		return new VertexBufferOpenGL(renderer, rmgr, name, usage);
 	}
 
 	void VideoDriverOpenGL::setRenderTarget(int handle)

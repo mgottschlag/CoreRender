@@ -19,69 +19,27 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERER_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERER_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_OPENGL_RENDERCAPSOPENGL_HPP_INCLUDED_
+#define _CORERENDER_RENDER_OPENGL_RENDERCAPSOPENGL_HPP_INCLUDED_
 
-#include "RenderResource.hpp"
-#include "RenderContext.hpp"
-#include "../core/Log.hpp"
+#include "CoreRender/render/RenderCaps.hpp"
 
 namespace cr
 {
-namespace core
-{
-	class MemoryPool;
-}
 namespace render
 {
-	class VideoDriver;
-
-	class Renderer
+namespace opengl
+{
+	class RenderCapsOpenGL : public RenderCaps
 	{
 		public:
-			Renderer(RenderContext::Ptr primary,
-			         RenderContext::Ptr secondary,
-			         core::Log::Ptr log,
-			         VideoDriver *driver);
-			~Renderer();
+			RenderCapsOpenGL();
+			virtual ~RenderCapsOpenGL();
 
-			void registerNew(RenderResource::Ptr res);
-			void registerUpload(RenderResource::Ptr res);
-			void registerDelete(RenderResource *res);
-
-			void enterThread();
-			void exitThread();
-
-			void uploadNewObjects();
-			void prepareRendering();
-			void uploadObjects();
-			void deleteObjects();
-
-			void render();
-
-			core::Log::Ptr getLog()
-			{
-				return log;
-			}
-			core::MemoryPool *getNextFrameMemory()
-			{
-				return memory[0];
-			}
-			core::MemoryPool *getCurrentFrameMemory()
-			{
-				return memory[1];
-			}
-			VideoDriver *getDriver()
-			{
-				return driver;
-			}
+			bool init();
 		private:
-			RenderContext::Ptr primary;
-			RenderContext::Ptr secondary;
-			core::Log::Ptr log;
-			core::MemoryPool *memory[2];
-			VideoDriver *driver;
 	};
+}
 }
 }
 

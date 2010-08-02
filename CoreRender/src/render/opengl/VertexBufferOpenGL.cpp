@@ -19,37 +19,40 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "CoreRender.hpp"
+#include "VertexBufferOpenGL.hpp"
 
-#include <iostream>
-#include <GL/glfw.h>
+#include <GL/glew.h>
 
-int main(int argc, char **argv)
+namespace cr
 {
-	// Initialize CoreRender
-	cr::render::GraphicsEngine graphics;
-	if (!graphics.init(cr::render::VideoDriverType::OpenGL, 800, 600, false))
+namespace render
+{
+namespace opengl
+{
+	VertexBufferOpenGL::VertexBufferOpenGL(Renderer *renderer,
+	                                       res::ResourceManager *rmgr,
+	                                       const std::string &name,
+	                                       VertexBufferUsage::List usage)
+		: VertexBuffer(renderer, rmgr, name, usage)
 	{
-		std::cerr << "Graphics engine failed to initialize!" << std::endl;
-		return -1;
 	}
-	cr::res::ResourceManager *rmgr = graphics.getResourceManager();
-
-	cr::render::Texture2D::Ptr texture = graphics.loadTexture2D("test.png");
-
-	bool stopping = false;
-	while (!stopping)
+	VertexBufferOpenGL::~VertexBufferOpenGL()
 	{
-		// Process input
-		// TODO
-		// Begin frame
-		graphics.beginFrame();
-		// Render objects
-		// TODO
-		// Finish and render frame
-		graphics.endFrame();
 	}
 
-	graphics.shutdown();
-	return 0;
+	bool VertexBufferOpenGL::create()
+	{
+		glGenBuffers(1, &handle);
+	}
+	bool VertexBufferOpenGL::destroy()
+	{
+		glDeleteBuffers(1, &handle);
+	}
+	bool VertexBufferOpenGL::upload()
+	{
+		// TODO: Type
+		glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+	}
+}
+}
 }

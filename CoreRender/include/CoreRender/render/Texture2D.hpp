@@ -34,17 +34,19 @@ namespace render
 	{
 		public:
 			Texture2D(Renderer *renderer,
-			        res::ResourceManager *rmgr,
-			        const std::string &name);
+			          res::ResourceManager *rmgr,
+			          const std::string &name);
 			virtual ~Texture2D();
 
 			bool set(unsigned int width,
 			         unsigned int height,
 			         TextureFormat::List internalformat,
 			         TextureFormat::List format = TextureFormat::Invalid,
-			         void *data = 0);
+			         void *data = 0,
+			         bool copy = true);
 			bool update(TextureFormat::List format,
-			            void *data);
+			            void *data,
+			            bool copy = true);
 			bool update(unsigned int x,
 			            unsigned int y,
 			            unsigned int width,
@@ -53,6 +55,9 @@ namespace render
 			            void *data);
 			void discardImageData();
 
+			virtual bool load();
+			virtual bool unload();
+
 			unsigned int getWidth()
 			{
 				return width;
@@ -60,6 +65,11 @@ namespace render
 			unsigned int getHeight()
 			{
 				return height;
+			}
+
+			virtual const char *getType()
+			{
+				return "Texture2D";
 			}
 
 			typedef core::SharedPointer<Texture2D> Ptr;

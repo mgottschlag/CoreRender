@@ -40,6 +40,11 @@ namespace render
 			RGBA8,
 			RGBA16F,
 			RGBA32F,
+			R8,
+			R16,
+			R32,
+			R16F,
+			R32F,
 			RG8,
 			RG16,
 			RG32,
@@ -57,6 +62,36 @@ namespace render
 		static bool supported(RenderCaps *caps,
 		                      List internalformat,
 		                      List format = Invalid);
+		static unsigned int getSize(TextureFormat::List format,
+		                            unsigned int texels);
+		static bool isCompressed(TextureFormat::List format)
+		{
+			switch (format)
+			{
+				case RGB_DXT1:
+				case RGBA_DXT1:
+				case RGBA_DXT3:
+				case RGBA_DXT5:
+					return true;
+				default:
+					return false;
+			}
+		}
+		static bool isFloat(TextureFormat::List format)
+		{
+			switch (format)
+			{
+				case RGBA16F:
+				case RGBA32F:
+				case R16F:
+				case R32F:
+				case RG16F:
+				case RG32F:
+					return true;
+				default:
+					return false;
+			}
+		}
 	};
 	struct TextureType
 	{
@@ -89,7 +124,7 @@ namespace render
 
 			typedef core::SharedPointer<Texture> Ptr;
 		protected:
-			int handle;
+			unsigned int handle;
 			TextureType::List type;
 	};
 }

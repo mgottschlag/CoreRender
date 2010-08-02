@@ -19,68 +19,50 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERER_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERER_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_INDEXBUFFER_HPP_INCLUDED_
+#define _CORERENDER_RENDER_INDEXBUFFER_HPP_INCLUDED_
 
 #include "RenderResource.hpp"
-#include "RenderContext.hpp"
-#include "../core/Log.hpp"
+
+#include <tbb/spin_mutex.h>
 
 namespace cr
 {
-namespace core
-{
-	class MemoryPool;
-}
 namespace render
 {
-	class VideoDriver;
-
-	class Renderer
+	class IndexBuffer : public RenderResource
 	{
 		public:
-			Renderer(RenderContext::Ptr primary,
-			         RenderContext::Ptr secondary,
-			         core::Log::Ptr log,
-			         VideoDriver *driver);
-			~Renderer();
+			IndexBuffer(Renderer *renderer,
+			             res::ResourceManager *rmgr,
+			             const std::string &name);
+			virtual ~IndexBuffer();
 
-			void registerNew(RenderResource::Ptr res);
-			void registerUpload(RenderResource::Ptr res);
-			void registerDelete(RenderResource *res);
+			void set(unsigned int size,
+			         void *data,
+			         bool copy = true);
+			void update(unsigned int offset,
+			            unsigned int size,
+			            const void *data);
+			void discardData();
 
-			void enterThread();
-			void exitThread();
-
-			void uploadNewObjects();
-			void prepareRendering();
-			void uploadObjects();
-			void deleteObjects();
-
-			void render();
-
-			core::Log::Ptr getLog()
+			int getHandle()
 			{
-				return log;
+				return handle;
 			}
-			core::MemoryPool *getNextFrameMemory()
+
+			virtual const char *getType()
 			{
-				return memory[0];
+				return "IndexBuffer";
 			}
-			core::MemoryPool *getCurrentFrameMemory()
-			{
-				return memory[1];
-			}
-			VideoDriver *getDriver()
-			{
-				return driver;
-			}
-		private:
-			RenderContext::Ptr primary;
-			RenderContext::Ptr secondary;
-			core::Log::Ptr log;
-			core::MemoryPool *memory[2];
-			VideoDriver *driver;
+
+			typedef core::SharedPointer<IndexBuffer> Ptr;
+		protected:
+			unsigned int handle;
+
+			tbb::spin_mutex imagemutex;
+			unsigned int size;
+			void *data;
 	};
 }
 }

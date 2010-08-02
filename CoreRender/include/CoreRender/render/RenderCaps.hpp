@@ -26,10 +26,11 @@ namespace cr
 {
 namespace render
 {
-	struct RenderCapsParam
-	{
-	};
-
+	/**
+	 * This class is filled with values by creating an instance of a derived
+	 * class and then setting the instance of this class to the content of the
+	 * derived class via RenderCaps::operator=().
+	 */
 	class RenderCaps
 	{
 		public:
@@ -62,6 +63,7 @@ namespace render
 					TextureDepthStencil,
 					TextureCompression,
 					TextureDXT1,
+					TextureRG,
 					VertexHalfFloat,
 					PointSprite,
 					Count
@@ -84,11 +86,11 @@ namespace render
 			{
 			}
 
-			bool getFlag(Flag::List flag)
+			bool getFlag(Flag::List flag) const
 			{
 				return (flags & (1 << (int)flag)) != 0;
 			}
-			float getParamF(Param::List param)
+			float getParamF(Param::List param) const
 			{
 				switch (param)
 				{
@@ -116,7 +118,7 @@ namespace render
 						return 0.0f;
 				}
 			}
-			int getParamI(Param::List param)
+			int getParamI(Param::List param) const
 			{
 				switch (param)
 				{
@@ -143,6 +145,22 @@ namespace render
 					default:
 						return 0;
 				}
+			}
+
+			RenderCaps &operator=(const RenderCaps &caps)
+			{
+				flags = caps.flags;
+				maxtexsize1d = caps.maxtexsize1d;
+				maxtexsize2d[0] = caps.maxtexsize2d[0];
+				maxtexsize2d[1] = caps.maxtexsize2d[1];
+				maxtexsize3d[0] = caps.maxtexsize3d[0];
+				maxtexsize3d[1] = caps.maxtexsize3d[1];
+				maxtexsize3d[2] = caps.maxtexsize3d[2];
+				maxtexsizecube[0] = caps.maxtexsizecube[0];
+				maxtexsizecube[1] = caps.maxtexsizecube[1];
+				maxpointsize = caps.maxpointsize;
+				minpointsize = caps.minpointsize;
+				return *this;
 			}
 		protected:
 			unsigned int flags;

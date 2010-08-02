@@ -19,68 +19,66 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERER_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERER_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_VERTEXBUFFER_HPP_INCLUDED_
+#define _CORERENDER_RENDER_VERTEXBUFFER_HPP_INCLUDED_
 
 #include "RenderResource.hpp"
-#include "RenderContext.hpp"
-#include "../core/Log.hpp"
+
+#include <tbb/spin_mutex.h>
 
 namespace cr
 {
-namespace core
-{
-	class MemoryPool;
-}
 namespace render
 {
-	class VideoDriver;
+	struct VertexBufferUsage
+	{
+		enum List
+		{
+			Static,
+			Stream,
+			Dynamic
+		};
+	};
 
-	class Renderer
+	class VertexBuffer : public RenderResource
 	{
 		public:
-			Renderer(RenderContext::Ptr primary,
-			         RenderContext::Ptr secondary,
-			         core::Log::Ptr log,
-			         VideoDriver *driver);
-			~Renderer();
+			VertexBuffer(Renderer *renderer,
+			             res::ResourceManager *rmgr,
+			             const std::string &name,
+			             VertexBufferUsage::List usage);
+			virtual ~VertexBuffer();
 
-			void registerNew(RenderResource::Ptr res);
-			void registerUpload(RenderResource::Ptr res);
-			void registerDelete(RenderResource *res);
+			void set(unsigned int size,
+			         void *data,
+			         bool copy = true);
+			void update(unsigned int offset,
+			            unsigned int size,
+			            const void *data);
+			void discardData();
 
-			void enterThread();
-			void exitThread();
-
-			void uploadNewObjects();
-			void prepareRendering();
-			void uploadObjects();
-			void deleteObjects();
-
-			void render();
-
-			core::Log::Ptr getLog()
+			int getHandle()
 			{
-				return log;
+				return handle;
 			}
-			core::MemoryPool *getNextFrameMemory()
+			VertexBufferUsage::List getUsage()
 			{
-				return memory[0];
+				return usage;
 			}
-			core::MemoryPool *getCurrentFrameMemory()
+
+			virtual const char *getType()
 			{
-				return memory[1];
+				return "VertexBuffer";
 			}
-			VideoDriver *getDriver()
-			{
-				return driver;
-			}
-		private:
-			RenderContext::Ptr primary;
-			RenderContext::Ptr secondary;
-			core::Log::Ptr log;
-			core::MemoryPool *memory[2];
-			VideoDriver *driver;
+
+			typedef core::SharedPointer<VertexBuffer> Ptr;
+		protected:
+			unsigned int handle;
+			VertexBufferUsage::List usage;
+
+			tbb::spin_mutex imagemutex;
+			unsigned int size;
+			void *data;
 	};
 }
 }

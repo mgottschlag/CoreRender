@@ -19,37 +19,63 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "CoreRender.hpp"
+#include "CoreRender/render/IndexBuffer.hpp"
 
-#include <iostream>
-#include <GL/glfw.h>
+#include <cstring>
+#include <cstdlib>
 
-int main(int argc, char **argv)
+namespace cr
 {
-	// Initialize CoreRender
-	cr::render::GraphicsEngine graphics;
-	if (!graphics.init(cr::render::VideoDriverType::OpenGL, 800, 600, false))
+namespace render
+{
+	IndexBuffer::IndexBuffer(Renderer *renderer,
+	             res::ResourceManager *rmgr,
+	             const std::string &name)
+		: RenderResource(renderer, rmgr, name), size(0), data(0)
 	{
-		std::cerr << "Graphics engine failed to initialize!" << std::endl;
-		return -1;
 	}
-	cr::res::ResourceManager *rmgr = graphics.getResourceManager();
-
-	cr::render::Texture2D::Ptr texture = graphics.loadTexture2D("test.png");
-
-	bool stopping = false;
-	while (!stopping)
+	IndexBuffer::~IndexBuffer()
 	{
-		// Process input
-		// TODO
-		// Begin frame
-		graphics.beginFrame();
-		// Render objects
-		// TODO
-		// Finish and render frame
-		graphics.endFrame();
+		if (data)
+			free(data);
 	}
 
-	graphics.shutdown();
-	return 0;
+	void IndexBuffer::set(unsigned int size,
+	                      void *data,
+	                      bool copy)
+	{
+		// Copy the data
+		void *datacopy;
+		if (copy)
+		{
+			datacopy = malloc(size);
+			memcpy(datacopy, data, size);
+		}
+		else
+			datacopy = data;
+		void *prevdata = 0;
+		// Fill in info
+		{
+			tbb::spin_mutex::scoped_lock lock(imagemutex);
+			prevdata = this->data;
+			this->size = size;
+			this->data = datacopy;
+		}
+		// Delete old data
+		if (prevdata)
+			free(prevdata);
+		// Register for uploading
+		registerUpload();
+	}
+	void IndexBuffer::update(unsigned int offset,
+	                         unsigned int size,
+	                         const void *data)
+	{
+		// TODO
+	}
+	void IndexBuffer::discardData()
+	{
+		// TODO
+	}
+}
 }
