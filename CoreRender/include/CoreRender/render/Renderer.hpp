@@ -27,6 +27,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "../core/Log.hpp"
 #include "Shader.hpp"
 
+#include <queue>
+
 namespace cr
 {
 namespace core
@@ -83,6 +85,15 @@ namespace render
 			core::Log::Ptr log;
 			core::MemoryPool *memory[2];
 			VideoDriver *driver;
+
+			tbb::spin_mutex newmutex;
+			std::queue<RenderResource::Ptr> newqueue;
+			tbb::spin_mutex shaderuploadmutex;
+			std::queue<Shader::Ptr> shaderuploadqueue;
+			tbb::spin_mutex uploadmutex;
+			std::queue<RenderResource::Ptr> uploadqueue;
+			tbb::spin_mutex deletemutex;
+			std::queue<RenderResource*> deletequeue;
 	};
 }
 }

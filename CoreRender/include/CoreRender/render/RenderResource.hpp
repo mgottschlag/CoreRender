@@ -43,6 +43,8 @@ namespace render
 			virtual bool create();
 			virtual bool destroy();
 			virtual bool upload();
+
+			typedef core::SharedPointer<RenderResource> Ptr;
 		protected:
 			Renderer *getRenderer()
 			{

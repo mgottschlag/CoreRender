@@ -52,15 +52,23 @@ namespace render
 
 	void Renderer::registerNew(RenderResource::Ptr res)
 	{
+		tbb::spin_mutex::scoped_lock lock(newmutex);
+		newqueue.push(res);
 	}
 	void Renderer::registerShaderUpload(Shader::Ptr shader)
 	{
+		tbb::spin_mutex::scoped_lock lock(shaderuploadmutex);
+		shaderuploadqueue.push(shader);
 	}
 	void Renderer::registerUpload(RenderResource::Ptr res)
 	{
+		tbb::spin_mutex::scoped_lock lock(uploadmutex);
+		uploadqueue.push(res);
 	}
 	void Renderer::registerDelete(RenderResource *res)
 	{
+		tbb::spin_mutex::scoped_lock lock(deletemutex);
+		deletequeue.push(res);
 	}
 
 	void Renderer::enterThread()
@@ -76,6 +84,32 @@ namespace render
 
 	void Renderer::uploadNewObjects()
 	{
+		// Upload new objects
+		while (true)
+		{
+			RenderResource::Ptr next;
+			{
+				tbb::spin_mutex::scoped_lock lock(newmutex);
+				if (newqueue.size() == 0)
+					break;
+				next = newqueue.front();
+				newqueue.pop();
+			}
+			next->create();
+		}
+		// Upload shaders
+		while (true)
+		{
+			Shader::Ptr next;
+			{
+				tbb::spin_mutex::scoped_lock lock(shaderuploadmutex);
+				if (shaderuploadqueue.size() == 0)
+					break;
+				next = shaderuploadqueue.front();
+				shaderuploadqueue.pop();
+			}
+			next->uploadShader();
+		}
 	}
 	void Renderer::prepareRendering()
 	{
@@ -88,11 +122,34 @@ namespace render
 	}
 	void Renderer::uploadObjects()
 	{
-		// TODO
+		while (true)
+		{
+			RenderResource::Ptr next;
+			{
+				tbb::spin_mutex::scoped_lock lock(uploadmutex);
+				if (uploadqueue.size() == 0)
+					break;
+				next = uploadqueue.front();
+				uploadqueue.pop();
+			}
+			next->upload();
+		}
 	}
 	void Renderer::deleteObjects()
 	{
-		// TODO
+		while (true)
+		{
+			RenderResource *next;
+			{
+				tbb::spin_mutex::scoped_lock lock(deletemutex);
+				if (deletequeue.size() == 0)
+					break;
+				next = deletequeue.front();
+				deletequeue.pop();
+			}
+			next->destroy();
+			delete next;
+		}
 	}
 
 	void Renderer::render()
