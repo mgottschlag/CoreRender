@@ -28,6 +28,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Texture2D.hpp"
 #include "IndexBuffer.hpp"
 #include "VertexBuffer.hpp"
+#include "Shader.hpp"
 
 namespace cr
 {
@@ -59,7 +60,10 @@ namespace render
 			virtual VertexBuffer::Ptr createVertexBuffer(Renderer *renderer,
 			                                             res::ResourceManager *rmgr,
 			                                             const std::string &name,
-	                                                     VertexBufferUsage::List usage) = 0;
+			                                             VertexBufferUsage::List usage) = 0;
+			virtual Shader::Ptr createShader(Renderer *renderer,
+			                                 res::ResourceManager *rmgr,
+			                                 const std::string &name) = 0;
 
 			virtual void setRenderTarget(int handle) = 0;
 			virtual void clear(bool colorbuffer,

@@ -53,6 +53,9 @@ namespace render
 	void Renderer::registerNew(RenderResource::Ptr res)
 	{
 	}
+	void Renderer::registerShaderUpload(Shader::Ptr shader)
+	{
+	}
 	void Renderer::registerUpload(RenderResource::Ptr res)
 	{
 	}

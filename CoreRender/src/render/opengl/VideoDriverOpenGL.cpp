@@ -23,6 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Texture2DOpenGL.hpp"
 #include "IndexBufferOpenGL.hpp"
 #include "VertexBufferOpenGL.hpp"
+#include "ShaderOpenGL.hpp"
 
 #include <GL/glew.h>
 
@@ -82,6 +83,12 @@ namespace opengl
 	                                             VertexBufferUsage::List usage)
 	{
 		return new VertexBufferOpenGL(renderer, rmgr, name, usage);
+	}
+	Shader::Ptr VideoDriverOpenGL::createShader(Renderer *renderer,
+	                                            res::ResourceManager *rmgr,
+	                                            const std::string &name)
+	{
+		return new ShaderOpenGL(renderer, rmgr, name);
 	}
 
 	void VideoDriverOpenGL::setRenderTarget(int handle)

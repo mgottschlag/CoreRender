@@ -50,7 +50,10 @@ namespace opengl
 			virtual VertexBuffer::Ptr createVertexBuffer(Renderer *renderer,
 			                                             res::ResourceManager *rmgr,
 			                                             const std::string &name,
-	                                                     VertexBufferUsage::List usage);
+			                                             VertexBufferUsage::List usage);
+			virtual Shader::Ptr createShader(Renderer *renderer,
+			                                 res::ResourceManager *rmgr,
+			                                 const std::string &name);
 
 			virtual void setRenderTarget(int handle);
 			virtual void clear(bool colorbuffer,

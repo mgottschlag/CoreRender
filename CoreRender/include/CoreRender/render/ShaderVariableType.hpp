@@ -19,53 +19,48 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_SHADER_HPP_INCLUDED_
-#define _CORERENDER_RENDER_SHADER_HPP_INCLUDED_
-
-#include "RenderResource.hpp"
+#ifndef _CORERENDER_RENDER_SHADERVARIABLETYPE_HPP_INCLUDED_
+#define _CORERENDER_RENDER_SHADERVARIABLETYPE_HPP_INCLUDED_
 
 namespace cr
 {
 namespace render
 {
-	class Shader : public RenderResource
+	struct ShaderVariableType
 	{
-		public:
-			Shader(Renderer *renderer,
-			       res::ResourceManager *rmgr,
-			       const std::string &name);
-			virtual ~Shader();
+		enum List
+		{
+			Float,
+			Float2,
+			Float3,
+			Float4,
+			Float4x4,
+			Float3x3,
+			Float4x3,
+			Float3x4
+		};
 
-			void setVertexShader(const std::string &vs);
-			void setFragmentShader(const std::string &fs);
-			void setGeometryShader(const std::string &gs);
-			void setTesselationShader(const std::string &ts);
-
-			void updateShader();
-
-			virtual void uploadShader()
+		unsigned int getSize(ShaderVariableType::List type)
+		{
+			switch (type)
 			{
+				case Float:
+					return 1;
+				case Float2:
+					return 2;
+				case Float3:
+					return 3;
+				case Float4:
+					return 4;
+				case Float4x4:
+					return 16;
+				case Float3x3:
+					return 9;
+				case Float4x3:
+				case Float3x4:
+					return 12;
 			}
-
-			int getHandle()
-			{
-				return handle;
-			}
-			virtual const char *getType()
-			{
-				return "Shader";
-			}
-
-			typedef core::SharedPointer<Shader> Ptr;
-		protected:
-			int handle;
-			int oldhandle;
-
-			tbb::spin_mutex textmutex;
-			std::string vs;
-			std::string fs;
-			std::string gs;
-			std::string ts;
+		}
 	};
 }
 }

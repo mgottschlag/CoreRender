@@ -42,6 +42,7 @@ set(SRC
 	include/CoreRender/render/RenderStats.hpp
 	include/CoreRender/render/RenderCaps.hpp
 	include/CoreRender/render/Shader.hpp
+	include/CoreRender/render/ShaderText.hpp
 	include/CoreRender/render/VideoDriverType.hpp
 	include/CoreRender/render/RenderContextOpenGL.hpp
 	include/CoreRender/render/RenderContextReuseOpenGL.hpp
@@ -73,6 +74,8 @@ set(SRC
 	src/render/opengl/IndexBufferOpenGL.hpp
 	src/render/opengl/RenderCapsOpenGL.cpp
 	src/render/opengl/RenderCapsOpenGL.hpp
+	src/render/opengl/ShaderOpenGL.cpp
+	src/render/opengl/ShaderOpenGL.hpp
 	src/render/opengl/Texture2DOpenGL.cpp
 	src/render/opengl/Texture2DOpenGL.hpp
 	src/render/opengl/VertexBufferOpenGL.cpp
@@ -83,6 +86,8 @@ set(SRC
 	src/render/Renderer.cpp
 	src/render/RenderResource.cpp
 	src/render/RenderThread.cpp
+	src/render/Shader.cpp
+	src/render/ShaderText.cpp
 	src/render/Texture.cpp
 	src/render/Texture2D.cpp
 	src/render/VertexBuffer.cpp

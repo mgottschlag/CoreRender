@@ -19,54 +19,34 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_SHADER_HPP_INCLUDED_
-#define _CORERENDER_RENDER_SHADER_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_OPENGL_SHADEROPENGL_HPP_INCLUDED_
+#define _CORERENDER_RENDER_OPENGL_SHADEROPENGL_HPP_INCLUDED_
 
-#include "RenderResource.hpp"
+#include "CoreRender/render/Shader.hpp"
 
 namespace cr
 {
 namespace render
 {
-	class Shader : public RenderResource
+namespace opengl
+{
+	class ShaderOpenGL : public Shader
 	{
 		public:
-			Shader(Renderer *renderer,
-			       res::ResourceManager *rmgr,
-			       const std::string &name);
-			virtual ~Shader();
+			ShaderOpenGL(Renderer *renderer,
+			             res::ResourceManager *rmgr,
+			             const std::string &name);
+			virtual ~ShaderOpenGL();
 
-			void setVertexShader(const std::string &vs);
-			void setFragmentShader(const std::string &fs);
-			void setGeometryShader(const std::string &gs);
-			void setTesselationShader(const std::string &ts);
-
-			void updateShader();
-
-			virtual void uploadShader()
-			{
-			}
-
-			int getHandle()
-			{
-				return handle;
-			}
-			virtual const char *getType()
-			{
-				return "Shader";
-			}
-
-			typedef core::SharedPointer<Shader> Ptr;
-		protected:
-			int handle;
-			int oldhandle;
-
-			tbb::spin_mutex textmutex;
-			std::string vs;
-			std::string fs;
-			std::string gs;
-			std::string ts;
+			virtual bool create();
+			virtual bool destroy();
+			virtual bool upload();
+			virtual void uploadShader();
+		private:
+			std::vector<unsigned int> shaders;
+			std::vector<unsigned int> oldshaders;
 	};
+}
 }
 }
 

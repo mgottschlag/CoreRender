@@ -65,10 +65,17 @@ namespace null
 			virtual VertexBuffer::Ptr createVertexBuffer(Renderer *renderer,
 			                                             res::ResourceManager *rmgr,
 			                                             const std::string &name,
-	                                                     VertexBufferUsage::List usage)
+			                                             VertexBufferUsage::List usage)
 			{
 				return new VertexBuffer(renderer, rmgr, name, usage);
 			}
+			virtual Shader::Ptr createShader(Renderer *renderer,
+			                                 res::ResourceManager *rmgr,
+			                                 const std::string &name)
+			{
+				return new Shader(renderer, rmgr, name);
+			}
+
 
 			virtual void setRenderTarget(int handle)
 			{

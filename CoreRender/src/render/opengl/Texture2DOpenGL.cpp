@@ -129,6 +129,7 @@ namespace opengl
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, true);
+		// TODO: Error checking
 		return true;
 	}
 	bool Texture2DOpenGL::destroy()
@@ -284,6 +285,7 @@ namespace opengl
 					             0);
 				}
 			}
+			// TODO: Error checking
 			glBindTexture(GL_TEXTURE_2D, handle);
 		}
 		glBindTexture(GL_TEXTURE_2D, 0);

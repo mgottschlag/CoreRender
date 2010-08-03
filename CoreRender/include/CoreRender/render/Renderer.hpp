@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "RenderResource.hpp"
 #include "RenderContext.hpp"
 #include "../core/Log.hpp"
+#include "Shader.hpp"
 
 namespace cr
 {
@@ -46,6 +47,7 @@ namespace render
 			~Renderer();
 
 			void registerNew(RenderResource::Ptr res);
+			void registerShaderUpload(Shader::Ptr shader);
 			void registerUpload(RenderResource::Ptr res);
 			void registerDelete(RenderResource *res);
 

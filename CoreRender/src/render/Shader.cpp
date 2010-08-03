@@ -19,55 +19,47 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_SHADER_HPP_INCLUDED_
-#define _CORERENDER_RENDER_SHADER_HPP_INCLUDED_
-
-#include "RenderResource.hpp"
+#include "CoreRender/render/Shader.hpp"
+#include "CoreRender/render/Renderer.hpp"
 
 namespace cr
 {
 namespace render
 {
-	class Shader : public RenderResource
+	Shader::Shader(Renderer *renderer,
+	               res::ResourceManager *rmgr,
+	               const std::string &name)
+		: RenderResource(renderer, rmgr, name)
 	{
-		public:
-			Shader(Renderer *renderer,
-			       res::ResourceManager *rmgr,
-			       const std::string &name);
-			virtual ~Shader();
+	}
+	Shader::~Shader()
+	{
+	}
 
-			void setVertexShader(const std::string &vs);
-			void setFragmentShader(const std::string &fs);
-			void setGeometryShader(const std::string &gs);
-			void setTesselationShader(const std::string &ts);
+	void Shader::setVertexShader(const std::string &vs)
+	{
+		tbb::spin_mutex::scoped_lock lock(textmutex);
+		this->vs = vs;
+	}
+	void Shader::setFragmentShader(const std::string &fs)
+	{
+		tbb::spin_mutex::scoped_lock lock(textmutex);
+		this->fs = fs;
+	}
+	void Shader::setGeometryShader(const std::string &gs)
+	{
+		tbb::spin_mutex::scoped_lock lock(textmutex);
+		this->gs = gs;
+	}
+	void Shader::setTesselationShader(const std::string &ts)
+	{
+		tbb::spin_mutex::scoped_lock lock(textmutex);
+		this->ts = ts;
+	}
 
-			void updateShader();
-
-			virtual void uploadShader()
-			{
-			}
-
-			int getHandle()
-			{
-				return handle;
-			}
-			virtual const char *getType()
-			{
-				return "Shader";
-			}
-
-			typedef core::SharedPointer<Shader> Ptr;
-		protected:
-			int handle;
-			int oldhandle;
-
-			tbb::spin_mutex textmutex;
-			std::string vs;
-			std::string fs;
-			std::string gs;
-			std::string ts;
-	};
+	void Shader::updateShader()
+	{
+		getRenderer()->registerShaderUpload(this);
+	}
 }
 }
-
-#endif
