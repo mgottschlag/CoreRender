@@ -60,7 +60,7 @@ namespace render
 		protected:
 			unsigned int handle;
 
-			tbb::spin_mutex imagemutex;
+			tbb::spin_mutex datamutex;
 			unsigned int size;
 			void *data;
 	};

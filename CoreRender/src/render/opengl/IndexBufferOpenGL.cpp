@@ -42,15 +42,22 @@ namespace opengl
 	bool IndexBufferOpenGL::create()
 	{
 		glGenBuffers(1, &handle);
+		// TODO: Error checking
+		return true;
 	}
 	bool IndexBufferOpenGL::destroy()
 	{
 		glDeleteBuffers(1, &handle);
+		return true;
 	}
 	bool IndexBufferOpenGL::upload()
 	{
 		// TODO: Type
-		glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+		tbb::spin_mutex::scoped_lock lock(datamutex);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, handle);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		return true;
 	}
 }
 }

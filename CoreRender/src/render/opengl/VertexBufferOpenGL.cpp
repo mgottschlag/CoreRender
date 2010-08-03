@@ -42,16 +42,23 @@ namespace opengl
 
 	bool VertexBufferOpenGL::create()
 	{
+		// TODO: Error checking
 		glGenBuffers(1, &handle);
+		return true;
 	}
 	bool VertexBufferOpenGL::destroy()
 	{
 		glDeleteBuffers(1, &handle);
+		return true;
 	}
 	bool VertexBufferOpenGL::upload()
 	{
+		tbb::spin_mutex::scoped_lock lock(datamutex);
 		// TODO: Type
+		glBindBuffer(GL_ARRAY_BUFFER, handle);
 		glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		return true;
 	}
 }
 }

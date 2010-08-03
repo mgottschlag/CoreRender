@@ -76,7 +76,7 @@ namespace render
 			unsigned int handle;
 			VertexBufferUsage::List usage;
 
-			tbb::spin_mutex imagemutex;
+			tbb::spin_mutex datamutex;
 			unsigned int size;
 			void *data;
 	};

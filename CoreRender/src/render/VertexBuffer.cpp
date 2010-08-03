@@ -57,7 +57,7 @@ namespace render
 		void *prevdata = 0;
 		// Fill in info
 		{
-			tbb::spin_mutex::scoped_lock lock(imagemutex);
+			tbb::spin_mutex::scoped_lock lock(datamutex);
 			prevdata = this->data;
 			this->size = size;
 			this->data = datacopy;
