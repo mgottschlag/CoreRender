@@ -23,6 +23,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <GL/glew.h>
 
+#include <iostream>
+
 namespace cr
 {
 namespace render
@@ -42,6 +44,11 @@ namespace opengl
 	bool IndexBufferOpenGL::create()
 	{
 		glGenBuffers(1, &handle);
+		unsigned int error = glGetError();
+		if (error != GL_NO_ERROR)
+		{
+			std::cout << "Could not create index buffer: " << gluErrorString(error) << std::endl;
+		}
 		// TODO: Error checking
 		return true;
 	}

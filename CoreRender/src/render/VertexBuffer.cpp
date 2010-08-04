@@ -32,7 +32,8 @@ namespace render
 	             res::ResourceManager *rmgr,
 	             const std::string &name,
 	             VertexBufferUsage::List usage)
-		: RenderResource(renderer, rmgr, name), usage(usage), size(0), data(0)
+		: RenderResource(renderer, rmgr, name), handle(0), usage(usage),
+		size(0), data(0)
 	{
 	}
 	VertexBuffer::~VertexBuffer()

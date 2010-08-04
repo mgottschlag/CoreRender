@@ -31,7 +31,7 @@ namespace render
 	IndexBuffer::IndexBuffer(Renderer *renderer,
 	             res::ResourceManager *rmgr,
 	             const std::string &name)
-		: RenderResource(renderer, rmgr, name), size(0), data(0)
+		: RenderResource(renderer, rmgr, name), handle(0), size(0), data(0)
 	{
 	}
 	IndexBuffer::~IndexBuffer()

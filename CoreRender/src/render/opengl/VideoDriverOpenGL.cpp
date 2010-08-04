@@ -121,6 +121,7 @@ namespace opengl
 		// Bind buffers/shader
 		// TODO: Error checking
 		glUseProgram(batch->shader);
+		
 		glBindBuffer(GL_ARRAY_BUFFER, batch->vertices);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch->indices);
 		// Apply attribs
@@ -131,11 +132,12 @@ namespace opengl
 		// Render triangles
 		// TODO: The client state never changes
 		glEnableClientState(GL_VERTEX_ARRAY);
-		log->debug("Drawing.");
+		log->debug("Drawing %d/%d.", batch->vertices, batch->indices);
 		glDrawElements(GL_TRIANGLES,
 		               batch->endindex - batch->startindex,
 		               GL_UNSIGNED_SHORT,
 		               (void*)(batch->startindex * 2));
+		//glDrawElements(GL_TRIANGLES, batch->endindex - batch->startindex, GL_UNSIGNED_SHORT, 0);
 		// TODO
 		glDisableClientState(GL_VERTEX_ARRAY);
 	}

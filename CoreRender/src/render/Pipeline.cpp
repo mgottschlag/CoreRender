@@ -89,6 +89,7 @@ namespace render
 			batch->attribcount = 0;
 			batch->texcount = 0;
 			batch->texmappingcount = 0;
+			passes[i]->insert(batch);
 		}
 	}
 
