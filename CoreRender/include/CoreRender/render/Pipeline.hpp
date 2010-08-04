@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "RenderPass.hpp"
 #include "RenderJob.hpp"
+#include "PipelineInfo.hpp"
 
 namespace cr
 {
@@ -46,7 +47,11 @@ namespace render
 			RenderPass::Ptr getPass(unsigned int index);
 			unsigned int getPassCount();
 
-			void render(RenderJob *job);
+			void submit(RenderJob *job);
+
+			void beginFrame();
+			void prepare(PipelineInfo *info);
+			void render(VideoDriver *driver);
 
 			typedef core::SharedPointer<Pipeline> Ptr;
 		private:

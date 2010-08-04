@@ -19,51 +19,20 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERPASS_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERPASS_HPP_INCLUDED_
-
-#include "RenderTarget.hpp"
-#include "RenderPassInfo.hpp"
+#ifndef _CORERENDER_RENDER_RENDERPASSINFO_HPP_INCLUDED_
+#define _CORERENDER_RENDER_RENDERPASSINFO_HPP_INCLUDED_
 
 namespace cr
 {
 namespace render
 {
-	class VideoDriver;
+	struct RenderBatch;
 
-	class RenderBatch;
-
-	class RenderPass : public core::ReferenceCounted
+	struct RenderPassInfo
 	{
-		public:
-			RenderPass(const std::string &context);
-			virtual ~RenderPass();
-
-			void setRenderTarget(RenderTarget::Ptr target);
-			RenderTarget::Ptr getRenderTarget();
-
-			void beginFrame();
-			void insert(RenderBatch *batch);
-			void prepare(RenderPassInfo *info);
-			void render(VideoDriver *driver);
-
-			const std::string &getContext()
-			{
-				return context;
-			}
-
-			typedef core::SharedPointer<RenderPass> Ptr;
-		private:
-			tbb::spin_mutex insertmutex;
-			std::vector<RenderBatch*> batches;
-
-			// TODO: We need info about the target etc here
-			RenderBatch **prepared;
-			unsigned int preparedcount;
-
-			RenderTarget::Ptr target;
-
-			std::string context;
+		int target;
+		RenderBatch **batches;
+		unsigned int batchcount;
 	};
 }
 }

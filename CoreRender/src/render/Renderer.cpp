@@ -21,6 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "CoreRender/render/Renderer.hpp"
 #include "CoreRender/core/MemoryPool.hpp"
+#include "CoreRender/render/VideoDriver.hpp"
 
 namespace cr
 {
@@ -74,12 +75,12 @@ namespace render
 	void Renderer::enterThread()
 	{
 		// Make context current
-		secondary->makeCurrent();
+		primary->makeCurrent();
 	}
 	void Renderer::exitThread()
 	{
 		// Release context
-		secondary->makeCurrent(false);
+		primary->makeCurrent(false);
 	}
 
 	void Renderer::uploadNewObjects()
@@ -111,10 +112,12 @@ namespace render
 			next->uploadShader();
 		}
 	}
-	void Renderer::prepareRendering()
+	void Renderer::prepareRendering(PipelineInfo *renderdata,
+	                                unsigned int pipelinecount)
 	{
-		// Move batches/passes to the render thread
-		// TODO
+		// Store rendering data
+		this->renderdata = renderdata;
+		this->pipelinecount = pipelinecount;
 		// Swap memory pools
 		core::MemoryPool *pool = memory[1];
 		memory[1] = memory[0];
@@ -154,14 +157,49 @@ namespace render
 
 	void Renderer::render()
 	{
+		// Fetch input
+		// TODO: Should not been done here
+		primary->update();
 		// Upload changed objects
 		uploadObjects();
 		// Render passes
-		// TODO
+		for (unsigned int i = 0; i < pipelinecount; i++)
+		{
+			renderPipeline(&renderdata[i]);
+		}
 		// Reset memory pool
 		// TODO
+		// Delete render data
+		for (unsigned int i = 0; i < pipelinecount; i++)
+		{
+			delete[] renderdata[i].passes;
+		}
+		delete[] renderdata;
+		// TODO
+		// Swap buffers
+		primary->swapBuffers();
 		// Delete unused objects
 		deleteObjects();
+	}
+
+	void Renderer::renderPipeline(PipelineInfo *info)
+	{
+		for (unsigned int i = 0; i < info->passcount; i++)
+		{
+			renderPass(&info->passes[i]);
+		}
+	}
+	void Renderer::renderPass(RenderPassInfo *info)
+	{
+		// Set target
+		// TODO
+		// Clear target
+		driver->clear(true, true, core::Color(128, 0, 0, 255));
+		// Draw batches
+		for (unsigned int i = 0; i < info->batchcount; i++)
+		{
+			driver->draw(info->batches[i]);
+		}
 	}
 }
 }

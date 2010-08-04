@@ -35,7 +35,14 @@ int main(int argc, char **argv)
 	}
 	cr::res::ResourceManager *rmgr = graphics.getResourceManager();
 
+	// Load some resources
 	cr::render::Texture2D::Ptr texture = graphics.loadTexture2D("test.png");
+	// TODO
+	// Setup pipeline
+	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();
+	cr::render::RenderPass::Ptr pass = new cr::render::RenderPass("AMBIENT");
+	pipeline->addPass(pass);
+	graphics.addPipeline(pipeline);
 
 	bool stopping = false;
 	while (!stopping)

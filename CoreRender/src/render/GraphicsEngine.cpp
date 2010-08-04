@@ -175,15 +175,26 @@ namespace render
 	bool GraphicsEngine::beginFrame()
 	{
 		renderer->uploadNewObjects();
-		// TODO: Setup the rendering pipeline?
+		// Setup the rendering pipeline
+		for (unsigned int i = 0; i < pipelines.size(); i++)
+		{
+			pipelines[i]->beginFrame();
+		}
 		return true;
 	}
 	bool GraphicsEngine::endFrame()
 	{
+		// Collect frame data
+		PipelineInfo *renderdata = new PipelineInfo[pipelines.size()];
+		for (unsigned int i = 0; i < pipelines.size(); i++)
+		{
+			pipelines[i]->prepare(&renderdata[i]);
+		}
+		// Render
 		// TODO: This still deadlocks on the first frame already
 		if (multithreaded)
 			renderthread->waitForFrame();
-		renderer->prepareRendering();
+		renderer->prepareRendering(renderdata, pipelines.size());
 		if (multithreaded)
 			renderthread->startFrame();
 		else

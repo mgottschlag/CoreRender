@@ -26,6 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "RenderContext.hpp"
 #include "../core/Log.hpp"
 #include "Shader.hpp"
+#include "PipelineInfo.hpp"
 
 #include <queue>
 
@@ -57,7 +58,8 @@ namespace render
 			void exitThread();
 
 			void uploadNewObjects();
-			void prepareRendering();
+			void prepareRendering(PipelineInfo *renderdata,
+			                      unsigned int pipelinecount);
 			void uploadObjects();
 			void deleteObjects();
 
@@ -80,6 +82,9 @@ namespace render
 				return driver;
 			}
 		private:
+			void renderPipeline(PipelineInfo *info);
+			void renderPass(RenderPassInfo *info);
+
 			RenderContext::Ptr primary;
 			RenderContext::Ptr secondary;
 			core::Log::Ptr log;
@@ -94,6 +99,9 @@ namespace render
 			std::queue<RenderResource::Ptr> uploadqueue;
 			tbb::spin_mutex deletemutex;
 			std::queue<RenderResource*> deletequeue;
+
+			PipelineInfo *renderdata;
+			unsigned int pipelinecount;
 	};
 }
 }

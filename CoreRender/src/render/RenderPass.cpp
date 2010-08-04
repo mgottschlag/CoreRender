@@ -20,12 +20,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/render/RenderPass.hpp"
+#include "CoreRender/render/VideoDriver.hpp"
+
+#include <cstring>
 
 namespace cr
 {
 namespace render
 {
-	RenderPass::RenderPass()
+	RenderPass::RenderPass(const std::string &context)
+		: context(context)
 	{
 	}
 	RenderPass::~RenderPass()
@@ -46,12 +50,39 @@ namespace render
 	}
 	void RenderPass::insert(RenderBatch *batch)
 	{
+		batches.push_back(batch);
 	}
-	void RenderPass::prepare()
+	void RenderPass::prepare(RenderPassInfo *info)
 	{
+		// Optimize batches
+		// TODO
+		// Copy batches for the rendering thread
+		info->target = 0;
+		//if (target)
+		//	info->target = target->getHandle();
+		info->batches = new RenderBatch*[batches.size()];
+		memcpy(info->batches, &batches[0], sizeof(RenderBatch*) * batches.size());
+		info->batchcount = batches.size();
+		// Clean up
+		batches.clear();
 	}
-	void RenderPass::render()
+	void RenderPass::render(VideoDriver *driver)
 	{
+		/*// Set render target
+		driver->setRenderTarget(target);
+		// Clear background
+		// TODO
+		driver->clear(true, true);
+		// Draw batches
+		for (unsigned int i = 0; i < preparedcount; i++)
+		{
+			driver->draw(prepared[i]);
+		}
+		// Clean up
+		// TODO: Not necessary with proper memory manager
+		delete[] prepared;
+		prepared = 0;
+		preparedcount = 0;*/
 	}
 }
 }

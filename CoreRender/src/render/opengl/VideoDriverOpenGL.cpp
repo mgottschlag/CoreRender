@@ -99,6 +99,19 @@ namespace opengl
 	                              core::Color color,
 	                              float depth)
 	{
+		if (!colorbuffer && !zbuffer)
+			return;
+		glClearColor((float)color.getRed() / 255.0f,
+		             (float)color.getGreen() / 255.0f,
+		             (float)color.getBlue() / 255.0f,
+		             (float)color.getAlpha() / 255.0f);
+		glClearDepth(depth);
+		if (colorbuffer && zbuffer)
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		else if (colorbuffer)
+			glClear(GL_COLOR_BUFFER_BIT);
+		else if (zbuffer)
+			glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
 	void VideoDriverOpenGL::draw(RenderBatch *batch)

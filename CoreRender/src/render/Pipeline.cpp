@@ -62,8 +62,33 @@ namespace render
 		return passes.size();
 	}
 
-	void Pipeline::render(RenderJob *job)
+	void Pipeline::submit(RenderJob *job)
 	{
+		// TODO
+	}
+
+	void Pipeline::beginFrame()
+	{
+		for (unsigned int i = 0; i < passes.size(); i++)
+		{
+			passes[i]->beginFrame();
+		}
+	}
+	void Pipeline::prepare(PipelineInfo *info)
+	{
+		info->passcount = passes.size();
+		info->passes = new RenderPassInfo[passes.size()];
+		for (unsigned int i = 0; i < passes.size(); i++)
+		{
+			passes[i]->prepare(&info->passes[i]);
+		}
+	}
+	void Pipeline::render(VideoDriver *driver)
+	{
+		for (unsigned int i = 0; i < passes.size(); i++)
+		{
+			passes[i]->render(driver);
+		}
 	}
 }
 }

@@ -64,6 +64,9 @@ namespace render
 	{
 		// Register thread in the renderer
 		renderer->enterThread();
+		// We do not want the first access to waitForFrame() to deadlock
+		frameend.post();
+		// Render loop
 		while (true)
 		{
 			// Wait for next frame to begin
