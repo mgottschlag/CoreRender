@@ -19,39 +19,51 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERPASS_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERPASS_HPP_INCLUDED_
-
-#include "RenderTarget.hpp"
+#include "CoreRender/render/Pipeline.hpp"
 
 namespace cr
 {
 namespace render
 {
-	class RenderBatch;
-
-	class RenderPass : public core::ReferenceCounted
+	Pipeline::Pipeline()
 	{
-		public:
-			RenderPass();
-			virtual ~RenderPass();
+	}
+	Pipeline::~Pipeline()
+	{
+	}
 
-			void setRenderTarget(RenderTarget::Ptr target);
-			RenderTarget::Ptr getRenderTarget();
+	void Pipeline::addPass(RenderPass::Ptr pass)
+	{
+		passes.push_back(pass);
+	}
+	void Pipeline::removePass(RenderPass::Ptr pass)
+	{
+		for (unsigned int i = 0; i < passes.size(); i++)
+		{
+			if (passes[i] == pass)
+			{
+				passes.erase(passes.begin() + i);
+				return;
+			}
+		}
+	}
+	void Pipeline::removePass(unsigned int index)
+	{
+		if (index >= passes.size())
+			return;
+		passes.erase(passes.begin() + index);
+	}
+	RenderPass::Ptr Pipeline::getPass(unsigned int index)
+	{
+		return passes[index];
+	}
+	unsigned int Pipeline::getPassCount()
+	{
+		return passes.size();
+	}
 
-			void beginFrame();
-			void insert(RenderBatch *batch);
-			void prepare();
-			void render();
-
-			typedef core::SharedPointer<RenderPass> *Ptr;
-		private:
-			tbb::spin_mutex insertmutex;
-			std::vector<RenderBatch*> batches;
-
-			RenderTarget::Ptr target;
-	};
+	void Pipeline::render(RenderJob *job)
+	{
+	}
 }
 }
-
-#endif

@@ -29,6 +29,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Texture2D.hpp"
 #include "VertexBuffer.hpp"
 #include "IndexBuffer.hpp"
+#include "Pipeline.hpp"
 
 namespace cr
 {
@@ -60,6 +61,14 @@ namespace render
 			            unsigned int height,
 			            bool fullscreen);
 			bool shutdown();
+
+			/**
+			 * @todo Functions for inserting pipelines at a certain position.
+			 */
+			void addPipeline(Pipeline::Ptr pipeline);
+			void removePipeline(Pipeline::Ptr pipeline);
+			std::vector<Pipeline::Ptr> getPipelines();
+			unsigned int getPipelineCount();
 
 			bool beginFrame();
 			bool endFrame();
@@ -109,6 +118,9 @@ namespace render
 			Renderer *renderer;
 			VideoDriver *driver;
 			RenderThread *renderthread;
+
+			tbb::spin_mutex pipelinemutex;
+			std::vector<Pipeline::Ptr> pipelines;
 	};
 }
 }

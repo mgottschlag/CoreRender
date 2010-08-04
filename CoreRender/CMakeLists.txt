@@ -36,7 +36,9 @@ set(SRC
 	include/CoreRender/res/Resource.hpp
 	include/CoreRender/res/ResourceManager.hpp
 	include/CoreRender/render/IndexBuffer.hpp
+	include/CoreRender/render/Pipeline.hpp
 	include/CoreRender/render/RenderBatch.hpp
+	include/CoreRender/render/RenderPass.hpp
 	include/CoreRender/render/RenderResource.hpp
 	include/CoreRender/render/RenderThread.hpp
 	include/CoreRender/render/RenderStats.hpp
@@ -82,8 +84,10 @@ set(SRC
 	src/render/opengl/VertexBufferOpenGL.hpp
 	src/render/opengl/VideoDriverOpenGL.cpp
 	src/render/opengl/VideoDriverOpenGL.hpp
+	src/render/Pipeline.cpp
 	src/render/RenderContextReuseOpenGL.cpp
 	src/render/Renderer.cpp
+	src/render/RenderPass.cpp
 	src/render/RenderResource.cpp
 	src/render/RenderThread.cpp
 	src/render/Shader.cpp

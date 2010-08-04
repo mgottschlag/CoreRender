@@ -19,39 +19,39 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERPASS_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERPASS_HPP_INCLUDED_
-
-#include "RenderTarget.hpp"
+#include "CoreRender/render/RenderPass.hpp"
 
 namespace cr
 {
 namespace render
 {
-	class RenderBatch;
-
-	class RenderPass : public core::ReferenceCounted
+	RenderPass::RenderPass()
 	{
-		public:
-			RenderPass();
-			virtual ~RenderPass();
+	}
+	RenderPass::~RenderPass()
+	{
+	}
 
-			void setRenderTarget(RenderTarget::Ptr target);
-			RenderTarget::Ptr getRenderTarget();
+	void RenderPass::setRenderTarget(RenderTarget::Ptr target)
+	{
+		this->target = target;
+	}
+	RenderTarget::Ptr RenderPass::getRenderTarget()
+	{
+		return target;
+	}
 
-			void beginFrame();
-			void insert(RenderBatch *batch);
-			void prepare();
-			void render();
-
-			typedef core::SharedPointer<RenderPass> *Ptr;
-		private:
-			tbb::spin_mutex insertmutex;
-			std::vector<RenderBatch*> batches;
-
-			RenderTarget::Ptr target;
-	};
+	void RenderPass::beginFrame()
+	{
+	}
+	void RenderPass::insert(RenderBatch *batch)
+	{
+	}
+	void RenderPass::prepare()
+	{
+	}
+	void RenderPass::render()
+	{
+	}
 }
 }
-
-#endif

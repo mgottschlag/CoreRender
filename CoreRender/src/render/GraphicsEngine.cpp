@@ -191,6 +191,35 @@ namespace render
 		return true;
 	}
 
+	void GraphicsEngine::addPipeline(Pipeline::Ptr pipeline)
+	{
+		// TODO: In debug mode, check whether we are currently rendering?
+		tbb::spin_mutex::scoped_lock lock(pipelinemutex);
+		pipelines.push_back(pipeline);
+	}
+	void GraphicsEngine::removePipeline(Pipeline::Ptr pipeline)
+	{
+		tbb::spin_mutex::scoped_lock lock(pipelinemutex);
+		for (unsigned int i = 0; i < pipelines.size(); i++)
+		{
+			if (pipelines[i] == pipeline)
+			{
+				pipelines.erase(pipelines.begin() + i);
+				return;
+			}
+		}
+	}
+	std::vector<Pipeline::Ptr> GraphicsEngine::getPipelines()
+	{
+		tbb::spin_mutex::scoped_lock lock(pipelinemutex);
+		return pipelines;
+	}
+	unsigned int GraphicsEngine::getPipelineCount()
+	{
+		tbb::spin_mutex::scoped_lock lock(pipelinemutex);
+		return pipelines.size();
+	}
+
 	Texture2D::Ptr GraphicsEngine::getTexture2D(const std::string &name)
 	{
 		return 0;

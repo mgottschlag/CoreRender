@@ -19,37 +19,31 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERPASS_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERPASS_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_RENDERJOB_HPP_INCLUDED_
+#define _CORERENDER_RENDER_RENDERJOB_HPP_INCLUDED_
 
-#include "RenderTarget.hpp"
+#include "IndexBuffer.hpp"
+#include "VertexBuffer.hpp"
+#include "Material.hpp"
 
 namespace cr
 {
 namespace render
 {
-	class RenderBatch;
-
-	class RenderPass : public core::ReferenceCounted
+	class RenderJob
 	{
 		public:
-			RenderPass();
-			virtual ~RenderPass();
+			RenderJob();
+			virtual ~RenderJob();
 
-			void setRenderTarget(RenderTarget::Ptr target);
-			RenderTarget::Ptr getRenderTarget();
-
-			void beginFrame();
-			void insert(RenderBatch *batch);
-			void prepare();
-			void render();
-
-			typedef core::SharedPointer<RenderPass> *Ptr;
+			VertexBuffer::Ptr vertices;
+			IndexBuffer::Ptr indices;
+			unsigned int startindex;
+			unsigned int endindex;
+			unsigned int basevertex;
+			Material::Ptr material;
+			// TODO: Uniforms, attribs
 		private:
-			tbb::spin_mutex insertmutex;
-			std::vector<RenderBatch*> batches;
-
-			RenderTarget::Ptr target;
 	};
 }
 }
