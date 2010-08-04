@@ -89,9 +89,9 @@ namespace render
 				log->warning("Could not clone the rendering context. "
 				             "Continuing single-threaded.");
 				multithreaded = false;
-				this->multithreaded = false;
 			}
 		}
+		this->multithreaded = multithreaded;
 		// Initialize resource manager
 		rmgr = new res::ResourceManager(fs, log);
 		if (!rmgr->init())
