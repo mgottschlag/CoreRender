@@ -19,37 +19,31 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERABLE_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERABLE_HPP_INCLUDED_
-
-#include "ShaderText.hpp"
-#include "Texture.hpp"
+#include "CoreRender/render/Material.hpp"
 
 namespace cr
 {
 namespace render
 {
-	class Material : public res::Resource
+	Material::Material(res::ResourceManager *rmgr, const std::string &name)
+		: Resource(rmgr, name)
 	{
-		public:
-			Material(res::ResourceManager *rmgr, const std::string &name);
-			virtual ~Material();
+	}
+	Material::~Material()
+	{
+	}
 
-			void setShader(ShaderText::Ptr shader);
-			ShaderText::Ptr getShader();
+	void Material::setShader(ShaderText::Ptr shader)
+	{
+		this->shader = shader;
+	}
+	ShaderText::Ptr Material::getShader()
+	{
+		return shader;
+	}
 
-			void addTexture(const std::string name, Texture::Ptr texture);
-
-			virtual const char *getType()
-			{
-				return "Material";
-			}
-
-			typedef core::SharedPointer<Material> Ptr;
-		private:
-			ShaderText::Ptr shader;
-	};
+	void Material::addTexture(const std::string name, Texture::Ptr texture)
+	{
+	}
 }
 }
-
-#endif

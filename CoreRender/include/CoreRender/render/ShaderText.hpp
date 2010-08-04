@@ -48,11 +48,16 @@ namespace render
 			             const std::string &text,
 			             bool autoinclude = false);
 
+			/**
+			 * @todo Currently shader creation happens in getShader(). It has
+			 * to be done here though as getShader() is called too late.
+			 */
 			bool addContext(const std::string &name,
 			                const std::string &vs,
 			                const std::string &fs,
 			                const std::string &gs = "",
 			                const std::string &ts = "");
+			bool hasContext(const std::string &name);
 
 			void addFlag(const std::string &flag, bool defaultvalue);
 
@@ -65,8 +70,18 @@ namespace render
 
 			void updateShaders();
 
+			/**
+			 * @todo This (and other functions here) needs to be made threadsafe.
+			 */
 			Shader::Ptr getShader(const std::string &context,
 			                      unsigned int flags);
+
+			virtual const char *getType()
+			{
+				return "ShaderText";
+			}
+
+			typedef core::SharedPointer<ShaderText> Ptr;
 		private:
 			render::VideoDriver *driver;
 			render::Renderer *renderer;

@@ -33,12 +33,15 @@ namespace render
 	class RenderJob
 	{
 		public:
-			RenderJob();
-			virtual ~RenderJob();
+			RenderJob()
+				: startindex(0), endindex(0), basevertex(0)
+			{
+			}
 
 			VertexBuffer::Ptr vertices;
 			IndexBuffer::Ptr indices;
 			unsigned int startindex;
+			// TODO: Change this into vertex count?
 			unsigned int endindex;
 			unsigned int basevertex;
 			Material::Ptr material;

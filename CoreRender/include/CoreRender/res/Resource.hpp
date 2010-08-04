@@ -79,6 +79,7 @@ namespace res
 		private:
 			tbb::spin_mutex statemutex;
 			bool loaded;
+			bool loading;
 			std::vector<core::Semaphore*> waiting;
 
 			std::string name;

@@ -54,6 +54,12 @@ namespace res
 
 	void Resource::queueForLoading()
 	{
+		{
+			tbb::spin_mutex::scoped_lock lock(statemutex);
+			if (this->loading == true)
+				return;
+			this->loading = true;
+		}
 		if (rmgr)
 			rmgr->queueForLoading(this);
 	}
@@ -75,27 +81,26 @@ namespace res
 	bool Resource::waitForLoading(bool recursive,
 	                              bool highpriority)
 	{
-		// Shortcut
-		if (isLoaded())
-			return true;
 		// Set priority
-		prioritizeLoading();
+		if (highpriority)
+			prioritizeLoading();
 		// Wait for resource to be loaded
 		core::Semaphore waiting;
 		{
 			tbb::spin_mutex::scoped_lock lock(statemutex);
-			if (isLoaded())
-				return true;
+			if (!loading)
+				return loaded;
 			this->waiting.push_back(&waiting);
 		}
 		waiting.wait();
-		return isLoaded();
+		return loaded;
 	}
 
 	void Resource::finishLoading(bool loaded)
 	{
 		tbb::spin_mutex::scoped_lock lock(statemutex);
 		this->loaded = loaded;
+		this->loading = false;
 		for (unsigned int i = 0; i < waiting.size(); i++)
 		{
 			waiting[i]->post();

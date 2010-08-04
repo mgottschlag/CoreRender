@@ -30,6 +30,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "VertexBuffer.hpp"
 #include "IndexBuffer.hpp"
 #include "Pipeline.hpp"
+#include "ShaderText.hpp"
 
 namespace cr
 {
@@ -75,12 +76,15 @@ namespace render
 
 			Texture2D::Ptr getTexture2D(const std::string &name);
 			Texture2D::Ptr loadTexture2D(const std::string &path,
-			                           const std::string &name = "");
+			                             const std::string &name = "");
 			Texture2D::Ptr createTexture2D(const std::string &name = "");
 
 			VertexBuffer::Ptr createVertexBuffer(const std::string &name = "",
 				VertexBufferUsage::List usage = VertexBufferUsage::Static);
 			IndexBuffer::Ptr createIndexBuffer(const std::string &name = "");
+			ShaderText::Ptr loadShaderText(const std::string &path,
+			                               const std::string &name = "");
+			ShaderText::Ptr createShaderText(const std::string &name = "");
 
 			void setFileSystem(core::FileSystem::Ptr fs);
 			core::FileSystem::Ptr getFileSystem()

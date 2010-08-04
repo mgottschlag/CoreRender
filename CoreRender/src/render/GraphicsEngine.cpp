@@ -277,6 +277,21 @@ namespace render
 			return driver->createIndexBuffer(renderer, rmgr, name);
 		}
 	}
+	ShaderText::Ptr GraphicsEngine::loadShaderText(const std::string &path,
+	                                               const std::string &name)
+	{
+		return 0;
+	}
+	ShaderText::Ptr GraphicsEngine::createShaderText(const std::string &name)
+	{
+		if (name == "")
+			return new ShaderText(driver, renderer, rmgr, rmgr->getInternalName());
+		else
+		{
+			// TODO: Check whether a resource with that name already exists
+			return new ShaderText(driver, renderer, rmgr, name);
+		}
+	}
 
 	void GraphicsEngine::setFileSystem(core::FileSystem::Ptr fs)
 	{

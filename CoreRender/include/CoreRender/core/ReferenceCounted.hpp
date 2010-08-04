@@ -189,7 +189,18 @@ namespace core
 			/**
 			 * Copy constructor.
 			 */
-			SharedPointer(const SharedPointer<typename remove_const<T>::type> &ptr) : target(ptr.get())
+			SharedPointer(const SharedPointer<typename remove_const<T>::type> &ptr)
+				: target(ptr.get())
+			{
+				if (target)
+					target->grab();
+			}
+			/**
+			 * Constructor to cast pointer types. The pointer must be implicitly
+			 * convertible.
+			 */
+			template <typename T2> SharedPointer(const SharedPointer<T2> &ptr)
+				: target(ptr.get())
 			{
 				if (target)
 					target->grab();

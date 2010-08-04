@@ -71,6 +71,7 @@ set(SRC
 	src/core/Time.cpp
 	src/render/GraphicsEngine.cpp
 	src/render/IndexBuffer.cpp
+	src/render/Material.cpp
 	src/render/null/VideoDriverNull.hpp
 	src/render/opengl/IndexBufferOpenGL.cpp
 	src/render/opengl/IndexBufferOpenGL.hpp

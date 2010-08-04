@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "IndexBufferOpenGL.hpp"
 #include "VertexBufferOpenGL.hpp"
 #include "ShaderOpenGL.hpp"
+#include "CoreRender/render/RenderBatch.hpp"
 
 #include <GL/glew.h>
 
@@ -116,10 +117,35 @@ namespace opengl
 
 	void VideoDriverOpenGL::draw(RenderBatch *batch)
 	{
+		// TODO: Keep track of state changes, do not change too much
+		// Bind buffers/shader
+		// TODO: Error checking
+		glUseProgram(batch->shader);
+		glBindBuffer(GL_ARRAY_BUFFER, batch->vertices);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch->indices);
+		// Apply attribs
+		glVertexPointer(3, GL_FLOAT, 32, 0);
+		// TODO
+		// Apply uniforms
+		// TODO
+		// Render triangles
+		// TODO: The client state never changes
+		glEnableClientState(GL_VERTEX_ARRAY);
+		log->debug("Drawing.");
+		glDrawElements(GL_TRIANGLES,
+		               batch->endindex - batch->startindex,
+		               GL_UNSIGNED_SHORT,
+		               (void*)(batch->startindex * 2));
+		// TODO
+		glDisableClientState(GL_VERTEX_ARRAY);
 	}
 
 	void VideoDriverOpenGL::endFrame()
 	{
+		// TODO: Unbind buffers, textures, program
+		glUseProgram(0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 }
 }

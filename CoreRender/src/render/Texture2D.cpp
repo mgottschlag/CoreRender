@@ -132,6 +132,7 @@ namespace render
 	bool Texture2D::load()
 	{
 		// TODO
+		finishLoading(false);
 		return false;
 	}
 	bool Texture2D::unload()

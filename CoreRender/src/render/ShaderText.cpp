@@ -138,6 +138,7 @@ namespace render
 			shader->setTesselationShader(ctx.ts);
 		// TODO: Attribs, uniforms
 		shader->updateShader();
+		shaders.push_back(shader);
 		return shader;
 	}
 }

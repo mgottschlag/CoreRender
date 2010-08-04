@@ -20,6 +20,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/render/Pipeline.hpp"
+#include "CoreRender/render/RenderBatch.hpp"
+
+#include <cstring>
 
 namespace cr
 {
@@ -64,7 +67,29 @@ namespace render
 
 	void Pipeline::submit(RenderJob *job)
 	{
-		// TODO
+		for (unsigned int i = 0; i < passes.size(); i++)
+		{
+			std::string context = passes[i]->getContext();
+			ShaderText::Ptr text = job->material->getShader();
+			Shader::Ptr shader = text->getShader(context, text->getFlags(""));
+			if (!shader)
+				continue;
+			// TODO: Memory leak, use the memory pool here
+			RenderBatch *batch = new RenderBatch;
+			// TODO: This memset should not be necessary
+			memset(batch, 0, sizeof(RenderBatch));
+			batch->startindex = job->startindex;
+			batch->endindex = job->endindex;
+			batch->basevertex = job->basevertex;
+			batch->vertices = job->vertices->getHandle();
+			batch->indices = job->indices->getHandle();
+			batch->shader = shader->getHandle();
+			batch->renderflags = 0;
+			batch->uniformcount = 0;
+			batch->attribcount = 0;
+			batch->texcount = 0;
+			batch->texmappingcount = 0;
+		}
 	}
 
 	void Pipeline::beginFrame()
