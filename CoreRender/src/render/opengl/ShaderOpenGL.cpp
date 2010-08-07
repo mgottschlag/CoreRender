@@ -161,6 +161,18 @@ namespace opengl
 			                               gluErrorString(error));
 			return;
 		}
+		// Get attrib locations
+		for (std::map<std::string, int>::iterator it = attribs.begin();
+		     it != attribs.end(); it++)
+		{
+			it->second = glGetAttribLocation(handle, it->first.c_str());
+		}
+		// Get uniform locations
+		for (std::map<std::string, int>::iterator it = uniforms.begin();
+		     it != uniforms.end(); it++)
+		{
+			it->second = glGetUniformLocation(handle, it->first.c_str());
+		}
 	}
 }
 }

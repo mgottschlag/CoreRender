@@ -23,11 +23,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_RENDER_SHADER_HPP_INCLUDED_
 
 #include "RenderResource.hpp"
+#include <map>
 
 namespace cr
 {
 namespace render
 {
+	class ShaderText;
+
 	class Shader : public RenderResource
 	{
 		public:
@@ -40,6 +43,11 @@ namespace render
 			void setFragmentShader(const std::string &fs);
 			void setGeometryShader(const std::string &gs);
 			void setTesselationShader(const std::string &ts);
+
+			void addAttrib(const std::string &name);
+			void addUniform(const std::string &name);
+			int getAttrib(const std::string &name);
+			int getUniform(const std::string &name);
 
 			void updateShader();
 
@@ -56,16 +64,30 @@ namespace render
 				return "Shader";
 			}
 
+			void setShaderText(ShaderText *text)
+			{
+				this->text = text;
+			}
+			ShaderText *getShaderText()
+			{
+				return text;
+			}
+
 			typedef core::SharedPointer<Shader> Ptr;
 		protected:
 			int handle;
 			int oldhandle;
+
+			ShaderText *text;
 
 			tbb::spin_mutex textmutex;
 			std::string vs;
 			std::string fs;
 			std::string gs;
 			std::string ts;
+
+			std::map<std::string, int> attribs;
+			std::map<std::string, int> uniforms;
 	};
 }
 }

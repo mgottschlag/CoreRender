@@ -21,6 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "CoreRender/render/ShaderText.hpp"
 #include "CoreRender/render/VideoDriver.hpp"
+#include "CoreRender/render/Renderer.hpp"
 
 #include <sstream>
 
@@ -62,9 +63,7 @@ namespace render
 		Context context = {
 			vs, fs, gs, ts
 		};
-		// TODO: Check whether texts exists
-		// Do we want this done here, or later? Later would pose less
-		// restrictions on the calling order of the functions.
+		// Store context info
 		contexts[name] = context;
 		return true;
 	}
@@ -129,14 +128,42 @@ namespace render
 		Shader::Ptr shader = driver->createShader(renderer,
 		                                          getManager(),
 		                                          shadername.str());
+		// Check whether texts exists
+		if (texts.find(ctx.vs) == texts.end())
+		{
+			renderer->getLog()->error("Text \"%s\" not found.", ctx.vs.c_str());
+			return false;
+		}
+		if (texts.find(ctx.fs) == texts.end())
+		{
+			renderer->getLog()->error("Text \"%s\" not found.", ctx.fs.c_str());
+			return false;
+		}
+		if (ctx.gs != "" && texts.find(ctx.gs) == texts.end())
+		{
+			renderer->getLog()->error("Text \"%s\" not found.", ctx.gs.c_str());
+			return false;
+		}
+		if (ctx.ts != "" && texts.find(ctx.ts) == texts.end())
+		{
+			renderer->getLog()->error("Text \"%s\" not found.", ctx.ts.c_str());
+			return false;
+		}
 		// Set shader data
-		shader->setVertexShader(ctx.vs);
-		shader->setFragmentShader(ctx.fs);
+		shader->setVertexShader(texts[ctx.vs]);
+		shader->setFragmentShader(texts[ctx.fs]);
 		if (ctx.gs != "")
-			shader->setGeometryShader(ctx.gs);
+			shader->setGeometryShader(texts[ctx.gs]);
 		if (ctx.ts != "")
-			shader->setTesselationShader(ctx.ts);
-		// TODO: Attribs, uniforms
+			shader->setTesselationShader(texts[ctx.ts]);
+		// Add attribs
+		for (unsigned int i = 0; i < attribs.size(); i++)
+			shader->addAttrib(attribs[i]);
+		// Add uniforms
+		for (unsigned int i = 0; i < uniforms.size(); i++)
+			shader->addUniform(uniforms[i].name);
+		// Finish shader
+		shader->setShaderText(this);
 		shader->updateShader();
 		shaders.push_back(shader);
 		return shader;

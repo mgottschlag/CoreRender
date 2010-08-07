@@ -29,7 +29,7 @@ namespace render
 	Shader::Shader(Renderer *renderer,
 	               res::ResourceManager *rmgr,
 	               const std::string &name)
-		: RenderResource(renderer, rmgr, name)
+		: RenderResource(renderer, rmgr, name), handle(0), oldhandle(0), text(0)
 	{
 	}
 	Shader::~Shader()
@@ -55,6 +55,29 @@ namespace render
 	{
 		tbb::spin_mutex::scoped_lock lock(textmutex);
 		this->ts = ts;
+	}
+
+	void Shader::addAttrib(const std::string &name)
+	{
+		attribs.insert(std::make_pair(name, -1));
+	}
+	void Shader::addUniform(const std::string &name)
+	{
+		uniforms.insert(std::make_pair(name, -1));
+	}
+	int Shader::getAttrib(const std::string &name)
+	{
+		std::map<std::string, int>::iterator it = attribs.find(name);
+		if (it == attribs.end())
+			return -1;
+		return it->second;
+	}
+	int Shader::getUniform(const std::string &name)
+	{
+		std::map<std::string, int>::iterator it = uniforms.find(name);
+		if (it == uniforms.end())
+			return -1;
+		return it->second;
 	}
 
 	void Shader::updateShader()

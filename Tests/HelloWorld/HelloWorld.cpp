@@ -80,6 +80,8 @@ unsigned short indices[36] = {
 
 static const std::string vs = "\n"
 "attribute vec3 pos;\n"
+"attribute vec2 texcoord;\n"
+"attribute vec3 normal;\n"
 "void main()\n"
 "{\n"
 "	gl_Position = vec4(pos, 1.0);\n"
@@ -112,6 +114,9 @@ int main(int argc, char **argv)
 	shader->addText("VS_COMMON", vs);
 	shader->addText("FS_AMBIENT", fs);
 	shader->addContext("AMBIENT", "VS_COMMON", "FS_AMBIENT");
+	shader->addAttrib("pos");
+	shader->addAttrib("texcoord");
+	shader->addAttrib("normal");
 	cr::render::Material::Ptr material = new cr::render::Material(rmgr,
 	                                                              "testmat");
 	material->addTexture("tex", texture);
