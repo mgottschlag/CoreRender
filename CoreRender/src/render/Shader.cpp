@@ -61,10 +61,6 @@ namespace render
 	{
 		attribs.insert(std::make_pair(name, -1));
 	}
-	void Shader::addUniform(const std::string &name)
-	{
-		uniforms.insert(std::make_pair(name, -1));
-	}
 	int Shader::getAttrib(const std::string &name)
 	{
 		std::map<std::string, int>::iterator it = attribs.find(name);
@@ -72,10 +68,25 @@ namespace render
 			return -1;
 		return it->second;
 	}
+	void Shader::addUniform(const std::string &name)
+	{
+		uniforms.insert(std::make_pair(name, -1));
+	}
 	int Shader::getUniform(const std::string &name)
 	{
 		std::map<std::string, int>::iterator it = uniforms.find(name);
 		if (it == uniforms.end())
+			return -1;
+		return it->second;
+	}
+	void Shader::addTexture(const std::string &name)
+	{
+		textures.insert(std::make_pair(name, -1));
+	}
+	int Shader::getTexture(const std::string &name)
+	{
+		std::map<std::string, int>::iterator it = textures.find(name);
+		if (it == textures.end())
 			return -1;
 		return it->second;
 	}

@@ -22,6 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_RENDERBATCH_HPP_INCLUDED_
 #define _CORERENDER_RENDER_RENDERBATCH_HPP_INCLUDED_
 
+#include "VertexLayout.hpp"
+
 namespace cr
 {
 namespace render
@@ -44,7 +46,11 @@ namespace render
 	};
 	struct AttribMapping
 	{
-		// TODO
+		int shaderhandle;
+		unsigned int address;
+		unsigned int stride;
+		unsigned int components;
+		VertexElementType::List type;
 	};
 	struct RenderBatch
 	{

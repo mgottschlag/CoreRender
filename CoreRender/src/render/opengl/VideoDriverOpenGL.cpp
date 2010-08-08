@@ -125,21 +125,56 @@ namespace opengl
 		glBindBuffer(GL_ARRAY_BUFFER, batch->vertices);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch->indices);
 		// Apply attribs
-		glVertexPointer(3, GL_FLOAT, 32, 0);
-		// TODO
+		for (unsigned int i = 0; i < batch->attribcount; i++)
+		{
+			if (batch->attribs[i].shaderhandle == -1)
+				continue;
+			unsigned int opengltype = GL_FLOAT;
+			switch (batch->attribs[i].type)
+			{
+				case VertexElementType::Float:
+					opengltype = GL_FLOAT;
+					break;
+				case VertexElementType::DoubleFloat:
+					opengltype = GL_DOUBLE;
+					break;
+				case VertexElementType::HalfFloat:
+					// TODO
+					opengltype = GL_FLOAT;
+					break;
+				case VertexElementType::Integer:
+					opengltype = GL_INT;
+					break;
+				case VertexElementType::Short:
+					opengltype = GL_SHORT;
+					break;
+				case VertexElementType::Byte:
+					opengltype = GL_BYTE;
+					break;
+			}
+			glEnableVertexAttribArray(batch->attribs[i].shaderhandle);
+			glVertexAttribPointer(batch->attribs[i].shaderhandle,
+			                      batch->attribs[i].components,
+			                      opengltype,
+			                      GL_FALSE,
+			                      batch->attribs[i].stride,
+			                      (void*)batch->attribs[i].address);
+		}
 		// Apply uniforms
 		// TODO
+		// Apply textures
+		// TODO
 		// Render triangles
-		// TODO: The client state never changes
-		glEnableClientState(GL_VERTEX_ARRAY);
-		log->debug("Drawing %d/%d.", batch->vertices, batch->indices);
 		glDrawElements(GL_TRIANGLES,
 		               batch->endindex - batch->startindex,
 		               GL_UNSIGNED_SHORT,
 		               (void*)(batch->startindex * 2));
-		//glDrawElements(GL_TRIANGLES, batch->endindex - batch->startindex, GL_UNSIGNED_SHORT, 0);
 		// TODO
-		glDisableClientState(GL_VERTEX_ARRAY);
+		// Clean up attribs
+		for (unsigned int i = 0; i < batch->attribcount; i++)
+		{
+			glDisableVertexAttribArray(batch->attribs[i].shaderhandle);
+		}
 	}
 
 	void VideoDriverOpenGL::endFrame()

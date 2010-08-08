@@ -82,14 +82,18 @@ static const std::string vs = "\n"
 "attribute vec3 pos;\n"
 "attribute vec2 texcoord;\n"
 "attribute vec3 normal;\n"
+"varying vec3 color;\n"
 "void main()\n"
 "{\n"
+"	color = vec3(texcoord.x, texcoord.y, 0.0);\n"
 "	gl_Position = vec4(pos, 1.0);\n"
 "}\n";
 static const std::string fs = "\n"
+"uniform sampler2D tex;"
+"varying vec3 color;"
 "void main()\n"
 "{\n"
-"	gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);\n"
+"	gl_FragColor = vec4(color, 1.0);\n"
 "}\n";
 
 int main(int argc, char **argv)
@@ -117,17 +121,25 @@ int main(int argc, char **argv)
 	shader->addAttrib("pos");
 	shader->addAttrib("texcoord");
 	shader->addAttrib("normal");
+	shader->addTexture("tex");
 	cr::render::Material::Ptr material = new cr::render::Material(rmgr,
 	                                                              "testmat");
 	material->addTexture("tex", texture);
 	material->setShader(shader);
+	// Create vertex layout
+	cr::render::VertexLayout::Ptr layout = new cr::render::VertexLayout(3);
+	layout->setElement(0, "pos", 0, 3, 0, cr::render::VertexElementType::Float, 32);
+	layout->setElement(1, "normal", 0, 3, 12, cr::render::VertexElementType::Float, 32);
+	layout->setElement(2, "texcoord", 0, 2, 24, cr::render::VertexElementType::Float, 32);
 	// Create render job
 	cr::render::RenderJob *job = new cr::render::RenderJob;
 	job->vertices = vb;
+	job->vertexcount = 24;
 	job->indices = ib;
 	job->endindex = 36;
 	job->material = material;
-	// TODO: Attribs, uniforms
+	job->layout = layout;
+	// TODO: Uniforms
 	// Setup pipeline
 	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();
 	cr::render::RenderPass::Ptr pass = new cr::render::RenderPass("AMBIENT");

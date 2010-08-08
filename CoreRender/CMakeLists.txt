@@ -61,6 +61,7 @@ set(SRC
 	include/CoreRender/render/Texture3D.hpp
 	include/CoreRender/render/TextureCube.hpp
 	include/CoreRender/render/VertexBuffer.hpp
+	include/CoreRender/render/VertexLayout.hpp
 	src/core/Buffer.cpp
 	src/core/FrameLimiter.cpp
 	src/core/Log.cpp

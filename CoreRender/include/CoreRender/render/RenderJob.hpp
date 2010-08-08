@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "IndexBuffer.hpp"
 #include "VertexBuffer.hpp"
 #include "Material.hpp"
+#include "VertexLayout.hpp"
 
 namespace cr
 {
@@ -39,12 +40,14 @@ namespace render
 			}
 
 			VertexBuffer::Ptr vertices;
+			unsigned int vertexcount;
 			IndexBuffer::Ptr indices;
 			unsigned int startindex;
 			// TODO: Change this into vertex count?
 			unsigned int endindex;
 			unsigned int basevertex;
 			Material::Ptr material;
+			VertexLayout::Ptr layout;
 			// TODO: Uniforms, attribs
 		private:
 	};

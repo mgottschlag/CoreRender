@@ -28,105 +28,111 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace cr
 {
-	struct VertexElementType
+	namespace render
 	{
-		enum List
+		struct VertexElementType
 		{
-			Float,
-			DoubleFloat,
-			HalfFloat,
-			Integer,
-			Short,
-			Byte
+			enum List
+			{
+				Float,
+				DoubleFloat,
+				HalfFloat,
+				Integer,
+				Short,
+				Byte
+			};
 		};
-	};
 
-	struct VertexLayoutElement
-	{
-		std::string name;
-		unsigned int vbslot;
-		unsigned int size;
-		unsigned int offset;
-		VertexElementType::List type;
-		unsigned int stride;
-	};
+		struct VertexLayoutElement
+		{
+			std::string name;
+			unsigned int vbslot;
+			unsigned int components;
+			unsigned int offset;
+			VertexElementType::List type;
+			unsigned int stride;
+		};
 
-	/**
-	 * @note The usage of this class by the engine is per design not
-	 * thread-safe, you have to setup the layout once before you feed it into
-	 * the engine and never are allowed to change it again. If you have to,
-	 * better create a new layout.
-	 */
-	class VertexLayout : public core::ReferenceCounted
-	{
-		public:
-			VertexLayout(unsigned int elemcount) : elemcount(elemcount)
-			{
-				elements = new VertexLayoutElement[elemcount];
-			}
-			~VertexLayout()
-			{
-				delete[] elements;
-			}
-
-			void setElement(unsigned int element,
-			                const std::string &name,
-			                unsigned int vbslot,
-			                unsigned int size,
-			                unsigned int offset,
-			                VertexElementType::List type,
-			                unsigned int stride = 0)
-			{
-				elements[element].name = name;
-				elements[element].vbslot = vbslot;
-				elements[element].size = size;
-				elements[element].offset = offset;
-				elements[element].type = type;
-				elements[element].stride = stride;
-			}
-
-			VertexLayoutElement *getElement(unsigned int index)
-			{
-				return &elements[index];
-			}
-			VertexLayoutElement *getElement(const std::string &name)
-			{
-				for (unsigned int i = 0; i < elemcount; i++)
+		/**
+		 * @note Not thread-safe.
+		 */
+		class VertexLayout : public core::ReferenceCounted
+		{
+			public:
+				VertexLayout(unsigned int elemcount) : elemcount(elemcount)
 				{
-					if (elements[i].name == name)
-						return &elements[i];
+					elements = new VertexLayoutElement[elemcount];
 				}
-				return 0;
-			}
-			unsigned int getElementCount()
-			{
-				return elemcount;
-			}
-
-			static unsigned int getElementSize(VertexElementType::List type)
-			{
-				switch (type)
+				~VertexLayout()
 				{
-					case VertexElementType::Float:
-						return 4;
-					case VertexElementType::DoubleFloat:
-						return 8;
-					case VertexElementType::HalfFloat:
-						return 2;
-					case VertexElementType::Integer:
-						return 4;
-					case VertexElementType::Short:
-						return 2;
-					case VertexElementType::Byte:
-						return 1;
+					delete[] elements;
 				}
-			}
 
-			typedef core::SharedPointer<VertexLayout> Ptr;
-		private:
-			unsigned int elemcount;
-			VertexLayoutElement *elements;
-	};
+				void setElement(unsigned int element,
+				                const std::string &name,
+				                unsigned int vbslot,
+				                unsigned int components,
+				                unsigned int offset,
+				                VertexElementType::List type,
+				                unsigned int stride = 0)
+				{
+					elements[element].name = name;
+					elements[element].vbslot = vbslot;
+					elements[element].components = components;
+					elements[element].offset = offset;
+					elements[element].type = type;
+					elements[element].stride = stride;
+				}
+
+				VertexLayoutElement *getElement(unsigned int index)
+				{
+					return &elements[index];
+				}
+				VertexLayoutElement *getElement(const std::string &name)
+				{
+					for (unsigned int i = 0; i < elemcount; i++)
+					{
+						if (elements[i].name == name)
+							return &elements[i];
+					}
+					return 0;
+				}
+				unsigned int getElementCount()
+				{
+					return elemcount;
+				}
+
+				unsigned int getSlotOffset(unsigned int slot)
+				{
+					// TODO
+					return 0;
+				}
+
+				static unsigned int getElementSize(VertexElementType::List type)
+				{
+					switch (type)
+					{
+						case VertexElementType::Float:
+							return 4;
+						case VertexElementType::DoubleFloat:
+							return 8;
+						case VertexElementType::HalfFloat:
+							return 2;
+						case VertexElementType::Integer:
+							return 4;
+						case VertexElementType::Short:
+							return 2;
+						case VertexElementType::Byte:
+							return 1;
+					}
+				}
+
+				typedef core::SharedPointer<VertexLayout> Ptr;
+			private:
+				unsigned int elemcount;
+				VertexLayoutElement *elements;
+		};
+	}
 }
 
 #endif

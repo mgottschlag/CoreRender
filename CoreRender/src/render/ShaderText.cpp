@@ -94,6 +94,10 @@ namespace render
 		};
 		uniforms.push_back(uniform);
 	}
+	void ShaderText::addTexture(const std::string &name)
+	{
+		textures.push_back(name);
+	}
 
 	unsigned int ShaderText::getFlags(const std::string &flagsset)
 	{
@@ -162,6 +166,9 @@ namespace render
 		// Add uniforms
 		for (unsigned int i = 0; i < uniforms.size(); i++)
 			shader->addUniform(uniforms[i].name);
+		// Add textures
+		for (unsigned int i = 0; i < textures.size(); i++)
+			shader->addTexture(textures[i]);
 		// Finish shader
 		shader->setShaderText(this);
 		shader->updateShader();

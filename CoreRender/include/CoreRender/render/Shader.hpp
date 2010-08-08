@@ -45,9 +45,11 @@ namespace render
 			void setTesselationShader(const std::string &ts);
 
 			void addAttrib(const std::string &name);
-			void addUniform(const std::string &name);
 			int getAttrib(const std::string &name);
+			void addUniform(const std::string &name);
 			int getUniform(const std::string &name);
+			void addTexture(const std::string &name);
+			int getTexture(const std::string &name);
 
 			void updateShader();
 
@@ -88,6 +90,7 @@ namespace render
 
 			std::map<std::string, int> attribs;
 			std::map<std::string, int> uniforms;
+			std::map<std::string, int> textures;
 	};
 }
 }

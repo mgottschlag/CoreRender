@@ -91,6 +91,13 @@ namespace opengl
 	}
 	void ShaderOpenGL::uploadShader()
 	{
+		// Make sure no error happened before
+		int error = glGetError();
+		if (error != GL_NO_ERROR)
+		{
+			getRenderer()->getLog()->error("Error before uploadShader(): %s",
+			                               gluErrorString(error));
+		}
 		// Move the current shader
 		// We cannot delete it as it might be in use right now
 		// TODO
@@ -105,7 +112,7 @@ namespace opengl
 		const char *fshadertext = fs.c_str();
 		unsigned int fshader = glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(fshader, 1, &fshadertext, NULL);
-		int error = glGetError();
+		error = glGetError();
 		if (error != GL_NO_ERROR)
 		{
 			glDeleteShader(vshader);
@@ -170,6 +177,12 @@ namespace opengl
 		// Get uniform locations
 		for (std::map<std::string, int>::iterator it = uniforms.begin();
 		     it != uniforms.end(); it++)
+		{
+			it->second = glGetUniformLocation(handle, it->first.c_str());
+		}
+		// Get texture locations
+		for (std::map<std::string, int>::iterator it = textures.begin();
+		     it != textures.end(); it++)
 		{
 			it->second = glGetUniformLocation(handle, it->first.c_str());
 		}

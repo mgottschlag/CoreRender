@@ -65,6 +65,7 @@ namespace render
 			void addUniform(const std::string &name,
 			                ShaderVariableType::List type,
 			                float *defaultvalue);
+			void addTexture(const std::string &name);
 
 			unsigned int getFlags(const std::string &flagsset = "");
 
@@ -108,6 +109,7 @@ namespace render
 			unsigned int flagdefaults;
 			std::vector<std::string> attribs;
 			std::vector<Uniform> uniforms;
+			std::vector<std::string> textures;
 
 			std::vector<Shader::Ptr> shaders;
 	};

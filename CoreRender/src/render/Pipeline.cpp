@@ -86,9 +86,32 @@ namespace render
 			batch->shader = shader->getHandle();
 			batch->renderflags = 0;
 			batch->uniformcount = 0;
-			batch->attribcount = 0;
 			batch->texcount = 0;
 			batch->texmappingcount = 0;
+			// Attribs
+			if (job->layout->getElementCount() > 0)
+			{
+				batch->attribcount = job->layout->getElementCount();
+				batch->attribs = new AttribMapping[job->layout->getElementCount()];
+				AttribMapping *attribs = batch->attribs;
+				for (unsigned int i = 0; i < job->layout->getElementCount(); i++)
+				{
+					VertexLayoutElement *attrib = job->layout->getElement(i);
+					attribs[i].shaderhandle = shader->getAttrib(attrib->name);
+					attribs[i].components = attrib->components;
+					attribs[i].stride = attrib->stride;
+					attribs[i].type = attrib->type;
+					attribs[i].address = job->layout->getSlotOffset(attrib->vbslot)
+					                   + attrib->offset;
+				}
+			}
+			else
+			{
+				batch->attribcount = 0;
+				batch->attribs = 0;
+			}
+			// Uniforms
+			// TODO
 			passes[i]->insert(batch);
 		}
 	}
