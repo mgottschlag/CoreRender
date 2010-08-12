@@ -78,22 +78,33 @@ unsigned short indices[36] = {
 	20, 22, 23,
 };
 
+unsigned int texdata[64] = {
+	0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+	0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+	0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+	0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+	0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF,
+	0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF,
+	0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF,
+	0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF,
+};
+
 static const std::string vs = "\n"
 "attribute vec3 pos;\n"
 "attribute vec2 texcoord;\n"
 "attribute vec3 normal;\n"
-"varying vec3 color;\n"
+"varying vec2 texcoord0;\n"
 "void main()\n"
 "{\n"
-"	color = vec3(texcoord.x, texcoord.y, 0.0);\n"
+"	texcoord0 = texcoord;\n"
 "	gl_Position = vec4(pos, 1.0);\n"
 "}\n";
 static const std::string fs = "\n"
 "uniform sampler2D tex;"
-"varying vec3 color;"
+"varying vec2 texcoord0;"
 "void main()\n"
 "{\n"
-"	gl_FragColor = vec4(color, 1.0);\n"
+"	gl_FragColor = texture2D(tex, texcoord0);\n"
 "}\n";
 
 int main(int argc, char **argv)
@@ -109,7 +120,13 @@ int main(int argc, char **argv)
 	cr::res::ResourceManager *rmgr = graphics.getResourceManager();
 
 	// Load some resources
-	cr::render::Texture2D::Ptr texture = graphics.loadTexture2D("test.png");
+	//cr::render::Texture2D::Ptr texture = graphics.loadTexture2D("test.png");
+	cr::render::Texture2D::Ptr texture = graphics.createTexture2D();
+	texture->set(8,
+	             8,
+	             cr::render::TextureFormat::RGBA8,
+	             cr::render::TextureFormat::RGBA8,
+	             texdata);
 	cr::render::VertexBuffer::Ptr vb = graphics.createVertexBuffer();
 	vb->set(24 * 8 * sizeof(float), vertices);
 	cr::render::IndexBuffer::Ptr ib = graphics.createIndexBuffer();

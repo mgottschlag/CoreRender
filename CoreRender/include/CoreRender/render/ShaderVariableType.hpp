@@ -30,6 +30,7 @@ namespace render
 	{
 		enum List
 		{
+			Invalid,
 			Float,
 			Float2,
 			Float3,
@@ -40,10 +41,12 @@ namespace render
 			Float3x4
 		};
 
-		unsigned int getSize(ShaderVariableType::List type)
+		static unsigned int getSize(ShaderVariableType::List type)
 		{
 			switch (type)
 			{
+				case Invalid:
+					return 0;
 				case Float:
 					return 1;
 				case Float2:
@@ -59,6 +62,8 @@ namespace render
 				case Float4x3:
 				case Float3x4:
 					return 12;
+				default:
+					return 0;
 			}
 		}
 	};

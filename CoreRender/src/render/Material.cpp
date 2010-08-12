@@ -44,6 +44,25 @@ namespace render
 
 	void Material::addTexture(const std::string name, Texture::Ptr texture)
 	{
+		TextureInfo info;
+		info.name = name;
+		info.texture = texture;
+		textures.push_back(info);
+	}
+	Texture::Ptr Material::getTexture(const std::string &name)
+	{
+		for (unsigned int i = 0; i < textures.size(); i++)
+		{
+			if (textures[i].name == name)
+			{
+				return textures[i].texture;
+			}
+		}
+		return 0;
+	}
+	const std::vector<Material::TextureInfo> &Material::getTextures()
+	{
+		return textures;
 	}
 }
 }

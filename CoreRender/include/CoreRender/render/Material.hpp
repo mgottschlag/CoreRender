@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "ShaderText.hpp"
 #include "Texture.hpp"
+#include "UniformData.hpp"
 
 namespace cr
 {
@@ -38,7 +39,20 @@ namespace render
 			void setShader(ShaderText::Ptr shader);
 			ShaderText::Ptr getShader();
 
+			struct TextureInfo
+			{
+				Texture::Ptr texture;
+				std::string name;
+			};
+
 			void addTexture(const std::string name, Texture::Ptr texture);
+			Texture::Ptr getTexture(const std::string &name);
+			const std::vector<TextureInfo> &getTextures();
+
+			UniformData &getUniformData()
+			{
+				return uniforms;
+			}
 
 			virtual const char *getType()
 			{
@@ -48,6 +62,10 @@ namespace render
 			typedef core::SharedPointer<Material> Ptr;
 		private:
 			ShaderText::Ptr shader;
+
+			std::vector<TextureInfo> textures;
+
+			UniformData uniforms;
 	};
 }
 }

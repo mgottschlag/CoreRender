@@ -67,6 +67,11 @@ namespace render
 
 	void Pipeline::submit(RenderJob *job)
 	{
+		// Get uniform data
+		UniformData uniforms = job->material->getShader()->getUniformData();
+		uniforms.setValues(job->material->getUniformData());
+		uniforms.setValues(job->uniforms);
+		// Collect batch info
 		for (unsigned int i = 0; i < passes.size(); i++)
 		{
 			std::string context = passes[i]->getContext();
@@ -85,9 +90,6 @@ namespace render
 			batch->indices = job->indices->getHandle();
 			batch->shader = shader->getHandle();
 			batch->renderflags = 0;
-			batch->uniformcount = 0;
-			batch->texcount = 0;
-			batch->texmappingcount = 0;
 			// Attribs
 			if (job->layout->getElementCount() > 0)
 			{
@@ -111,7 +113,29 @@ namespace render
 				batch->attribs = 0;
 			}
 			// Uniforms
+			batch->uniformcount = 0;
 			// TODO
+			// Textures
+			const std::vector<Material::TextureInfo> &textureinfo = job->material->getTextures();
+			if (textureinfo.size() > 0)
+			{
+				// TODO: Unify this?
+				TextureEntry *textures = new TextureEntry[textureinfo.size()];
+				for (unsigned int i = 0; i < textureinfo.size(); i++)
+				{
+					textures[i].shaderhandle = shader->getTexture(textureinfo[i].name);
+					textures[i].textureindex = i;
+					textures[i].texhandle = textureinfo[i].texture->getHandle();
+					textures[i].type = textureinfo[i].texture->getTextureType();
+				}
+				batch->textures = textures;
+				batch->texcount = textureinfo.size();
+			}
+			else
+			{
+				batch->textures = 0;
+				batch->texcount = 0;
+			}
 			passes[i]->insert(batch);
 		}
 	}

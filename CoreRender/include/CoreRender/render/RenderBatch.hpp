@@ -32,9 +32,6 @@ namespace render
 	{
 		int texhandle;
 		int type;
-	};
-	struct TextureMapping
-	{
 		int shaderhandle;
 		int textureindex;
 	};
@@ -55,12 +52,10 @@ namespace render
 	struct RenderBatch
 	{
 		TextureEntry *textures;
-		TextureMapping *texmapping;
 		UniformMapping *uniforms;
 		AttribMapping *attribs;
 
 		unsigned int texcount;
-		unsigned int texmappingcount;
 		unsigned int uniformcount;
 		unsigned int attribcount;
 

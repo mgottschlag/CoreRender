@@ -37,8 +37,31 @@ namespace render
 	unsigned int TextureFormat::getSize(TextureFormat::List format,
 	                                     unsigned int texels)
 	{
-		// TODO
-		return 0;
+		switch (format)
+		{
+			case TextureFormat::Invalid:
+				return 0;
+			case TextureFormat::RGBA8:
+				return texels * 4;
+			case TextureFormat::RGBA16F:
+				return texels * 8;
+			case TextureFormat::RGBA32F:
+				return texels * 16;
+			case TextureFormat::RGBA_DXT1:
+				return texels / 2;
+			case TextureFormat::RGBA_DXT3:
+			case TextureFormat::RGBA_DXT5:
+				return texels;
+			case TextureFormat::Depth24Stencil8:
+				return texels * 4;
+			case TextureFormat::Depth16:
+				return texels * 2;
+			case TextureFormat::Depth24:
+				return texels * 3;
+			default:
+				// TODO
+				return 0;
+		}
 	}
 
 	Texture::Texture(Renderer *renderer,

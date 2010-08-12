@@ -163,7 +163,33 @@ namespace opengl
 		// Apply uniforms
 		// TODO
 		// Apply textures
-		// TODO
+		for (unsigned int i = 0; i < batch->texcount; i++)
+		{
+			if (batch->textures[i].shaderhandle == -1)
+				continue;
+			if (batch->textures[i].texhandle == -1)
+				continue;
+			int opengltype = GL_TEXTURE_2D;
+			switch (batch->textures[i].type)
+			{
+				case TextureType::Texture1D:
+					opengltype = GL_TEXTURE_1D;
+					break;
+				case TextureType::Texture2D:
+					opengltype = GL_TEXTURE_2D;
+					break;
+				case TextureType::Texture3D:
+					opengltype = GL_TEXTURE_3D;
+					break;
+				case TextureType::TextureCube:
+					opengltype = GL_TEXTURE_CUBE_MAP;
+					break;
+			}
+			glActiveTexture(GL_TEXTURE0 + batch->textures[i].textureindex);
+			glBindTexture(opengltype, batch->textures[i].texhandle);
+			glUniform1i(batch->textures[i].shaderhandle,
+			            batch->textures[i].textureindex);
+		}
 		// Render triangles
 		glDrawElements(GL_TRIANGLES,
 		               batch->endindex - batch->startindex,

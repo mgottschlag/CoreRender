@@ -89,10 +89,11 @@ namespace render
 	                            ShaderVariableType::List type,
 	                            float *defaultvalue)
 	{
-		Uniform uniform = {
+		/*Uniform uniform = {
 			name, type, defaultvalue
 		};
-		uniforms.push_back(uniform);
+		uniforms.push_back(uniform);*/
+		uniforms.add(name).set(type, defaultvalue);
 	}
 	void ShaderText::addTexture(const std::string &name)
 	{
@@ -164,8 +165,15 @@ namespace render
 		for (unsigned int i = 0; i < attribs.size(); i++)
 			shader->addAttrib(attribs[i]);
 		// Add uniforms
-		for (unsigned int i = 0; i < uniforms.size(); i++)
-			shader->addUniform(uniforms[i].name);
+		{
+			UniformData::UniformMap::const_iterator it;
+			for (it = uniforms.getData().begin();
+			     it != uniforms.getData().end();
+			     it++)
+			{
+				shader->addUniform(it->second.getName());
+			}
+		}
 		// Add textures
 		for (unsigned int i = 0; i < textures.size(); i++)
 			shader->addTexture(textures[i]);

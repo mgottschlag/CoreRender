@@ -60,6 +60,7 @@ set(SRC
 	include/CoreRender/render/Texture2D.hpp
 	include/CoreRender/render/Texture3D.hpp
 	include/CoreRender/render/TextureCube.hpp
+	include/CoreRender/render/UniformData.hpp
 	include/CoreRender/render/VertexBuffer.hpp
 	include/CoreRender/render/VertexLayout.hpp
 	src/core/Buffer.cpp
@@ -96,6 +97,7 @@ set(SRC
 	src/render/ShaderText.cpp
 	src/render/Texture.cpp
 	src/render/Texture2D.cpp
+	src/render/UniformData.cpp
 	src/render/VertexBuffer.cpp
 	src/res/LoadingThread.cpp
 	src/res/Resource.cpp

@@ -48,7 +48,7 @@ namespace render
 			unsigned int basevertex;
 			Material::Ptr material;
 			VertexLayout::Ptr layout;
-			// TODO: Uniforms, attribs
+			UniformData uniforms;
 		private:
 	};
 }

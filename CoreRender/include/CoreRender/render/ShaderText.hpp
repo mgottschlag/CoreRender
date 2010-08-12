@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "../res/Resource.hpp"
 #include "Shader.hpp"
 #include "ShaderVariableType.hpp"
+#include "UniformData.hpp"
 
 #include <map>
 
@@ -82,6 +83,11 @@ namespace render
 				return "ShaderText";
 			}
 
+			const UniformData &getUniformData()
+			{
+				return uniforms;
+			}
+
 			typedef core::SharedPointer<ShaderText> Ptr;
 		private:
 			render::VideoDriver *driver;
@@ -95,23 +101,17 @@ namespace render
 				std::string ts;
 			};
 
-			struct Uniform
-			{
-				std::string name;
-				ShaderVariableType::List type;
-				float *defaultvalue;
-			};
-
 			std::map<std::string, std::string> texts;
 			std::map<std::string, Context> contexts;
 
 			std::vector<std::string> flags;
 			unsigned int flagdefaults;
 			std::vector<std::string> attribs;
-			std::vector<Uniform> uniforms;
 			std::vector<std::string> textures;
 
 			std::vector<Shader::Ptr> shaders;
+
+			UniformData uniforms;
 	};
 }
 }
