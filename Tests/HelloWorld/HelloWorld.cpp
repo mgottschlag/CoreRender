@@ -93,15 +93,16 @@ static const std::string vs = "\n"
 "attribute vec3 pos;\n"
 "attribute vec2 texcoord;\n"
 "attribute vec3 normal;\n"
+"uniform vec2 scale;\n"
 "varying vec2 texcoord0;\n"
 "void main()\n"
 "{\n"
 "	texcoord0 = texcoord;\n"
-"	gl_Position = vec4(pos, 1.0);\n"
+"	gl_Position = vec4(pos * vec3(scale, 1.0), 1.0);\n"
 "}\n";
 static const std::string fs = "\n"
-"uniform sampler2D tex;"
-"varying vec2 texcoord0;"
+"uniform sampler2D tex;\n"
+"varying vec2 texcoord0;\n"
 "void main()\n"
 "{\n"
 "	gl_FragColor = texture2D(tex, texcoord0);\n"
@@ -139,6 +140,8 @@ int main(int argc, char **argv)
 	shader->addAttrib("texcoord");
 	shader->addAttrib("normal");
 	shader->addTexture("tex");
+	float defscale[2] = {1.0f, 1.0f};
+	shader->addUniform("scale", cr::render::ShaderVariableType::Float2, defscale);
 	cr::render::Material::Ptr material = new cr::render::Material(rmgr,
 	                                                              "testmat");
 	material->addTexture("tex", texture);
@@ -156,6 +159,8 @@ int main(int argc, char **argv)
 	job->endindex = 36;
 	job->material = material;
 	job->layout = layout;
+	job->uniforms = shader->getUniformData();
+	job->uniforms["scale"] = cr::math::Vector2F(0.5f, 0.5f);
 	// TODO: Uniforms
 	// Setup pipeline
 	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();

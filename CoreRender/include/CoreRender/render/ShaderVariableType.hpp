@@ -39,6 +39,7 @@ namespace render
 			Float3x3,
 			Float4x3,
 			Float3x4
+			// TODO: 2x2, 3x2, 4x2, 2x3, 2x4
 		};
 
 		static unsigned int getSize(ShaderVariableType::List type)

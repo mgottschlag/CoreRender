@@ -23,6 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_RENDER_RENDERBATCH_HPP_INCLUDED_
 
 #include "VertexLayout.hpp"
+#include "ShaderVariableType.hpp"
 
 namespace cr
 {
@@ -38,7 +39,7 @@ namespace render
 	struct UniformMapping
 	{
 		int shaderhandle;
-		int type;
+		ShaderVariableType::List type;
 		float *data;
 	};
 	struct AttribMapping

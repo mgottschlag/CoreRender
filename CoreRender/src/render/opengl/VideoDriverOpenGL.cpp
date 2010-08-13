@@ -121,7 +121,7 @@ namespace opengl
 		// Bind buffers/shader
 		// TODO: Error checking
 		glUseProgram(batch->shader);
-		
+
 		glBindBuffer(GL_ARRAY_BUFFER, batch->vertices);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch->indices);
 		// Apply attribs
@@ -161,6 +161,60 @@ namespace opengl
 			                      (void*)batch->attribs[i].address);
 		}
 		// Apply uniforms
+		for (unsigned int i = 0; i < batch->uniformcount; i++)
+		{
+			if (batch->uniforms[i].shaderhandle == -1)
+				continue;
+			switch (batch->uniforms[i].type)
+			{
+				case ShaderVariableType::Float:
+					glUniform1f(batch->uniforms[i].shaderhandle,
+					            batch->uniforms[i].data[0]);
+					break;
+				case ShaderVariableType::Float2:
+					glUniform2f(batch->uniforms[i].shaderhandle,
+					            batch->uniforms[i].data[0],
+					            batch->uniforms[i].data[1]);
+					break;
+				case ShaderVariableType::Float3:
+					glUniform2f(batch->uniforms[i].shaderhandle,
+					            batch->uniforms[i].data[0],
+					            batch->uniforms[i].data[1]);
+					break;
+				case ShaderVariableType::Float4:
+					glUniform3f(batch->uniforms[i].shaderhandle,
+					            batch->uniforms[i].data[0],
+					            batch->uniforms[i].data[2],
+					            batch->uniforms[i].data[3]);
+					break;
+				case ShaderVariableType::Float4x4:
+					glUniformMatrix4fv(batch->uniforms[i].shaderhandle,
+					                   1,
+					                   GL_FALSE,
+					                   batch->uniforms[i].data);
+					break;
+				case ShaderVariableType::Float3x3:
+					glUniformMatrix3fv(batch->uniforms[i].shaderhandle,
+					                   1,
+					                   GL_FALSE,
+					                   batch->uniforms[i].data);
+					break;
+				case ShaderVariableType::Float4x3:
+					glUniformMatrix4x3fv(batch->uniforms[i].shaderhandle,
+					                     1,
+					                     GL_FALSE,
+					                     batch->uniforms[i].data);
+					break;
+				case ShaderVariableType::Float3x4:
+					glUniformMatrix3x4fv(batch->uniforms[i].shaderhandle,
+					                     1,
+					                     GL_FALSE,
+					                     batch->uniforms[i].data);
+					break;
+				default:
+					break;
+			}
+		}
 		// TODO
 		// Apply textures
 		for (unsigned int i = 0; i < batch->texcount; i++)
@@ -201,6 +255,17 @@ namespace opengl
 		{
 			glDisableVertexAttribArray(batch->attribs[i].shaderhandle);
 		}
+		// Clean up memory
+		for (unsigned int i = 0; i < batch->uniformcount; i++)
+		{
+			delete[] batch->uniforms[i].data;
+		}
+		delete[] batch->attribs;
+		delete[] batch->uniforms;
+		delete[] batch->textures;
+		delete batch;
+		// TODO
+		// TODO: Should be done by the memory pool class?
 	}
 
 	void VideoDriverOpenGL::endFrame()

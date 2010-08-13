@@ -113,7 +113,23 @@ namespace render
 				batch->attribs = 0;
 			}
 			// Uniforms
-			batch->uniformcount = 0;
+			const UniformData::UniformMap &uniformdata = uniforms.getData();
+			batch->uniformcount = uniformdata.size();
+			batch->uniforms = new UniformMapping[batch->uniformcount];
+			{
+				unsigned int i = 0;
+				for (UniformData::UniformMap::const_iterator it = uniformdata.begin();
+				     it != uniformdata.end(); ++it, ++i)
+				{
+					batch->uniforms[i].type = it->second.getType();
+					unsigned int size = ShaderVariableType::getSize(batch->uniforms[i].type);
+					batch->uniforms[i].shaderhandle = shader->getUniform(it->second.getName());
+					batch->uniforms[i].data = new float[size];
+					memcpy(batch->uniforms[i].data,
+					       it->second.getData(),
+					       size * sizeof(float));
+				}
+			}
 			// TODO
 			// Textures
 			const std::vector<Material::TextureInfo> &textureinfo = job->material->getTextures();
