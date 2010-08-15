@@ -47,7 +47,7 @@ namespace opengl
 			virtual void makeCurrent(bool current = true);
 			virtual void swapBuffers();
 
-			virtual void update();
+			virtual void update(GraphicsEngine *inputreceiver);
 		private:
 	};
 }

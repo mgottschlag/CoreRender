@@ -51,7 +51,7 @@ namespace opengl
 
 			virtual RenderContext::Ptr clone();
 
-			virtual void update();
+			virtual void update(GraphicsEngine *inputreceiver);
 		private:
 			RenderWindowGLCML::Ptr window;
 			int handle;

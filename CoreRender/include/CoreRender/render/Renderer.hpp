@@ -39,6 +39,7 @@ namespace core
 namespace render
 {
 	class VideoDriver;
+	class GraphicsEngine;
 
 	class Renderer
 	{
@@ -46,7 +47,8 @@ namespace render
 			Renderer(RenderContext::Ptr primary,
 			         RenderContext::Ptr secondary,
 			         core::Log::Ptr log,
-			         VideoDriver *driver);
+			         VideoDriver *driver,
+			         GraphicsEngine *input);
 			~Renderer();
 
 			void registerNew(RenderResource::Ptr res);
@@ -102,6 +104,9 @@ namespace render
 
 			PipelineInfo *renderdata;
 			unsigned int pipelinecount;
+
+			// TODO: We should not have any pointer to the GraphicsEngine here
+			GraphicsEngine *input;
 	};
 }
 }

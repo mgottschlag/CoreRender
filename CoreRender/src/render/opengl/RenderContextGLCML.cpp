@@ -91,7 +91,7 @@ namespace opengl
 		return context;
 	}
 
-	void RenderContextGLCML::update()
+	void RenderContextGLCML::update(GraphicsEngine *inputreceiver)
 	{
 		glcml_window_poll_events();
 	}

@@ -3,7 +3,8 @@ project(CoreRender)
 cmake_minimum_required(VERSION 2.6.0)
 
 
-option(CORERENDER_USE_GLFW "Use GLFW single-threaded OpenGL contexts." ON)
+option(CORERENDER_USE_SDL "Use SDL multi-threaded OpenGL contexts." ON)
+option(CORERENDER_USE_GLFW "Use GLFW single-threaded OpenGL contexts." OFF)
 option(CORERENDER_USE_GLCML "Use GLCML multi-threaded OpenGL contexts." OFF)
 
 set(SRC
@@ -128,7 +129,22 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 
-if(CORERENDER_USE_GLFW)
+find_package(SDL)
+if(CORERENDER_USE_SDL AND SDL_FOUND)
+	include_directories(${SDL_INCLUDE_DIR})
+	set(SRC
+		${SRC}
+		src/render/opengl/RenderContextSDL.cpp
+		src/render/opengl/RenderContextSDL.hpp
+		src/render/opengl/RenderWindowSDL.cpp
+		src/render/opengl/RenderWindowSDL.hpp
+	)
+	set(LIB
+		${LIB}
+		${SDL_LIBRARY}
+	)
+	add_definitions(-DCORERENDER_USE_SDL)
+elseif(CORERENDER_USE_GLFW)
 	set(SRC
 		${SRC}
 		src/render/opengl/RenderContextGLFW.cpp
@@ -152,7 +168,7 @@ elseif(CORERENDER_USE_GLCML)
 		glcml
 	)
 	add_definitions(-DCORERENDER_USE_GLCML)
-endif(CORERENDER_USE_GLFW)
+endif(CORERENDER_USE_SDL AND SDL_FOUND)
 
 
 include_directories(include)

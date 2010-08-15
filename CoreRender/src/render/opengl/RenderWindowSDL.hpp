@@ -19,47 +19,48 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERCONTEXT_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERCONTEXT_HPP_INCLUDED_
 
-#include "VideoDriverType.hpp"
-#include "../core/ReferenceCounted.hpp"
+#ifndef _CORERENDER_RENDER_OPENGL_RENDERWINDOWSDL_HPP_INCLUDED_
+#define _CORERENDER_RENDER_OPENGL_RENDERWINDOWSDL_HPP_INCLUDED_
+
+#include "CoreRender/core/ReferenceCounted.hpp"
+#include "CoreRender/core/Platform.hpp"
+
+#include <GL/glx.h>
 
 namespace cr
 {
 namespace render
 {
-	class GraphicsEngine;
-
-	class RenderContext : public core::ReferenceCounted
+namespace opengl
+{
+	class RenderWindowSDL : public core::ReferenceCounted
 	{
 		public:
-			virtual ~RenderContext()
-			{
-			}
+			RenderWindowSDL();
+			virtual ~RenderWindowSDL();
 
-			virtual bool resize(unsigned int width,
-			                    unsigned int height,
-			                    bool fullscreen)
-			{
-				return false;
-			}
+			bool open(unsigned int width,
+			          unsigned int height,
+			          bool fullscreen);
+			bool resize(unsigned int width,
+			            unsigned int height,
+			            bool fullscreen);
 
-			typedef core::SharedPointer<RenderContext> Ptr;
-
-			virtual void makeCurrent(bool current = true) = 0;
-			virtual void swapBuffers() = 0;
-
-			virtual RenderContext::Ptr clone()
-			{
-				return 0;
-			}
-
-			virtual void update(GraphicsEngine *inputreceiver)
-			{
-			}
-			virtual VideoDriverType::List getDriverType() = 0;
+			typedef core::SharedPointer<RenderWindowSDL> Ptr;
+		private:
+			bool initialized;
+#if defined(CORERENDER_UNIX)
+			Display *display;
+			Window window;
+			GLXContext primary;
+			void (*lockDisplay)();
+			void (*unlockDisplay)();
+#elif defined(CORERENDER_WINDOWS)
+#endif
+		friend class RenderContextSDL;
 	};
+}
 }
 }
 

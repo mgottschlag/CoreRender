@@ -249,7 +249,7 @@ namespace opengl
 		               batch->endindex - batch->startindex,
 		               GL_UNSIGNED_SHORT,
 		               (void*)(batch->startindex * 2));
-		// TODO
+		// TODO: Index type
 		// Clean up attribs
 		for (unsigned int i = 0; i < batch->attribcount; i++)
 		{

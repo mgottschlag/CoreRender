@@ -26,7 +26,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/Renderer.hpp"
 #include "CoreRender/render/RenderThread.hpp"
 
-#if defined(CORERENDER_USE_GLCML)
+#if defined(CORERENDER_USE_SDL)
+	#include "opengl/RenderContextSDL.hpp"
+#elif defined(CORERENDER_USE_GLCML)
 	#include "opengl/RenderContextGLCML.hpp"
 #elif defined(CORERENDER_USE_GLFW)
 	#include "opengl/RenderContextGLFW.hpp"
@@ -116,7 +118,7 @@ namespace render
 			secondcontext = 0;
 			return false;
 		}
-		renderer = new Renderer(context, secondcontext, log, driver);
+		renderer = new Renderer(context, secondcontext, log, driver, this);
 		// Create render thread
 		if (multithreaded)
 		{
@@ -323,7 +325,16 @@ namespace render
 	{
 		if (type == VideoDriverType::OpenGL)
 		{
-#if defined(CORERENDER_USE_GLCML)
+#if defined(CORERENDER_USE_SDL)
+			opengl::RenderContextSDL *newctx;
+			newctx = new opengl::RenderContextSDL();
+			if (!newctx->create(width, height, fullscreen))
+			{
+				delete newctx;
+				return 0;
+			}
+			return newctx;
+#elif defined(CORERENDER_USE_GLCML)
 			opengl::RenderContextGLCML *newctx;
 			newctx = new opengl::RenderContextGLCML();
 			if (!newctx->create(width, height, fullscreen))

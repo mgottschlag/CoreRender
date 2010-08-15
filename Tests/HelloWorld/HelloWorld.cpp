@@ -161,7 +161,6 @@ int main(int argc, char **argv)
 	job->layout = layout;
 	job->uniforms = shader->getUniformData();
 	job->uniforms["scale"] = cr::math::Vector2F(0.5f, 0.5f);
-	// TODO: Uniforms
 	// Setup pipeline
 	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();
 	cr::render::RenderPass::Ptr pass = new cr::render::RenderPass("AMBIENT");

@@ -65,7 +65,7 @@ namespace opengl
 		glfwSwapBuffers();
 	}
 
-	void RenderContextGLFW::update()
+	void RenderContextGLFW::update(GraphicsEngine* inputreceiver)
 	{
 		glfwPollEvents();
 	}

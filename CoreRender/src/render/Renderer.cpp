@@ -30,8 +30,10 @@ namespace render
 	Renderer::Renderer(RenderContext::Ptr primary,
 	                   RenderContext::Ptr secondary,
 	                   core::Log::Ptr log,
-	                   VideoDriver *driver)
-		: primary(primary), secondary(secondary), log(log), driver(driver)
+	                   VideoDriver *driver,
+	                   GraphicsEngine *input)
+		: primary(primary), secondary(secondary), log(log), driver(driver),
+		input(input)
 	{
 		// Make context active for this thread
 		if (secondary)
@@ -159,7 +161,7 @@ namespace render
 	{
 		// Fetch input
 		// TODO: Should not been done here
-		primary->update();
+		primary->update(input);
 		// Upload changed objects
 		uploadObjects();
 		// Render passes
