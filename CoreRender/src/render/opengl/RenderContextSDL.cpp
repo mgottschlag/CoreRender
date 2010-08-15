@@ -31,7 +31,7 @@ namespace render
 {
 namespace opengl
 {
-	RenderContextSDL::RenderContextSDL() : initialized(false)
+	RenderContextSDL::RenderContextSDL() : initialized(false), primary(false)
 	{
 	}
 	RenderContextSDL::~RenderContextSDL()
@@ -63,6 +63,7 @@ namespace opengl
 #elif defined(CORERENDER_WINDOWS)
 	#error Not implemented!
 #endif
+		primary = true;
 		return true;
 	}
 
@@ -115,8 +116,11 @@ namespace opengl
 				switch (event.type)
 				{
 					case SDL_QUIT:
-						// TODO
+					{
+						InputEvent inputevent(InputEventType::WindowClosed);
+						inputreceiver->injectInput(inputevent);
 						break;
+					}
 				}
 			}
 			// TODO

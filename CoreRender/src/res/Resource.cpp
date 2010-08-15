@@ -28,7 +28,7 @@ namespace cr
 namespace res
 {
 	Resource::Resource(ResourceManager *rmgr, const std::string &name)
-		: loaded(false), name(name), rmgr(rmgr)
+		: loaded(false), loading(false), name(name), rmgr(rmgr)
 	{
 		rmgr->addResource(this);
 	}

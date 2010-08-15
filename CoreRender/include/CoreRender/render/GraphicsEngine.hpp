@@ -31,6 +31,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "IndexBuffer.hpp"
 #include "Pipeline.hpp"
 #include "ShaderText.hpp"
+#include "InputEvent.hpp"
+
+#include <queue>
 
 namespace cr
 {
@@ -41,7 +44,6 @@ namespace res
 namespace render
 {
 	class RenderContext;
-	class InputEvent;
 	class Renderer;
 	class RenderThread;
 	class VideoDriver;
@@ -97,8 +99,8 @@ namespace render
 				return log;
 			}
 
-			void injectInput(InputEvent *event);
-			InputEvent *getInput();
+			void injectInput(const InputEvent &event);
+			bool getInput(InputEvent *event);
 
 			res::ResourceManager *getResourceManager()
 			{
@@ -125,6 +127,9 @@ namespace render
 
 			tbb::spin_mutex pipelinemutex;
 			std::vector<Pipeline::Ptr> pipelines;
+
+			tbb::spin_mutex inputmutex;
+			std::queue<InputEvent> inputqueue;
 	};
 }
 }

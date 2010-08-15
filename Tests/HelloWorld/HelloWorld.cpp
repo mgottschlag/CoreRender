@@ -173,6 +173,18 @@ int main(int argc, char **argv)
 	while (!stopping)
 	{
 		// Process input
+		cr::render::InputEvent input;
+		while (graphics.getInput(&input))
+		{
+			switch (input.type)
+			{
+				case cr::render::InputEventType::WindowClosed:
+					stopping = true;
+					break;
+				default:
+					break;
+			}
+		}
 		// TODO
 		// Begin frame
 		graphics.beginFrame();
@@ -180,10 +192,18 @@ int main(int argc, char **argv)
 		pipeline->submit(job);
 		// Finish and render frame
 		graphics.endFrame();
+		
 	}
 
 	// Delete resources
 	delete job;
+	texture = 0;
+	vb = 0;
+	ib = 0;
+	shader = 0;
+	material = 0;
+	pipeline = 0;
+	pass = 0;
 	// TODO: Other resources
 
 	graphics.shutdown();

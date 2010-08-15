@@ -46,6 +46,11 @@ namespace render
 	}
 	Renderer::~Renderer()
 	{
+		// Delete remaining render resources
+		// TODO: Do we have to upload objects here? They will not be used.
+		uploadNewObjects();
+		uploadObjects();
+		deleteObjects();
 		// Release context
 		if (secondary)
 			secondary->makeCurrent(false);
@@ -174,6 +179,10 @@ namespace render
 		// Delete render data
 		for (unsigned int i = 0; i < pipelinecount; i++)
 		{
+			for (unsigned int j = 0; j < renderdata[i].passes->batchcount; j++)
+			{
+				delete[] renderdata[i].passes[j].batches;
+			}
 			delete[] renderdata[i].passes;
 		}
 		delete[] renderdata;

@@ -160,6 +160,8 @@ namespace render
 		// Destroy renderer
 		delete renderer;
 		renderer = 0;
+		// Delete driver
+		delete driver;
 		// Stop resource manager
 		rmgr->shutdown();
 		delete rmgr;
@@ -309,13 +311,19 @@ namespace render
 		this->log = log;
 	}
 
-	void GraphicsEngine::injectInput(InputEvent *event)
+	void GraphicsEngine::injectInput(const InputEvent &event)
 	{
+		tbb::spin_mutex::scoped_lock lock(inputmutex);
+		inputqueue.push(event);
 	}
-	InputEvent *GraphicsEngine::getInput()
+	bool GraphicsEngine::getInput(InputEvent *event)
 	{
-		// TODO
-		return 0;
+		tbb::spin_mutex::scoped_lock lock(inputmutex);
+		if (inputqueue.empty())
+			return false;
+		*event = inputqueue.front();
+		inputqueue.pop();
+		return true;
 	}
 
 	RenderContext::Ptr GraphicsEngine::createContext(VideoDriverType::List type,
