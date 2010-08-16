@@ -160,7 +160,8 @@ int main(int argc, char **argv)
 	job->material = material;
 	job->layout = layout;
 	job->uniforms = shader->getUniformData();
-	job->uniforms["scale"] = cr::math::Vector2F(0.5f, 0.5f);
+	cr::math::Vector2F scale(0.5f, 0.5f);
+	job->uniforms["scale"] = scale;
 	// Setup pipeline
 	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();
 	cr::render::RenderPass::Ptr pass = new cr::render::RenderPass("AMBIENT");
@@ -181,11 +182,21 @@ int main(int argc, char **argv)
 				case cr::render::InputEventType::WindowClosed:
 					stopping = true;
 					break;
+				case cr::render::InputEventType::KeyDown:
+					if (input.keyboard.key == cr::render::KeyCode::Up)
+						scale.y *= 1.1f;
+					if (input.keyboard.key == cr::render::KeyCode::Down)
+						scale.y /= 1.1f;
+					if (input.keyboard.key == cr::render::KeyCode::Left)
+						scale.x *= 1.1f;
+					if (input.keyboard.key == cr::render::KeyCode::Right)
+						scale.x /= 1.1f;
+					job->uniforms["scale"] = scale;
+					break;
 				default:
 					break;
 			}
 		}
-		// TODO
 		// Begin frame
 		graphics.beginFrame();
 		// Render objects

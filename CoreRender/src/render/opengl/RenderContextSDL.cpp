@@ -21,6 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "RenderContextSDL.hpp"
 #include "CoreRender/render/GraphicsEngine.hpp"
+#include "KeyCodeSDL.hpp"
 
 #include <SDL.h>
 #include <iostream>
@@ -117,13 +118,87 @@ namespace opengl
 				{
 					case SDL_QUIT:
 					{
-						InputEvent inputevent(InputEventType::WindowClosed);
+						InputEvent inputevent;
+						inputevent.type = InputEventType::WindowClosed;
 						inputreceiver->injectInput(inputevent);
 						break;
 					}
+					case SDL_MOUSEMOTION:
+					{
+						InputEvent inputevent;
+						inputevent.type = InputEventType::MouseMoved;
+						inputevent.mouse.dx = event.motion.xrel;
+						inputevent.mouse.dy = event.motion.yrel;
+						inputevent.mouse.x = event.motion.x;
+						inputevent.mouse.y = event.motion.y;
+						inputreceiver->injectInput(inputevent);
+						break;
+					}
+					case SDL_MOUSEBUTTONDOWN:
+					case SDL_MOUSEBUTTONUP:
+					{
+						if (event.button.button == SDL_BUTTON_WHEELUP
+							|| event.button.button == SDL_BUTTON_WHEELDOWN)
+						{
+							// TODO
+							break;
+						}
+						InputEvent inputevent;
+						if (event.button.type == SDL_MOUSEBUTTONDOWN)
+							inputevent.type = InputEventType::MouseDown;
+						else
+							inputevent.type = InputEventType::MouseUp;
+						inputevent.mouse.dx = inputevent.mouse.dy = 0;
+						switch (event.button.button)
+						{
+							case SDL_BUTTON_LEFT:
+								inputevent.mouse.button = 0;
+								break;
+							case SDL_BUTTON_RIGHT:
+								inputevent.mouse.button = 1;
+								break;
+							case SDL_BUTTON_MIDDLE:
+								inputevent.mouse.button = 2;
+								break;
+							default:
+								inputevent.mouse.button = 0;
+								break;
+						}
+						inputevent.mouse.x = event.button.x;
+						inputevent.mouse.y = event.button.y;
+						inputreceiver->injectInput(inputevent);
+						break;
+					}
+					case SDL_KEYDOWN:
+					case SDL_KEYUP:
+					{
+						InputEvent inputevent;
+						if (event.type == SDL_KEYDOWN)
+							inputevent.type = InputEventType::KeyDown;
+						else
+							inputevent.type = InputEventType::KeyUp;
+						inputevent.keyboard.key = translateSDLKey(event.key.keysym.sym);
+						if (inputevent.keyboard.key == KeyCode::Invalid)
+						{
+							inputreceiver->getLog()->warning("SDL: Invalid key pressed: %d",
+							                                 event.key.keysym.sym);
+							break;
+						}
+						inputreceiver->injectInput(inputevent);
+						if (event.type == SDL_KEYDOWN)
+						{
+							// Also inject char event
+							inputevent.type = InputEventType::CharTyped;
+							inputevent.chartyped.unicode = event.key.keysym.unicode;
+							inputreceiver->injectInput(inputevent);
+						}
+						break;
+					}
+					default:
+						// TODO: Joystick events, visibility events
+						break;
 				}
 			}
-			// TODO
 		}
 	}
 }

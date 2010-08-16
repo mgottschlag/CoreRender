@@ -22,16 +22,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_INPUTEVENT_HPP_INCLUDED_
 #define _CORERENDER_RENDER_INPUTEVENT_HPP_INCLUDED_
 
+#include "KeyCode.hpp"
+
 namespace cr
 {
 namespace render
 {
-	struct KeyCode
-	{
-		enum List
-		{
-		};
-	};
 	struct InputEventType
 	{
 		enum List
@@ -39,6 +35,7 @@ namespace render
 			WindowClosed,
 			KeyDown,
 			KeyUp,
+			CharTyped,
 			MouseMoved,
 			MouseDown,
 			MouseUp
@@ -48,12 +45,17 @@ namespace render
 	{
 		KeyCode::List key;
 	};
+	struct CharEvent
+	{
+		unsigned int unicode;
+	};
 	struct MouseEvent
 	{
 		int x;
 		int y;
 		int dx;
 		int dy;
+		// TODO: Make this an enum?
 		int button;
 	};
 	struct InputEvent
@@ -70,6 +72,7 @@ namespace render
 		{
 			KeyboardEvent keyboard;
 			MouseEvent mouse;
+			CharEvent chartyped;
 		};
 	};
 }
