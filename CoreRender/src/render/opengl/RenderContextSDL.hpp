@@ -53,6 +53,8 @@ namespace opengl
 			virtual RenderContext::Ptr clone();
 
 			virtual void update(GraphicsEngine *inputreceiver);
+
+			typedef core::SharedPointer<RenderContextSDL> Ptr;
 		private:
 			RenderWindowSDL::Ptr window;
 			bool initialized;

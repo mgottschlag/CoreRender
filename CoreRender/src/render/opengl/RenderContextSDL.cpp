@@ -102,8 +102,47 @@ namespace opengl
 
 	RenderContext::Ptr RenderContextSDL::clone()
 	{
-		// TODO
+#if defined(CORERENDER_UNIX)
+		// Get visual info
+		XWindowAttributes attrib;
+		if (!XGetWindowAttributes(display, x11window, &attrib))
+			return 0;
+		XVisualInfo visualtpl;
+		for (int i = 0; i < XScreenCount(display); i++)
+		{
+			if (XRootWindow(display, i) == attrib.root)
+				visualtpl.screen = i;
+		}
+		visualtpl.visualid = XVisualIDFromVisual(attrib.visual);
+		int visualcount;
+		XVisualInfo *visual = XGetVisualInfo(display,
+		                                     VisualScreenMask|VisualIDMask,
+		                                     &visualtpl,
+		                                     &visualcount);
+		if (!visual)
+			return 0;
+
+		// Create context
+		GLXContext newglxctx = glXCreateContext(display, visual, context, True);
+		XFree(visual);
+		if (!newglxctx)
+			return 0;
+		// Create SDL context class
+		RenderContextSDL::Ptr newctx = new RenderContextSDL();
+		newctx->window = window;
+		newctx->initialized = true;
+		newctx->primary = false;
+		newctx->display = display;
+		newctx->x11window = x11window;
+		newctx->context = newglxctx;
+		newctx->lockDisplay = lockDisplay;
+		newctx->unlockDisplay = unlockDisplay;
+		return newctx;
+#elif defined(CORERENDER_WINDOWS)
 		return 0;
+#else
+		return 0;
+#endif
 	}
 
 	void RenderContextSDL::update(GraphicsEngine *inputreceiver)

@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 {
 	// Initialize CoreRender
 	cr::render::GraphicsEngine graphics;
-	if (!graphics.init(cr::render::VideoDriverType::OpenGL, 800, 600, false, 0, false))
+	if (!graphics.init(cr::render::VideoDriverType::OpenGL, 800, 600, false, 0, true))
 	{
 		std::cerr << "Graphics engine failed to initialize!" << std::endl;
 		return -1;

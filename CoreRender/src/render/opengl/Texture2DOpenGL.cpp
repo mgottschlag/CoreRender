@@ -229,6 +229,7 @@ namespace opengl
 				}
 			}
 			// Upload texture data
+			glBindTexture(GL_TEXTURE_2D, handle);
 			if (data)
 			{
 				// TODO
@@ -285,8 +286,13 @@ namespace opengl
 					             0);
 				}
 			}
-			// TODO: Error checking
-			glBindTexture(GL_TEXTURE_2D, handle);
+			// Error checking
+			GLenum error = glGetError();
+			if (error != GL_NO_ERROR)
+			{
+				core::Log::Ptr log = getRenderer()->getLog();
+				log->error("Uploading texture: %s", gluErrorString(error));
+			}
 		}
 		glBindTexture(GL_TEXTURE_2D, 0);
 		uploadFinished();

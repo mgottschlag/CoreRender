@@ -253,6 +253,8 @@ namespace opengl
 		// Clean up attribs
 		for (unsigned int i = 0; i < batch->attribcount; i++)
 		{
+			if (batch->attribs[i].shaderhandle == -1)
+				continue;
 			glDisableVertexAttribArray(batch->attribs[i].shaderhandle);
 		}
 		// Clean up memory
