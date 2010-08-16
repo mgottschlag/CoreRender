@@ -80,12 +80,6 @@ namespace core
 	{
 		if (path == "")
 			return 0;
-		if (path[0] == ':')
-		{
-			// Just use the path as we are supposed to bypass the file system
-			// TODO
-			return 0;
-		}
 		tbb::mutex::scoped_lock lock(mutex);
 		// Look for the newest mount point that contains the file
 		unsigned int modecheck = mode;
@@ -110,10 +104,6 @@ namespace core
 	}
 	std::string StandardFileSystem::getPath(const std::string &path, const std::string &currentdir)
 	{
-		if (path == "")
-			return "";
-		if (path[0] == ':')
-			return path;
 		if (path[0] == '\\')
 			return path;
 		return currentdir + "/" + path;
