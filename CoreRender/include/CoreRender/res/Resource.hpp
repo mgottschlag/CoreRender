@@ -60,6 +60,11 @@ namespace res
 			{
 				return loaded;
 			}
+			bool isLoading()
+			{
+				tbb::spin_mutex::scoped_lock lock(statemutex);
+				return loading;
+			}
 			void prioritizeLoading();
 			virtual bool waitForLoading(bool recursive,
 			                            bool highpriority = false);
