@@ -38,13 +38,16 @@ namespace opengl
 	{
 		if (initialized)
 		{
+#if defined(CORERENDER_UNIX)
 			lockDisplay();
 			glXMakeCurrent(display, window, primary);
 			unlockDisplay();
 			SDL_Quit();
+#elif defined(CORERENDER_WINDOWS)
+#endif
 		}
 	}
-
+	
 	bool RenderWindowSDL::open(unsigned int width,
 	                           unsigned int height,
 	                           bool fullscreen)
@@ -78,8 +81,6 @@ namespace opengl
 			SDL_Quit();
 			return false;
 		}
-		//window = wminfo.info.x11.window;
-		//display = wminfo.info.x11.gfxdisplay;
 		window = glXGetCurrentDrawable();
 		display = glXGetCurrentDisplay();
 		primary = glXGetCurrentContext();
@@ -90,7 +91,9 @@ namespace opengl
 		glXMakeCurrent(display, None, NULL);
 		unlockDisplay();
 #elif defined(CORERENDER_WINDOWS)
-	#error Not implemented!
+		window = wminfo.window;
+		hdc = GetDC(window);
+		primary = wglCreateContext(hdc);
 #else
 	#error Not implemented!
 #endif

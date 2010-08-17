@@ -25,8 +25,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/RenderContextOpenGL.hpp"
 #include "RenderWindowSDL.hpp"
 
-#include <GL/glx.h>
-
 namespace cr
 {
 namespace render
@@ -66,6 +64,8 @@ namespace opengl
 			void (*lockDisplay)();
 			void (*unlockDisplay)();
 #elif defined(CORERENDER_WINDOWS)
+			HDC hdc;
+			HGLRC context;
 #endif
 	};
 }

@@ -39,7 +39,12 @@ namespace opengl
 	{
 		if (initialized)
 		{
+#if defined(CORERENDER_UNIX)
 			// TODO
+#elif defined(CORERENDER_WINDOWS)
+			if (!primary)
+				wglDeleteContext(context);
+#endif
 		}
 	}
 
@@ -62,7 +67,8 @@ namespace opengl
 		lockDisplay = window->lockDisplay;
 		unlockDisplay = window->unlockDisplay;
 #elif defined(CORERENDER_WINDOWS)
-	#error Not implemented!
+		hdc = window->hdc;
+		context = window->primary;
 #endif
 		primary = true;
 		return true;
@@ -86,7 +92,13 @@ namespace opengl
 		else
 			glXMakeCurrent(display, None, NULL);
 #elif defined(CORERENDER_WINDOWS)
-	#error Not implemented!
+		if (current)
+		{
+			// TODO: Check whether the context already is bound?
+			wglMakeCurrent(hdc, context);
+		}
+		else
+			wglMakeCurrent(hdc, NULL);
 #endif
 	}
 	void RenderContextSDL::swapBuffers()
@@ -96,7 +108,7 @@ namespace opengl
 		glXSwapBuffers(display, x11window);
 		unlockDisplay();
 #elif defined(CORERENDER_WINDOWS)
-	#error Not implemented!
+		SwapBuffers(hdc);
 #endif
 	}
 
@@ -139,7 +151,14 @@ namespace opengl
 		newctx->unlockDisplay = unlockDisplay;
 		return newctx;
 #elif defined(CORERENDER_WINDOWS)
-		return 0;
+		HGLRC newhglrc = wglCreateContext(hdc);
+		if (!newhglrc)
+			return 0;
+		RenderContextSDL::Ptr newctx = new RenderContextSDL();
+		newctx->hdc = hdc;
+		newctx->context = newhglrc;
+		wglShareLists(newctx->context, context);
+		return newctx;
 #else
 		return 0;
 #endif
@@ -147,7 +166,7 @@ namespace opengl
 
 	void RenderContextSDL::update(GraphicsEngine *inputreceiver)
 	{
-		if (primary)
+		if (!primary)
 		{
 			// Poll events
 			SDL_Event event;

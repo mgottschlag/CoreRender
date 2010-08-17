@@ -26,7 +26,12 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/core/ReferenceCounted.hpp"
 #include "CoreRender/core/Platform.hpp"
 
+#if defined(CORERENDER_UNIX)
 #include <GL/glx.h>
+#elif defined(CORERENDER_WINDOWS)
+#include <Windows.h>
+#include <wingdi.h>
+#endif
 
 namespace cr
 {
@@ -57,6 +62,9 @@ namespace opengl
 			void (*lockDisplay)();
 			void (*unlockDisplay)();
 #elif defined(CORERENDER_WINDOWS)
+			HWND window;
+			HDC hdc;
+			HGLRC primary;
 #endif
 		friend class RenderContextSDL;
 	};

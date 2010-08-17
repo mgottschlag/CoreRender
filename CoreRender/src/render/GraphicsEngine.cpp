@@ -203,6 +203,9 @@ namespace render
 			renderthread->startFrame();
 		else
 			renderer->render();
+		// Update input in secondary context
+		// SDL needs this.
+		secondcontext->update(this);
 		return true;
 	}
 

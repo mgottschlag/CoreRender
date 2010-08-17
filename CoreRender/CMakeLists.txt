@@ -109,7 +109,6 @@ set(LIB
 	tbb
 	freeimage
 	freeimageplus
-	GLEW
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -117,6 +116,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		${LIB}
 		OpenGL32
 		ws2_32
+		glew32
+		glu32
 	)
 else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -Woverloaded-virtual")
@@ -125,6 +126,7 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		${LIB}
 		pthread
 		GL
+		GLEW
 	)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
