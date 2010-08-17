@@ -25,6 +25,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/RenderContextOpenGL.hpp"
 #include "RenderWindowSDL.hpp"
 
+#include <tbb/spin_mutex.h>
+
 namespace cr
 {
 namespace render
@@ -67,6 +69,8 @@ namespace opengl
 			HDC hdc;
 			HGLRC context;
 #endif
+
+			static tbb::spin_mutex sdlmutex;
 	};
 }
 }

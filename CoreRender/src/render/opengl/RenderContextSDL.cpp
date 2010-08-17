@@ -52,6 +52,7 @@ namespace opengl
 	                              unsigned int height,
 	                              bool fullscreen)
 	{
+		tbb::spin_mutex::scoped_lock lock(sdlmutex);
 		// Open render window
 		window = new RenderWindowSDL();
 		if (!window->open(width, height, fullscreen))
@@ -78,12 +79,14 @@ namespace opengl
 	                              unsigned int height,
 	                              bool fullscreen)
 	{
+		tbb::spin_mutex::scoped_lock lock(sdlmutex);
 		return window->resize(width, height, fullscreen);
 	}
 
 	void RenderContextSDL::makeCurrent(bool current)
 	{
 #if defined(CORERENDER_UNIX)
+		lockDisplay();
 		if (current)
 		{
 			// TODO: Check whether the context already is bound?
@@ -91,6 +94,7 @@ namespace opengl
 		}
 		else
 			glXMakeCurrent(display, None, NULL);
+		unlockDisplay();
 #elif defined(CORERENDER_WINDOWS)
 		if (current)
 		{
@@ -103,6 +107,7 @@ namespace opengl
 	}
 	void RenderContextSDL::swapBuffers()
 	{
+		tbb::spin_mutex::scoped_lock lock(sdlmutex);
 #if defined(CORERENDER_UNIX)
 		lockDisplay();
 		glXSwapBuffers(display, x11window);
@@ -114,6 +119,7 @@ namespace opengl
 
 	RenderContext::Ptr RenderContextSDL::clone()
 	{
+		tbb::spin_mutex::scoped_lock lock(sdlmutex);
 #if defined(CORERENDER_UNIX)
 		// Get visual info
 		XWindowAttributes attrib;
@@ -168,6 +174,10 @@ namespace opengl
 	{
 		if (!primary)
 		{
+			tbb::spin_mutex::scoped_lock lock(sdlmutex);
+#if defined(CORERENDER_UNIX)
+			lockDisplay();
+#endif
 			// Poll events
 			SDL_Event event;
 			while (SDL_PollEvent(&event))
@@ -257,8 +267,13 @@ namespace opengl
 						break;
 				}
 			}
+#if defined(CORERENDER_UNIX)
+			unlockDisplay();
+#endif
 		}
 	}
+
+	tbb::spin_mutex RenderContextSDL::sdlmutex;
 }
 }
 }
