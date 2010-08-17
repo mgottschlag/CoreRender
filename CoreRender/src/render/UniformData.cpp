@@ -76,7 +76,7 @@ namespace render
 				delete[] data;
 			data = new float[1];
 		}
-		data[0] = i;
+		data[0] = (float)i;
 		return *this;
 	}
 	Uniform &Uniform::operator=(const math::Vector2F &v)
@@ -116,8 +116,8 @@ namespace render
 				delete[] data;
 			data = new float[2];
 		}
-		data[0] = v.x;
-		data[1] = v.y;
+		data[0] = (float)v.x;
+		data[1] = (float)v.y;
 		return *this;
 	}
 	Uniform &Uniform::operator=(const math::Vector3I &v)
@@ -130,9 +130,9 @@ namespace render
 				delete[] data;
 			data = new float[3];
 		}
-		data[0] = v.x;
-		data[1] = v.y;
-		data[2] = v.z;
+		data[0] = (float)v.x;
+		data[1] = (float)v.y;
+		data[2] = (float)v.z;
 		return *this;
 	}
 	Uniform &Uniform::operator=(const Uniform &other)

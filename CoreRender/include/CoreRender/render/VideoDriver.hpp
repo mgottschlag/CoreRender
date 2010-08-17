@@ -38,7 +38,7 @@ namespace res
 }
 namespace render
 {
-	class RenderBatch;
+	struct RenderBatch;
 	class Renderer;
 
 	class VideoDriver

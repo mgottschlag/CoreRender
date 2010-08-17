@@ -31,7 +31,7 @@ namespace render
 {
 	class VideoDriver;
 
-	class RenderBatch;
+	struct RenderBatch;
 
 	class RenderPass : public core::ReferenceCounted
 	{
