@@ -54,6 +54,10 @@ namespace res
 			 */
 			void queueForLoading();
 
+			/**
+			 * @note Must not be called manually as the class is not
+			 * thread-safe.
+			 */
 			virtual bool load();
 			virtual bool unload();
 			bool isLoaded()
@@ -80,7 +84,10 @@ namespace res
 		protected:
 			void finishLoading(bool loaded);
 
-			const std::string &getPath();
+			const std::string &getPath()
+			{
+				return path;
+			}
 		private:
 			tbb::spin_mutex statemutex;
 			bool loaded;

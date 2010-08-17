@@ -21,9 +21,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "CoreRender/render/Texture2D.hpp"
 #include "CoreRender/render/Renderer.hpp"
+#include "CoreRender/res/ResourceManager.hpp"
 
 #include <cstring>
 #include <cstdlib>
+#include <FreeImagePlus.h>
 
 namespace cr
 {
@@ -131,7 +133,84 @@ namespace render
 
 	bool Texture2D::load()
 	{
+		std::string path = getPath();
+		// Open file
+		core::FileSystem::Ptr fs = getManager()->getFileSystem();
+		core::File::Ptr file = fs->open(path, core::FileAccess::Read);
+		if (!file)
+		{
+			getRenderer()->getLog()->error("Could not open file \"%s\".",
+			                               path.c_str());
+			finishLoading(false);
+			return false;
+		}
+		// Read the file content
+		unsigned int filesize = file->getSize();
+		unsigned char *buffer = new unsigned char[filesize];
+		if (file->read(filesize, buffer) != (int)filesize)
+		{
+			getRenderer()->getLog()->error("%s: Could not read file content.",
+			                               getName().c_str());
+			delete[] buffer;
+			finishLoading(false);
+			return false;
+		}
+		// Check extension to figure out how to load the file
 		// TODO
+		{
+			// Use freeimage to load the image
+			fipMemoryIO memio(buffer, filesize);
+			fipImage image;
+			if (!image.loadFromMemory(memio))
+			{
+				getRenderer()->getLog()->error("%s: Could not load image.",
+				                               getName().c_str());
+				delete[] buffer;
+				finishLoading(false);
+				return false;
+			}
+			// Convert the image to RGBA8
+			// TODO: Other formats?
+			if (!image.convertTo32Bits())
+			{
+				getRenderer()->getLog()->error("%s: Could not convert to 32bit.",
+				                               getName().c_str());
+				delete[] buffer;
+				finishLoading(false);
+				return false;
+			}
+			// Copy data
+			unsigned int datasize = 4 * image.getWidth() * image.getHeight();
+			void *datacopy = malloc(datasize);
+			memcpy(datacopy, image.accessPixels(), datasize);
+			// Convert from BGRA to RGBA
+			unsigned int *pixels = (unsigned int*)datacopy;
+			for (unsigned int i = 0; i < image.getWidth() * image.getHeight(); ++i)
+			{
+				// TODO: Breaks on big-endian
+				unsigned int color = pixels[i];
+				color = (color & 0xFF00FF00)
+					| ((color & 0x000000FF) << 16)
+					| ((color & 0x00FF0000) >> 16);
+				pixels[i] = color;
+			}
+			// Set texture data
+			void *prevdata;
+			{
+				tbb::spin_mutex::scoped_lock lock(imagemutex);
+				prevdata = this->data;
+				width = image.getWidth();
+				height = image.getHeight();
+				internalformat = TextureFormat::RGBA8;
+				format = TextureFormat::RGBA8;
+				data = datacopy;
+			}
+			if (prevdata)
+				free(prevdata);
+		}
+		// TODO
+		delete[] buffer;
+		registerUpload();
 		finishLoading(false);
 		return false;
 	}
