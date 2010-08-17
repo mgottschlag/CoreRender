@@ -110,8 +110,20 @@ static const std::string fs = "\n"
 
 int main(int argc, char **argv)
 {
-	// Initialize CoreRender
 	cr::render::GraphicsEngine graphics;
+	// Initialize file system
+	{
+		cr::core::StandardFileSystem::Ptr filesystem;
+		filesystem = new cr::core::StandardFileSystem();
+		filesystem->mount("Tests/media/", "/", cr::core::FileAccess::Read);
+		// The following lines do not work with out-of-tree builds
+		//std::string rootdir = cr::core::FileSystem::getDirectory(argv[0]);
+		//filesystem->mount(rootdir + "/../media/", "/", cr::core::FileAccess::Read);
+		// Writes (e.g. log) shall go into the working directory
+		filesystem->mount("", "/", cr::core::FileAccess::Write);
+		graphics.setFileSystem(filesystem);
+	}
+	// Initialize CoreRender
 	if (!graphics.init(cr::render::VideoDriverType::OpenGL, 800, 600, false, 0, true))
 	{
 		std::cerr << "Graphics engine failed to initialize!" << std::endl;
@@ -121,7 +133,7 @@ int main(int argc, char **argv)
 	cr::res::ResourceManager *rmgr = graphics.getResourceManager();
 
 	// Load some resources
-	cr::render::Texture2D::Ptr texture = graphics.loadTexture2D("Tests/media/textures/CoreRender.png");
+	cr::render::Texture2D::Ptr texture = graphics.loadTexture2D("/textures/CoreRender.png");
 	/*cr::render::Texture2D::Ptr texture = graphics.createTexture2D();
 	texture->set(8,
 	             8,

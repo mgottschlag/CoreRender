@@ -41,7 +41,7 @@ namespace cr
 namespace render
 {
 	GraphicsEngine::GraphicsEngine()
-		: multithreaded(true), renderer(0), renderthread(0)
+		: rmgr(0), multithreaded(true), renderer(0), renderthread(0)
 	{
 	}
 	GraphicsEngine::~GraphicsEngine()
@@ -60,11 +60,11 @@ namespace render
 		{
 			core::StandardFileSystem::Ptr newfs = new core::StandardFileSystem();
 			newfs->mount("", "");
-			fs = newfs.get();
+			fs = newfs;
 		}
 		// Initialize log file
 		if (!log)
-			log = new core::Log(fs, "CoreRenderLog.html");
+			log = new core::Log(fs, "/CoreRenderLog.html");
 		log->info("CoreRender initializing.");
 		// TODO: Version information
 		// Create context of no was provided

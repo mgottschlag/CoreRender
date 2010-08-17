@@ -39,6 +39,37 @@ namespace core
 			virtual bool isFile(const std::string &path) = 0;
 			virtual bool isDirectory(const std::string &path) = 0;
 
+			static void splitPath(const std::string &path,
+			                      std::string &directory,
+			                      std::string &file)
+			{
+				size_t slash = path.rfind("/");
+				if (slash == std::string::npos)
+				{
+					directory = "";
+					file = path;
+				}
+				else
+				{
+					directory = path.substr(0, slash);
+					file = path.substr(slash + 1);
+				}
+			}
+			static std::string getDirectory(const std::string &path)
+			{
+				std::string directory;
+				std::string file;
+				splitPath(path, directory, file);
+				return directory;
+			}
+			static std::string getFileName(const std::string &path)
+			{
+				std::string directory;
+				std::string file;
+				splitPath(path, directory, file);
+				return file;
+			}
+
 			typedef SharedPointer<FileSystem> Ptr;
 		private:
 	};
