@@ -69,7 +69,7 @@ namespace render
 			virtual void clear(bool colorbuffer,
 			                   bool zbuffer,
 			                   core::Color color = core::Color(0, 0, 0, 0),
-			                   float depth = 0.0f) = 0;
+			                   float depth = 1.0f) = 0;
 
 			virtual void draw(RenderBatch *batch) = 0;
 

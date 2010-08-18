@@ -44,6 +44,7 @@ namespace opengl
 
 	bool VideoDriverOpenGL::init()
 	{
+		// Init extensions
 		if (glewInit() != GLEW_OK)
 		{
 			log->error("Could not initialize GLEW.");
@@ -59,6 +60,11 @@ namespace opengl
 			log->error("Could not initialize capabilities.");
 			return false;
 		}
+		// Init static OpenGL states
+		glCullFace(GL_BACK);
+		glEnable(GL_CULL_FACE);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_DEPTH_TEST);
 		return true;
 	}
 	bool VideoDriverOpenGL::shutdown()
