@@ -134,12 +134,6 @@ int main(int argc, char **argv)
 
 	// Load some resources
 	cr::render::Texture2D::Ptr texture = graphics.loadTexture2D("/textures/CoreRender.png");
-	/*cr::render::Texture2D::Ptr texture = graphics.createTexture2D();
-	texture->set(8,
-	             8,
-	             cr::render::TextureFormat::RGBA8,
-	             cr::render::TextureFormat::RGBA8,
-	             texdata);*/
 	cr::render::VertexBuffer::Ptr vb = graphics.createVertexBuffer();
 	vb->set(24 * 8 * sizeof(float), vertices);
 	cr::render::IndexBuffer::Ptr ib = graphics.createIndexBuffer();
