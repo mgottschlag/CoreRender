@@ -65,7 +65,7 @@ namespace render
 			void addAttrib(const std::string &name);
 			void addUniform(const std::string &name,
 			                ShaderVariableType::List type,
-			                float *defaultvalue);
+			                float *defaultvalue = 0);
 			void addTexture(const std::string &name);
 
 			unsigned int getFlags(const std::string &flagsset = "");
@@ -87,6 +87,8 @@ namespace render
 			{
 				return uniforms;
 			}
+
+			virtual bool load();
 
 			typedef core::SharedPointer<ShaderText> Ptr;
 		private:

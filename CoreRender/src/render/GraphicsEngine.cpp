@@ -59,7 +59,7 @@ namespace render
 		if (!fs)
 		{
 			core::StandardFileSystem::Ptr newfs = new core::StandardFileSystem();
-			newfs->mount("", "");
+			newfs->mount("", "/");
 			fs = newfs;
 		}
 		// Initialize log file
@@ -240,6 +240,7 @@ namespace render
 
 	Texture2D::Ptr GraphicsEngine::getTexture2D(const std::string &name)
 	{
+		// TODO
 		return 0;
 	}
 	Texture2D::Ptr GraphicsEngine::loadTexture2D(const std::string &path,
@@ -287,7 +288,13 @@ namespace render
 	ShaderText::Ptr GraphicsEngine::loadShaderText(const std::string &path,
 	                                               const std::string &name)
 	{
-		return 0;
+		ShaderText::Ptr shader;
+		if (name.size() == 0)
+			shader = createShaderText(path);
+		else
+			shader = createShaderText(name);
+		shader->loadFromFile(path);
+		return shader;
 	}
 	ShaderText::Ptr GraphicsEngine::createShaderText(const std::string &name)
 	{

@@ -135,6 +135,19 @@ namespace render
 		data[2] = (float)v.z;
 		return *this;
 	}
+	Uniform &Uniform::operator=(const math::Matrix4 &m)
+	{
+		// TODO: int uniforms
+		if (type != ShaderVariableType::Float4x4)
+		{
+			type = ShaderVariableType::Float4x4;
+			if (data)
+				delete[] data;
+			data = new float[16];
+		}
+		memcpy(data, &m.m, 16 * sizeof(float));
+		return *this;
+	}
 	Uniform &Uniform::operator=(const Uniform &other)
 	{
 		// TODO: Disallow type changes?

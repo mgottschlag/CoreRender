@@ -139,8 +139,8 @@ namespace render
 		core::File::Ptr file = fs->open(path, core::FileAccess::Read);
 		if (!file)
 		{
-			getRenderer()->getLog()->error("Could not open file \"%s\".",
-			                               path.c_str());
+			getManager()->getLog()->error("Could not open file \"%s\".",
+			                              path.c_str());
 			finishLoading(false);
 			return false;
 		}
@@ -149,8 +149,8 @@ namespace render
 		unsigned char *buffer = new unsigned char[filesize];
 		if (file->read(filesize, buffer) != (int)filesize)
 		{
-			getRenderer()->getLog()->error("%s: Could not read file content.",
-			                               getName().c_str());
+			getManager()->getLog()->error("%s: Could not read file content.",
+			                              getName().c_str());
 			delete[] buffer;
 			finishLoading(false);
 			return false;
@@ -163,8 +163,8 @@ namespace render
 			fipImage image;
 			if (!image.loadFromMemory(memio))
 			{
-				getRenderer()->getLog()->error("%s: Could not load image.",
-				                               getName().c_str());
+				getManager()->getLog()->error("%s: Could not load image.",
+				                              getName().c_str());
 				delete[] buffer;
 				finishLoading(false);
 				return false;
@@ -173,8 +173,8 @@ namespace render
 			// TODO: Other formats?
 			if (!image.convertTo32Bits())
 			{
-				getRenderer()->getLog()->error("%s: Could not convert to 32bit.",
-				                               getName().c_str());
+				getManager()->getLog()->error("%s: Could not convert to 32bit.",
+				                              getName().c_str());
 				delete[] buffer;
 				finishLoading(false);
 				return false;
@@ -185,7 +185,7 @@ namespace render
 			memcpy(datacopy, image.accessPixels(), datasize);
 			// Convert from BGRA to RGBA
 			unsigned int *pixels = (unsigned int*)datacopy;
-			for (unsigned int i = 0; i < image.getWidth() * image.getHeight(); ++i)
+			for (int i = 0; i < image.getWidth() * image.getHeight(); ++i)
 			{
 				// TODO: Breaks on big-endian
 				unsigned int color = pixels[i];
@@ -211,8 +211,8 @@ namespace render
 		// TODO
 		delete[] buffer;
 		registerUpload();
-		finishLoading(false);
-		return false;
+		finishLoading(true);
+		return true;
 	}
 	bool Texture2D::unload()
 	{

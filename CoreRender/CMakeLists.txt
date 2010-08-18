@@ -103,6 +103,12 @@ set(SRC
 	src/res/LoadingThread.cpp
 	src/res/Resource.cpp
 	src/res/ResourceManager.cpp
+	src/3rdparty/tinystr.cpp
+	src/3rdparty/tinystr.h
+	src/3rdparty/tinyxml.cpp
+	src/3rdparty/tinyxml.h
+	src/3rdparty/tinyxmlerror.cpp
+	src/3rdparty/tinyxmlparser.cpp
 )
 
 set(LIB

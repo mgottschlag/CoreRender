@@ -1,0 +1,49 @@
+<Shader>
+	<Flag name="DIRECTIONALLIGHTING" default="true" />
+
+	<Text name="VS_GENERAL">
+	<![CDATA[
+		uniform mat4 worldMat;
+		attribute vec3 pos;
+		attribute vec3 normal;
+		attribute vec2 texcoord;
+		varying vec2 texcoord0;
+		//#if DIRECTIONALLIGHTING
+		varying float light;
+		//#endif
+		void main()
+		{
+			texcoord0 = texcoord;
+			//#if DIRECTIONALLIGHTING
+			light = dot(normal, vec3(-1.0, -1.0, -1.0)) / 3.0;
+			//#endif
+			gl_Position = worldMat * vec4(pos, 1.0);
+			//gl_Position = vec4(pos, 1.0);
+		}
+	]]>
+	</Text>
+	<Text name="FS_AMBIENT">
+	<![CDATA[
+		varying vec2 texcoord0;
+		sampler2D tex;
+		//#if DIRECTIONALLIGHTING
+		varying float light;
+		//#endif
+		void main()
+		{
+			gl_FragColor = texture2D(tex, texcoord0) * light;
+			//gl_FragColor = vec4(texcoord0, 0.0, 1.0);
+		}
+	]]>
+	</Text>
+
+	<Attrib name="pos" />
+	<Attrib name="normal" />
+	<Attrib name="texcoord" />
+
+	<Uniform name="worldMat" type="mat4" />
+
+	<Texture name="tex" />
+
+	<Context name="AMBIENT" vs="VS_GENERAL" fs="FS_AMBIENT" />
+</Shader>

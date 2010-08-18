@@ -115,7 +115,7 @@ int main(int argc, char **argv)
 	{
 		cr::core::StandardFileSystem::Ptr filesystem;
 		filesystem = new cr::core::StandardFileSystem();
-		filesystem->mount("Tests/media/", "/", cr::core::FileAccess::Read);
+		filesystem->mount("Tutorials/media/", "/", cr::core::FileAccess::Read);
 		// The following lines do not work with out-of-tree builds
 		//std::string rootdir = cr::core::FileSystem::getDirectory(argv[0]);
 		//filesystem->mount(rootdir + "/../media/", "/", cr::core::FileAccess::Read);
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
 	vb->set(24 * 8 * sizeof(float), vertices);
 	cr::render::IndexBuffer::Ptr ib = graphics.createIndexBuffer();
 	ib->set(36 * sizeof(unsigned short), indices);
-	cr::render::ShaderText::Ptr shader = graphics.createShaderText("testshader");
+	/*cr::render::ShaderText::Ptr shader = graphics.createShaderText("testshader");
 	shader->addText("VS_COMMON", vs);
 	shader->addText("FS_AMBIENT", fs);
 	shader->addContext("AMBIENT", "VS_COMMON", "FS_AMBIENT");
@@ -147,7 +147,8 @@ int main(int argc, char **argv)
 	shader->addAttrib("normal");
 	shader->addTexture("tex");
 	float defscale[2] = {1.0f, 1.0f};
-	shader->addUniform("scale", cr::render::ShaderVariableType::Float2, defscale);
+	shader->addUniform("scale", cr::render::ShaderVariableType::Float2, defscale);*/
+	cr::render::ShaderText::Ptr shader = graphics.loadShaderText("/shaders/Simple.shader.xml");
 	cr::render::Material::Ptr material = new cr::render::Material(rmgr,
 	                                                              "testmat");
 	material->addTexture("tex", texture);
@@ -165,9 +166,13 @@ int main(int argc, char **argv)
 	job->endindex = 36;
 	job->material = material;
 	job->layout = layout;
-	job->uniforms = shader->getUniformData();
-	cr::math::Vector2F scale(0.5f, 0.5f);
-	job->uniforms["scale"] = scale;
+	// This does not work as the shader is not loaded yet
+	//job->uniforms = shader->getUniformData();
+	/*cr::math::Vector2F scale(0.5f, 0.5f);
+	job->uniforms["scale"] = scale;*/
+	cr::math::Matrix4 matrix = cr::math::Matrix4::ScaleMat(cr::math::Vector3F(0.5f, 0.5f, 0.5f));
+	job->uniforms.add("worldMat") = matrix;
+	//job->uniforms["worldMat"] = matrix;
 	// Setup pipeline
 	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();
 	cr::render::RenderPass::Ptr pass = new cr::render::RenderPass("AMBIENT");
@@ -175,6 +180,7 @@ int main(int argc, char **argv)
 	graphics.addPipeline(pipeline);
 	// Wait for resources to be loaded
 	texture->waitForLoading(false);
+	shader->waitForLoading(false);
 	// Render loop
 	bool stopping = false;
 	while (!stopping)
@@ -189,7 +195,7 @@ int main(int argc, char **argv)
 					stopping = true;
 					break;
 				case cr::render::InputEventType::KeyDown:
-					if (input.keyboard.key == cr::render::KeyCode::Up)
+					/*if (input.keyboard.key == cr::render::KeyCode::Up)
 						scale.y *= 1.1f;
 					if (input.keyboard.key == cr::render::KeyCode::Down)
 						scale.y /= 1.1f;
@@ -197,7 +203,7 @@ int main(int argc, char **argv)
 						scale.x *= 1.1f;
 					if (input.keyboard.key == cr::render::KeyCode::Right)
 						scale.x /= 1.1f;
-					job->uniforms["scale"] = scale;
+					job->uniforms["scale"] = scale;*/
 					break;
 				default:
 					break;
@@ -206,10 +212,11 @@ int main(int argc, char **argv)
 		// Begin frame
 		graphics.beginFrame();
 		// Render objects
+		matrix = matrix * cr::math::Quaternion(cr::math::Vector3F(0.0, 0.1, 0.1)).toMatrix();
+		job->uniforms["worldMat"] = matrix;
 		pipeline->submit(job);
 		// Finish and render frame
 		graphics.endFrame();
-		
 	}
 
 	// Delete resources

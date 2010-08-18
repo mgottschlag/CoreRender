@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "ShaderVariableType.hpp"
 #include "../math/Vector3.hpp"
 #include "../math/Vector2.hpp"
+#include "../math/Matrix4.hpp"
 #include "../render/ShaderVariableType.hpp"
 
 #include <string>
@@ -50,6 +51,7 @@ namespace render
 			Uniform &operator=(const math::Vector3F &v);
 			Uniform &operator=(const math::Vector2I &v);
 			Uniform &operator=(const math::Vector3I &v);
+			Uniform &operator=(const math::Matrix4 &m);
 			Uniform &operator=(const Uniform &other);
 
 			void set(ShaderVariableType::List type,

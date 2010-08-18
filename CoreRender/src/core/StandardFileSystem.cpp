@@ -88,7 +88,7 @@ namespace core
 		for (unsigned int i = 0; i < mountinfo.size(); ++i)
 		{
 			if ((mountinfo[i].dest == path.substr(0, mountinfo[i].dest.size()))
-				&& ((mountinfo[i].mode & mode) == mode))
+				&& ((mountinfo[i].mode & modecheck) == modecheck))
 			{
 				std::string abspath = mountinfo[i].src + path.substr(mountinfo[i].dest.size());
 				std::cout << path << " mapped to " << abspath << std::endl;
