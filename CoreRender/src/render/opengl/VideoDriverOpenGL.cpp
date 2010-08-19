@@ -183,13 +183,15 @@ namespace opengl
 					            batch->uniforms[i].data[1]);
 					break;
 				case ShaderVariableType::Float3:
-					glUniform2f(batch->uniforms[i].shaderhandle,
-					            batch->uniforms[i].data[0],
-					            batch->uniforms[i].data[1]);
-					break;
-				case ShaderVariableType::Float4:
 					glUniform3f(batch->uniforms[i].shaderhandle,
 					            batch->uniforms[i].data[0],
+					            batch->uniforms[i].data[1],
+					            batch->uniforms[i].data[2]);
+					break;
+				case ShaderVariableType::Float4:
+					glUniform4f(batch->uniforms[i].shaderhandle,
+					            batch->uniforms[i].data[0],
+					            batch->uniforms[i].data[1],
 					            batch->uniforms[i].data[2],
 					            batch->uniforms[i].data[3]);
 					break;

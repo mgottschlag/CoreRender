@@ -43,6 +43,9 @@ namespace opengl
 			virtual bool upload();
 			virtual void uploadShader();
 		private:
+			void printShaderInfoLog(unsigned int shader);
+			void printProgramInfoLog(unsigned int program);
+
 			std::vector<unsigned int> shaders;
 			std::vector<unsigned int> oldshaders;
 	};

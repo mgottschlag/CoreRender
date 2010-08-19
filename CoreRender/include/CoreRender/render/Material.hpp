@@ -33,7 +33,10 @@ namespace render
 	class Material : public res::Resource
 	{
 		public:
-			Material(res::ResourceManager *rmgr, const std::string &name);
+			Material(render::VideoDriver *driver,
+			         render::Renderer *renderer,
+			         res::ResourceManager *rmgr,
+			         const std::string &name);
 			virtual ~Material();
 
 			void setShader(ShaderText::Ptr shader);
@@ -54,6 +57,8 @@ namespace render
 				return uniforms;
 			}
 
+			virtual bool load();
+
 			virtual const char *getType()
 			{
 				return "Material";
@@ -61,7 +66,11 @@ namespace render
 
 			typedef core::SharedPointer<Material> Ptr;
 		private:
+			render::VideoDriver *driver;
+			render::Renderer *renderer;
+
 			ShaderText::Ptr shader;
+			std::string shaderflags;
 
 			std::vector<TextureInfo> textures;
 

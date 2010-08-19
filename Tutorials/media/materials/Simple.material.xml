@@ -1,0 +1,9 @@
+<Material>
+	<Shader file="/shaders/Simple.shader.xml" flags="Lighting=true" />
+
+	<Uniform name="lightDir" type="float3" >
+		1.0, 1.0, 1.0
+	</Uniform>
+
+	<Texture name="tex" file="/textures/CoreRender.png" />
+</Material>

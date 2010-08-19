@@ -140,8 +140,7 @@ int main(int argc, char **argv)
 	shader->addTexture("tex");
 	float defscale[2] = {1.0f, 1.0f};
 	shader->addUniform("scale", cr::render::ShaderVariableType::Float2, defscale);
-	cr::render::Material::Ptr material = new cr::render::Material(rmgr,
-	                                                              "testmat");
+	cr::render::Material::Ptr material = graphics.createMaterial("testmat");
 	material->addTexture("tex", texture);
 	material->setShader(shader);
 	// Create vertex layout

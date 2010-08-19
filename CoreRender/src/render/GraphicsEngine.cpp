@@ -306,6 +306,27 @@ namespace render
 			return new ShaderText(driver, renderer, rmgr, name);
 		}
 	}
+	Material::Ptr GraphicsEngine::loadMaterial(const std::string &path,
+	                                           const std::string &name)
+	{
+		Material::Ptr material;
+		if (name.size() == 0)
+			material = createMaterial(path);
+		else
+			material = createMaterial(name);
+		material->loadFromFile(path);
+		return material;
+	}
+	Material::Ptr GraphicsEngine::createMaterial(const std::string &name)
+	{
+		if (name == "")
+			return new Material(driver, renderer, rmgr, rmgr->getInternalName());
+		else
+		{
+			// TODO: Check whether a resource with that name already exists
+			return new Material(driver, renderer, rmgr, name);
+		}
+	}
 
 	void GraphicsEngine::setFileSystem(core::FileSystem::Ptr fs)
 	{

@@ -78,36 +78,6 @@ unsigned short indices[36] = {
 	20, 22, 23,
 };
 
-unsigned int texdata[64] = {
-	0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
-	0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
-	0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
-	0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
-	0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF,
-	0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF,
-	0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF,
-	0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF, 0xFF1A1AFF,
-};
-
-static const std::string vs = "\n"
-"attribute vec3 pos;\n"
-"attribute vec2 texcoord;\n"
-"attribute vec3 normal;\n"
-"uniform vec2 scale;\n"
-"varying vec2 texcoord0;\n"
-"void main()\n"
-"{\n"
-"	texcoord0 = texcoord;\n"
-"	gl_Position = vec4(pos * vec3(scale, 1.0), 1.0);\n"
-"}\n";
-static const std::string fs = "\n"
-"uniform sampler2D tex;\n"
-"varying vec2 texcoord0;\n"
-"void main()\n"
-"{\n"
-"	gl_FragColor = texture2D(tex, texcoord0);\n"
-"}\n";
-
 int main(int argc, char **argv)
 {
 	cr::render::GraphicsEngine graphics;
@@ -130,29 +100,13 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	graphics.getLog()->setConsoleLevel(cr::core::LogLevel::Debug);
-	cr::res::ResourceManager *rmgr = graphics.getResourceManager();
 
 	// Load some resources
-	cr::render::Texture2D::Ptr texture = graphics.loadTexture2D("/textures/CoreRender.png");
 	cr::render::VertexBuffer::Ptr vb = graphics.createVertexBuffer();
 	vb->set(24 * 8 * sizeof(float), vertices);
 	cr::render::IndexBuffer::Ptr ib = graphics.createIndexBuffer();
 	ib->set(36 * sizeof(unsigned short), indices);
-	/*cr::render::ShaderText::Ptr shader = graphics.createShaderText("testshader");
-	shader->addText("VS_COMMON", vs);
-	shader->addText("FS_AMBIENT", fs);
-	shader->addContext("AMBIENT", "VS_COMMON", "FS_AMBIENT");
-	shader->addAttrib("pos");
-	shader->addAttrib("texcoord");
-	shader->addAttrib("normal");
-	shader->addTexture("tex");
-	float defscale[2] = {1.0f, 1.0f};
-	shader->addUniform("scale", cr::render::ShaderVariableType::Float2, defscale);*/
-	cr::render::ShaderText::Ptr shader = graphics.loadShaderText("/shaders/Simple.shader.xml");
-	cr::render::Material::Ptr material = new cr::render::Material(rmgr,
-	                                                              "testmat");
-	material->addTexture("tex", texture);
-	material->setShader(shader);
+	cr::render::Material::Ptr material = graphics.loadMaterial("/materials/Simple.material.xml");
 	// Create vertex layout
 	cr::render::VertexLayout::Ptr layout = new cr::render::VertexLayout(3);
 	layout->setElement(0, "pos", 0, 3, 0, cr::render::VertexElementType::Float, 32);
@@ -168,21 +122,19 @@ int main(int argc, char **argv)
 	job->layout = layout;
 	// This does not work as the shader is not loaded yet
 	//job->uniforms = shader->getUniformData();
-	/*cr::math::Vector2F scale(0.5f, 0.5f);
-	job->uniforms["scale"] = scale;*/
 	cr::math::Matrix4 matrix = cr::math::Matrix4::ScaleMat(cr::math::Vector3F(0.5f, 0.5f, 0.5f));
 	job->uniforms.add("worldMat") = matrix;
-	//job->uniforms["worldMat"] = matrix;
 	// Setup pipeline
 	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();
 	cr::render::RenderPass::Ptr pass = new cr::render::RenderPass("AMBIENT");
 	pipeline->addPass(pass);
 	graphics.addPipeline(pipeline);
 	// Wait for resources to be loaded
-	texture->waitForLoading(false);
-	shader->waitForLoading(false);
+	material->waitForLoading(true);
 	// Render loop
 	bool stopping = false;
+	uint64_t fpstime = cr::core::Time::getSystemTime();
+	int fps = 0;
 	while (!stopping)
 	{
 		// Process input
@@ -217,14 +169,20 @@ int main(int argc, char **argv)
 		pipeline->submit(job);
 		// Finish and render frame
 		graphics.endFrame();
+		fps++;
+		uint64_t currenttime = cr::core::Time::getSystemTime();
+		if (currenttime - fpstime >= 1000000)
+		{
+			std::cout << "FPS: " << fps << std::endl;
+			fpstime = currenttime;
+			fps = 0;
+		}
 	}
 
 	// Delete resources
 	delete job;
-	texture = 0;
 	vb = 0;
 	ib = 0;
-	shader = 0;
 	material = 0;
 	pipeline = 0;
 	pass = 0;

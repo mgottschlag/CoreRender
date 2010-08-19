@@ -23,6 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/Renderer.hpp"
 
 #include <GL/glew.h>
+#include <sstream>
 
 namespace cr
 {
@@ -131,6 +132,17 @@ namespace opengl
 			                               gluErrorString(error));
 			return;
 		}
+		int status;
+		glGetShaderiv(vshader, GL_COMPILE_STATUS, &status);
+		if (status != GL_TRUE)
+		{
+			glDeleteShader(vshader);
+			glDeleteShader(fshader);
+			getRenderer()->getLog()->error("Could not compile vertex shader.");
+			printShaderInfoLog(vshader);
+			return;
+		}
+		printShaderInfoLog(vshader);
 		glCompileShader(fshader);
 		error = glGetError();
 		if (error != GL_NO_ERROR)
@@ -141,6 +153,16 @@ namespace opengl
 			                               gluErrorString(error));
 			return;
 		}
+		glGetShaderiv(fshader, GL_COMPILE_STATUS, &status);
+		if (status != GL_TRUE)
+		{
+			glDeleteShader(vshader);
+			glDeleteShader(fshader);
+			getRenderer()->getLog()->error("Could not compile vertex shader.");
+			printShaderInfoLog(fshader);
+			return;
+		}
+		printShaderInfoLog(fshader);
 		// Create new program
 		handle = glCreateProgram();
 		error = glGetError();
@@ -168,6 +190,18 @@ namespace opengl
 			                               gluErrorString(error));
 			return;
 		}
+		glGetProgramiv(handle, GL_LINK_STATUS, &status);
+		if (status != GL_TRUE)
+		{
+			glDeleteShader(vshader);
+			glDeleteShader(fshader);
+			glDeleteProgram(handle);
+			handle = 0;
+			getRenderer()->getLog()->error("Could not link program.");
+			printShaderInfoLog(fshader);
+			return;
+		}
+		printProgramInfoLog(handle);
 		// Get attrib locations
 		for (std::map<std::string, int>::iterator it = attribs.begin();
 		     it != attribs.end(); it++)
@@ -185,6 +219,57 @@ namespace opengl
 		     it != textures.end(); it++)
 		{
 			it->second = glGetUniformLocation(handle, it->first.c_str());
+		}
+	}
+
+	void ShaderOpenGL::printShaderInfoLog(unsigned int shader)
+	{
+		// Get length
+		int length = 0;
+		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+		if (length > 1)
+		{
+			// Get info log
+			char *infolog = new char[length];
+			int charswritten;
+			glGetShaderInfoLog(shader, length, &charswritten, infolog);
+			// Split into lines and print to log
+			core::Log::Ptr log = getRenderer()->getLog();
+			log->warning("Shader info log:");
+			std::string line;
+			std::istringstream stream(infolog);
+			while (!stream.eof())
+			{
+				std::getline(stream, line);
+				log->warning("%s", line.c_str());
+			}
+			// Delete again
+			delete[] infolog;
+		}
+	}
+	void ShaderOpenGL::printProgramInfoLog(unsigned int program)
+	{
+		// Get length
+		int length = 0;
+		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+		if (length > 1)
+		{
+			// Get info log
+			char *infolog = new char[length];
+			int charswritten;
+			glGetProgramInfoLog(program, length, &charswritten, infolog);
+			// Split into lines and print to log
+			core::Log::Ptr log = getRenderer()->getLog();
+			log->warning("Program info log:");
+			std::string line;
+			std::istringstream stream(infolog);
+			while (!stream.eof())
+			{
+				std::getline(stream, line);
+				log->warning("%s", line.c_str());
+			}
+			// Delete again
+			delete[] infolog;
 		}
 	}
 }

@@ -20,13 +20,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/render/Material.hpp"
+#include "CoreRender/res/ResourceManager.hpp"
+#include "CoreRender/render/VideoDriver.hpp"
+#include "../3rdparty/tinyxml.h"
+
+#include <sstream>
 
 namespace cr
 {
 namespace render
 {
-	Material::Material(res::ResourceManager *rmgr, const std::string &name)
-		: Resource(rmgr, name)
+	Material::Material(render::VideoDriver *driver,
+			           render::Renderer *renderer,
+	                   res::ResourceManager *rmgr,
+	                   const std::string &name)
+		: Resource(rmgr, name), driver(driver), renderer(renderer)
 	{
 	}
 	Material::~Material()
@@ -63,6 +71,200 @@ namespace render
 	const std::vector<Material::TextureInfo> &Material::getTextures()
 	{
 		return textures;
+	}
+
+	bool Material::load()
+	{
+		std::string path = getPath();
+		// Open file
+		core::FileSystem::Ptr fs = getManager()->getFileSystem();
+		core::File::Ptr file = fs->open(path,
+		                                core::FileAccess::Read | core::FileAccess::Text);
+		if (!file)
+		{
+			getManager()->getLog()->error("Could not open file \"%s\".",
+			                               path.c_str());
+			finishLoading(false);
+			return false;
+		}
+		// Open XML file
+		unsigned int filesize = file->getSize();
+		char *buffer = new char[filesize];
+		if (file->read(filesize, buffer) != (int)filesize)
+		{
+			getManager()->getLog()->error("%s: Could not read file content.",
+			                              getName().c_str());
+			delete[] buffer;
+			finishLoading(false);
+			return false;
+		}
+		// Parse XML file
+		TiXmlDocument xml(path.c_str());
+		xml.Parse(buffer, 0);
+		delete[] buffer;
+		// Load XML file
+		TiXmlNode *root = xml.FirstChild("Material");
+		if (!root)
+		{
+			getManager()->getLog()->error("%s: <Material> not found.",
+			                              getName().c_str());
+			finishLoading(false);
+			return false;
+		}
+		{
+			// Get shader
+			TiXmlElement *shaderelem;
+			for (TiXmlNode *node = root->FirstChild("Shader");
+			     node != 0;
+			     node = root->IterateChildren("Shader", node))
+			{
+				getManager()->getLog()->debug("%s: Text.",
+				                              getName().c_str());
+				shaderelem = node->ToElement();
+				if (shaderelem)
+					break;
+			}
+			if (!shaderelem)
+			{
+				getManager()->getLog()->error("%s: No shader given.",
+				                              getName().c_str());
+				finishLoading(false);
+				return false;
+			}
+			// Get shader info
+			const char *shaderfile = shaderelem->Attribute("file");
+			if (!shaderfile)
+			{
+				getManager()->getLog()->error("%s: Shader file missing.",
+				                              getName().c_str());
+				finishLoading(false);
+				return false;
+			}
+			const char *flagattrib = shaderelem->Attribute("flags");
+			std::string flags;
+			if (flagattrib)
+				flags = flagattrib;
+			// Load shader
+			// TODO: Look for existing shader
+			ShaderText::Ptr shader = new ShaderText(driver, renderer, getManager(), shaderfile);
+			shader->loadFromFile(shaderfile);
+			setShader(shader);
+			shaderflags = flags;
+		}
+		// Load textures
+		for (TiXmlNode *node = root->FirstChild("Texture");
+		     node != 0;
+		     node = root->IterateChildren("Texture", node))
+		{
+			TiXmlElement *element = node->ToElement();
+			if (!element)
+				continue;
+			// Read text
+			const char *name = element->Attribute("name");
+			if (!name)
+			{
+				getManager()->getLog()->warning("%s: Texture name missing.",
+				                                getName().c_str());
+				continue;
+			}
+			const char *file = element->Attribute("file");
+			if (!name)
+			{
+				getManager()->getLog()->warning("%s: Texture file missing.",
+				                                getName().c_str());
+				continue;
+			}
+			// Load texture
+			// TODO: Texture types
+			Texture::Ptr texture = driver->createTexture2D(renderer, getManager(), file);
+			texture->loadFromFile(file);
+			// Add texture
+			addTexture(name, texture);
+		}
+		// Load uniforms
+				// Add uniforms
+		for (TiXmlNode *node = root->FirstChild("Uniform");
+		     node != 0;
+		     node = root->IterateChildren("Uniform", node))
+		{
+			TiXmlElement *element = node->ToElement();
+			if (!element)
+				continue;
+			// Read unform info
+			const char *name = element->Attribute("name");
+			const char *typestr = element->Attribute("type");
+			if (!name || !typestr)
+			{
+				getManager()->getLog()->warning("%s: Uniform declaration invalid!",
+				                                getName().c_str());
+				continue;
+			}
+			// Get uniform type
+			ShaderVariableType::List type;
+			if (!strcmp(typestr, "float1"))
+			{
+				type = ShaderVariableType::Float;
+			}
+			else if (!strcmp(typestr, "float2"))
+			{
+				type = ShaderVariableType::Float2;
+			}
+			else if (!strcmp(typestr, "float3"))
+			{
+				type = ShaderVariableType::Float3;
+			}
+			else if (!strcmp(typestr, "float4"))
+			{
+				type = ShaderVariableType::Float4;
+			}
+			else if (!strcmp(typestr, "mat3"))
+			{
+				type = ShaderVariableType::Float3x3;
+			}
+			else if (!strcmp(typestr, "mat3x4"))
+			{
+				type = ShaderVariableType::Float3x4;
+			}
+			else if (!strcmp(typestr, "mat4x3"))
+			{
+				type = ShaderVariableType::Float4x3;
+			}
+			else if (!strcmp(typestr, "mat4"))
+			{
+				type = ShaderVariableType::Float4x4;
+			}
+			else
+			{
+				getManager()->getLog()->warning("%s: Unknown uniform type for %s.",
+				                                getName().c_str(), name);
+				continue;
+			}
+			// Get uniform default value
+			unsigned int size = ShaderVariableType::getSize(type);
+			float *defdata = new float[size];
+			const char *content = element->GetText();
+			if (!content)
+			{
+				memset(defdata, 0, sizeof(float) * size);
+			}
+			else
+			{
+				std::istringstream stream(content);
+				for (unsigned int i = 0; i < size; i++)
+				{
+					stream >> defdata[i];
+					getManager()->getLog()->warning("%s: Read: %f.",
+					                                getName().c_str(), defdata[i]);
+					char separator;
+					stream >> separator;
+				}
+			}
+			// Add uniform
+			uniforms.add(name).set(type, defdata);
+			delete[] defdata;
+		}
+		finishLoading(true);
+		return true;
 	}
 }
 }

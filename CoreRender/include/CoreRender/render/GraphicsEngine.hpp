@@ -87,6 +87,9 @@ namespace render
 			ShaderText::Ptr loadShaderText(const std::string &path,
 			                               const std::string &name = "");
 			ShaderText::Ptr createShaderText(const std::string &name = "");
+			Material::Ptr loadMaterial(const std::string &path,
+			                           const std::string &name = "");
+			Material::Ptr createMaterial(const std::string &name = "");
 
 			void setFileSystem(core::FileSystem::Ptr fs);
 			core::FileSystem::Ptr getFileSystem()

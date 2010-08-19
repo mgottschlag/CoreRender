@@ -364,9 +364,28 @@ namespace render
 				continue;
 			}
 			// Get uniform default value
-			// TODO
+			unsigned int size = ShaderVariableType::getSize(type);
+			float *defdata = new float[size];
+			const char *content = element->GetText();
+			if (!content)
+			{
+				memset(defdata, 0, sizeof(float) * size);
+			}
+			else
+			{
+				std::istringstream stream(content);
+				for (unsigned int i = 0; i < size; i++)
+				{
+					stream >> defdata[i];
+					getManager()->getLog()->warning("%s: Read: %f.",
+					                                getName().c_str(), defdata[i]);
+					char separator;
+					stream >> separator;
+				}
+			}
 			// Add uniform
-			addUniform(name, type, 0);
+			addUniform(name, type, defdata);
+			delete[] defdata;
 		}
 		// Add textures
 		for (TiXmlNode *node = root->FirstChild("Texture");
