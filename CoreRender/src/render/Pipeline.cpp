@@ -86,6 +86,8 @@ namespace render
 			batch->startindex = job->startindex;
 			batch->endindex = job->endindex;
 			batch->basevertex = job->basevertex;
+			batch->vertexoffset = job->vertexoffset;
+			batch->indextype = job->indextype;
 			batch->vertices = job->vertices->getHandle();
 			batch->indices = job->indices->getHandle();
 			batch->shader = shader->getHandle();

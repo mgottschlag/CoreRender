@@ -35,7 +35,8 @@ namespace render
 	{
 		public:
 			RenderJob()
-				: startindex(0), endindex(0), basevertex(0)
+				: startindex(0), endindex(0), basevertex(0), vertexoffset(0),
+				indextype(2)
 			{
 			}
 
@@ -46,6 +47,8 @@ namespace render
 			// TODO: Change this into vertex count?
 			unsigned int endindex;
 			unsigned int basevertex;
+			unsigned int vertexoffset;
+			unsigned int indextype;
 			Material::Ptr material;
 			VertexLayout::Ptr layout;
 			UniformData uniforms;

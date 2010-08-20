@@ -68,6 +68,8 @@ namespace render
 		unsigned int startindex;
 		unsigned int endindex;
 		unsigned int basevertex;
+		unsigned int vertexoffset;
+		unsigned int indextype;
 
 		unsigned int renderflags;
 	};
