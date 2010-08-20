@@ -104,7 +104,7 @@ namespace core
 	}
 	std::string StandardFileSystem::getPath(const std::string &path, const std::string &currentdir)
 	{
-		if (path[0] == '\\')
+		if (path[0] == '/' || path[0] == '\\')
 			return path;
 		return currentdir + "/" + path;
 	}

@@ -76,6 +76,7 @@ namespace render
 	bool Material::load()
 	{
 		std::string path = getPath();
+		std::string directory = core::FileSystem::getDirectory(path);
 		// Open file
 		core::FileSystem::Ptr fs = getManager()->getFileSystem();
 		core::File::Ptr file = fs->open(path,
@@ -159,7 +160,7 @@ namespace render
 			TiXmlElement *element = node->ToElement();
 			if (!element)
 				continue;
-			// Read text
+			// Read texture info
 			const char *name = element->Attribute("name");
 			if (!name)
 			{
@@ -176,8 +177,10 @@ namespace render
 			}
 			// Load texture
 			// TODO: Texture types
-			Texture::Ptr texture = driver->createTexture2D(renderer, getManager(), file);
-			texture->loadFromFile(file);
+			Texture::Ptr texture = driver->createTexture2D(renderer,
+			                                               getManager(),
+														   fs->getPath(file, directory));
+			texture->loadFromFile(fs->getPath(file, directory));
 			// Add texture
 			addTexture(name, texture);
 		}
@@ -253,8 +256,6 @@ namespace render
 				for (unsigned int i = 0; i < size; i++)
 				{
 					stream >> defdata[i];
-					getManager()->getLog()->warning("%s: Read: %f.",
-					                                getName().c_str(), defdata[i]);
 					char separator;
 					stream >> separator;
 				}
