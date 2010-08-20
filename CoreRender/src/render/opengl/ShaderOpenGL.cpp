@@ -136,10 +136,10 @@ namespace opengl
 		glGetShaderiv(vshader, GL_COMPILE_STATUS, &status);
 		if (status != GL_TRUE)
 		{
-			glDeleteShader(vshader);
-			glDeleteShader(fshader);
 			getRenderer()->getLog()->error("Could not compile vertex shader.");
 			printShaderInfoLog(vshader);
+			glDeleteShader(vshader);
+			glDeleteShader(fshader);
 			return;
 		}
 		printShaderInfoLog(vshader);
@@ -149,17 +149,17 @@ namespace opengl
 		{
 			glDeleteShader(vshader);
 			glDeleteShader(fshader);
-			getRenderer()->getLog()->error("Could not compile vertex shader: %s",
+			getRenderer()->getLog()->error("Could not compile fragment shader: %s",
 			                               gluErrorString(error));
 			return;
 		}
 		glGetShaderiv(fshader, GL_COMPILE_STATUS, &status);
 		if (status != GL_TRUE)
 		{
+			getRenderer()->getLog()->error("Could not compile fragment shader.");
+			printShaderInfoLog(fshader);
 			glDeleteShader(vshader);
 			glDeleteShader(fshader);
-			getRenderer()->getLog()->error("Could not compile vertex shader.");
-			printShaderInfoLog(fshader);
 			return;
 		}
 		printShaderInfoLog(fshader);
@@ -193,12 +193,12 @@ namespace opengl
 		glGetProgramiv(handle, GL_LINK_STATUS, &status);
 		if (status != GL_TRUE)
 		{
+			getRenderer()->getLog()->error("Could not link program.");
+			printShaderInfoLog(fshader);
 			glDeleteShader(vshader);
 			glDeleteShader(fshader);
 			glDeleteProgram(handle);
 			handle = 0;
-			getRenderer()->getLog()->error("Could not link program.");
-			printShaderInfoLog(fshader);
 			return;
 		}
 		printProgramInfoLog(handle);
