@@ -76,6 +76,9 @@ namespace render
 
 			virtual bool load();
 
+			virtual bool waitForLoading(bool recursive,
+			                            bool highpriority = false);
+
 			virtual const char *getType()
 			{
 				return "Model";

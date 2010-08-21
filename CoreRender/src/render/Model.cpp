@@ -195,9 +195,6 @@ namespace render
 			                             rmgr->getInternalName());
 			mesh.material->loadFromFile(fs->getPath(materialfile, directory));
 			addMesh(mesh);
-			getManager()->getLog()->debug("%s: Mesh added: %d.",
-				                          getName().c_str(),
-				                          batchindex);
 		}
 		finishLoading(true);
 		return true;
@@ -400,6 +397,21 @@ namespace render
 			elemidx++;
 		}
 		return layout;
+	}
+
+	bool Model::waitForLoading(bool recursive, bool highpriority)
+	{
+		if (!Resource::waitForLoading(recursive, highpriority))
+			return false;
+		// Wait for the materials
+		bool result = true;
+		for (unsigned int i = 0; i < meshes.size(); i++)
+		{
+			if (meshes[i].material)
+				result = result && meshes[i].material->waitForLoading(recursive,
+				                                                      highpriority);
+		}
+		return result;
 	}
 }
 }

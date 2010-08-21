@@ -268,5 +268,22 @@ namespace render
 		finishLoading(true);
 		return true;
 	}
+
+	bool Material::waitForLoading(bool recursive, bool highpriority)
+	{
+		if (!Resource::waitForLoading(recursive, highpriority))
+			return false;
+		// Wait for the shader
+		bool result = true;
+		if (shader)
+			result = result && shader->waitForLoading(recursive, highpriority);
+		// Wait for the textures
+		for (unsigned int i = 0; i < textures.size(); i++)
+		{
+			result = result && textures[i].texture->waitForLoading(recursive,
+			                                                       highpriority);
+		}
+		return result;
+	}
 }
 }
