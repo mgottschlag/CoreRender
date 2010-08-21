@@ -61,7 +61,7 @@ namespace render
 			{
 				unsigned int batch;
 				Material::Ptr material;
-				// TODO: Transformation
+				math::Matrix4 transformation;
 			};
 
 			void addMesh(const Mesh &mesh);

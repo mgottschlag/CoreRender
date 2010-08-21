@@ -1,10 +1,24 @@
 <?xml version="1.0" ?>
 <Model geometry="jeep.geo">
-    <Mesh index="0" material="jeep.material.xml" />
-    <Mesh index="1" material="jeep.material.xml" />
-    <Mesh index="2" material="jeep.material.xml" />
-    <Mesh index="3" material="jeep.material.xml" />
-    <Mesh index="4" material="jeep.material.xml" />
-    <Mesh index="5" material="jeep.material.xml" />
-    <Mesh index="6" material="jeep.material.xml" />
+    <Mesh index="0" material="jeep.material.xml">
+        <Transformation>1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1</Transformation>
+    </Mesh>
+    <Mesh index="1" material="jeep.material.xml">
+        <Transformation>1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1</Transformation>
+    </Mesh>
+    <Mesh index="2" material="jeep.material.xml">
+        <Transformation>1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1</Transformation>
+    </Mesh>
+    <Mesh index="3" material="jeep.material.xml">
+        <Transformation>1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1</Transformation>
+    </Mesh>
+    <Mesh index="4" material="jeep.material.xml">
+        <Transformation>1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1</Transformation>
+    </Mesh>
+    <Mesh index="5" material="jeep.material.xml">
+        <Transformation>1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1</Transformation>
+    </Mesh>
+    <Mesh index="6" material="jeep.material.xml">
+        <Transformation>1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1</Transformation>
+    </Mesh>
 </Model>

@@ -7,6 +7,8 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <queue>
+#include <sstream>
 
 using namespace cr;
 using namespace render;
@@ -66,7 +68,7 @@ struct OutputInfo
 int main(int argc, char **argv)
 {
 	// TODO: Make this a switchable setting
-	bool swapyz = true;
+	bool swapyz = false;
 	if (argc != 2)
 	{
 		std::cout << "Usage: " << argv[0] << " <modelfile>" << std::endl;
@@ -78,7 +80,8 @@ int main(int argc, char **argv)
 	                                         aiProcess_CalcTangentSpace |
 	                                         aiProcess_Triangulate |
 	                                         aiProcess_JoinIdenticalVertices |
-	                                         aiProcess_SortByPType);
+	                                         aiProcess_SortByPType |
+	                                         aiProcess_FlipWindingOrder);
 	if (!scene)
 	{
 		std::cerr << "Importing the model failed: " << importer.GetErrorString() << std::endl;
@@ -207,7 +210,6 @@ int main(int argc, char **argv)
 					pos[1] = meshsrc->mVertices[j].y;
 					pos[2] = meshsrc->mVertices[j].z;
 				}
-				std::cout << "Position: " << pos[0] << "/" << pos[1] << "/" << pos[2] << std::endl;
 				pos = (float*)((char*)pos + batch.attribs.stride);
 			}
 		}
@@ -274,7 +276,6 @@ int main(int argc, char **argv)
 					texcoord[1] = texcoordsrc[j].y;
 				if (attribs.texcoordsize[i] > 2)
 					texcoord[2] = texcoordsrc[j].z;
-				std::cout << "Texcoord: " << texcoord[0] << "/" << texcoord[1] << std::endl;
 				texcoord = (float*)((char*)texcoord + batch.attribs.stride);
 			}
 		}
@@ -410,13 +411,50 @@ int main(int argc, char **argv)
 	TiXmlElement *root = new TiXmlElement("Model");
 	xml.LinkEndChild(root);
 	root->SetAttribute("geometry",(relfilename + ".geo").c_str());
-	for (unsigned int i = 0; i < output.batches.size(); i++)
+	// Traverse the scene node hierarchy
+	std::queue<aiNode*> nodes;
+	nodes.push(scene->mRootNode);
+	while (!nodes.empty())
 	{
-		// TODO: Node transformation
-		TiXmlElement *mesh = new TiXmlElement("Mesh");
-		root->LinkEndChild(mesh);
-		mesh->SetAttribute("index", i);
-		mesh->SetAttribute("material", "/materials/Model.material.xml");
+		aiNode *node = nodes.front();
+		nodes.pop();
+		// Add children to the queue
+		for (unsigned int i = 0; i < node->mNumChildren; i++)
+		{
+			nodes.push(node->mChildren[i]);
+		}
+		// Compute absolute transformation
+		aiMatrix4x4 transmat = node->mTransformation;
+		aiNode *parent = node->mParent;
+		while (parent)
+		{
+			transmat = parent->mTransformation * transmat;
+			if (parent == scene->mRootNode)
+				break;
+			parent = parent->mParent;
+		}
+		// Write meshes
+		for (unsigned int i = 0; i < node->mNumMeshes; i++)
+		{
+			// TODO: Node transformation
+			TiXmlElement *mesh = new TiXmlElement("Mesh");
+			root->LinkEndChild(mesh);
+			mesh->SetAttribute("index", node->mMeshes[i]);
+			mesh->SetAttribute("material", "/materials/Model.material.xml");
+			if (!transmat.IsIdentity())
+			{
+				TiXmlElement *transformation = new TiXmlElement("Transformation");
+				mesh->LinkEndChild(transformation);
+				std::ostringstream matstream;
+				for (unsigned int i = 0; i < 16; i++)
+				{
+					matstream << transmat[i%4][i / 4];
+					if (i != 15)
+						matstream << ", ";
+				}
+				transformation->LinkEndChild(new TiXmlText(matstream.str().c_str()));
+			}
+		}
 	}
 	// TODO: Joints
 	// Save file

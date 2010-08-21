@@ -186,6 +186,28 @@ namespace render
 				                                batchindex);
 				continue;
 			}
+			// Get transformation
+			TiXmlElement *transelem = 0;
+			for (TiXmlNode *node = element->FirstChild("Transformation");
+			     node != 0;
+			     node = element->IterateChildren("Transformation", node))
+			{
+				transelem = node->ToElement();
+				if (transelem)
+					break;
+			}
+			math::Matrix4 transmat;
+			if (transelem)
+			{
+				std::istringstream matstream(transelem->GetText());
+				for (unsigned int i = 0; i < 16; i++)
+				{
+					matstream >> transmat.x[i];
+					char separator;
+					matstream >> separator;
+				}
+			}
+			// Create and add mesh
 			res::ResourceManager *rmgr = getManager();
 			Mesh mesh;
 			mesh.batch = batchindex;
@@ -194,6 +216,7 @@ namespace render
 			                             rmgr,
 			                             rmgr->getInternalName());
 			mesh.material->loadFromFile(fs->getPath(materialfile, directory));
+			mesh.transformation = transmat;
 			addMesh(mesh);
 		}
 		finishLoading(true);
