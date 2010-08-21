@@ -42,6 +42,15 @@ namespace render
 			void setShader(ShaderText::Ptr shader);
 			ShaderText::Ptr getShader();
 
+			void setShaderFlags(const std::string &flags)
+			{
+				shaderflags = flags;
+			}
+			std::string getShaderFlags()
+			{
+				return shaderflags;
+			}
+
 			struct TextureInfo
 			{
 				Texture::Ptr texture;

@@ -84,7 +84,8 @@ namespace render
 		unsigned int index = flags.size();
 		if (index == 32)
 		{
-			// TODO: Warning
+			renderer->getLog()->warning("%s: Too many flags, flag omitted.",
+			                            getName().c_str());
 			return;
 		}
 		flags.push_back(flag);
@@ -100,10 +101,6 @@ namespace render
 	                            ShaderVariableType::List type,
 	                            float *defaultvalue)
 	{
-		/*Uniform uniform = {
-			name, type, defaultvalue
-		};
-		uniforms.push_back(uniform);*/
 		uniforms.add(name).set(type, defaultvalue);
 	}
 	void ShaderText::addTexture(const std::string &name)
@@ -113,11 +110,55 @@ namespace render
 
 	unsigned int ShaderText::getFlags(const std::string &flagsset)
 	{
-		return 0;
+		std::istringstream stream(flagsset);
+		unsigned int output = flagdefaults;
+		// Tokenize flag string
+		while(!stream.eof())
+		{
+			std::string flag;
+			stream >> flag;
+			if (flag == "")
+				break;
+			size_t equalsign = flag.find("=");
+			if (equalsign == std::string::npos)
+			{
+				renderer->getLog()->warning("Invalid flag string \"%s\".",
+				                            flag.c_str());
+				continue;
+			}
+			// Get flag name
+			std::string flagname = flag.substr(0, equalsign);
+			int flagindex = -1;
+			for (unsigned int i = 0; i < flags.size(); i++)
+			{
+				if (flags[i] == flagname)
+				{
+					flagindex = i;
+					break;
+				}
+			}
+			if (flagindex == -1)
+			{
+				renderer->getLog()->warning("Unknown flag: \"%s\".",
+				                            flagname.c_str());
+				continue;
+			}
+			// Get value
+			bool flagvalue = false;
+			if (flag.substr(equalsign + 1) == "true")
+				flagvalue = true;
+			// Set value in the bitset
+			if (flagvalue)
+				output |= 1 << flagindex;
+			else
+				output &= ~(1 << flagindex);
+		}
+		return output;
 	}
 
 	void ShaderText::updateShaders()
 	{
+		// TODO: Do we need this?
 	}
 
 	Shader::Ptr ShaderText::getShader(const std::string &context,
@@ -138,12 +179,21 @@ namespace render
 		if (it == contexts.end())
 			return 0;
 		Context &ctx = it->second;
-		// TODO: Set flags
 		// Create shader
 		// TODO: Check whether this name already is taken
 		Shader::Ptr shader = driver->createShader(renderer,
 		                                          getManager(),
 		                                          shadername.str());
+		// Set flags
+		std::string flagtext;
+		for (unsigned int i = 0; i < this->flags.size(); i++)
+		{
+			flagtext += "#define " + this->flags[i] + " ";
+			if ((flags && (1 << i)) != 0)
+				flagtext += "1\n";
+			else
+				flagtext += "0\n";
+		}
 		// Check whether texts exists
 		if (texts.find(ctx.vs) == texts.end())
 		{
@@ -166,12 +216,12 @@ namespace render
 			return false;
 		}
 		// Set shader data
-		shader->setVertexShader(texts[ctx.vs]);
-		shader->setFragmentShader(texts[ctx.fs]);
+		shader->setVertexShader(flagtext + texts[ctx.vs]);
+		shader->setFragmentShader(flagtext + texts[ctx.fs]);
 		if (ctx.gs != "")
-			shader->setGeometryShader(texts[ctx.gs]);
+			shader->setGeometryShader(flagtext + texts[ctx.gs]);
 		if (ctx.ts != "")
-			shader->setTesselationShader(texts[ctx.ts]);
+			shader->setTesselationShader(flagtext + texts[ctx.ts]);
 		// Add attribs
 		for (unsigned int i = 0; i < attribs.size(); i++)
 			shader->addAttrib(attribs[i]);
@@ -419,7 +469,31 @@ namespace render
 			addTexture(name);
 		}
 		// Add flags
-		// TODO
+		for (TiXmlNode *node = root->FirstChild("Flag");
+		     node != 0;
+		     node = root->IterateChildren("Flag", node))
+		{
+			TiXmlElement *element = node->ToElement();
+			if (!element)
+				continue;
+			// Read text
+			const char *name = element->Attribute("name");
+			if (!name)
+			{
+				getManager()->getLog()->warning("%s: Flag name missing.",
+				                                getName().c_str());
+				continue;
+			}
+			// Read default value
+			bool defvalue = false;
+			const char *defstr = element->Attribute("default");
+			if (defstr && !strcmp(defstr, "true"))
+				defvalue = true;
+			getManager()->getLog()->warning("Flag: %s/%d",
+			                                name, (int)defvalue);
+			// Add flag
+			addFlag(name, defvalue);
+		}
 		finishLoading(true);
 		return true;
 	}

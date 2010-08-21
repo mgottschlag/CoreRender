@@ -151,7 +151,7 @@ namespace render
 			ShaderText::Ptr shader = new ShaderText(driver, renderer, getManager(), shaderfile);
 			shader->loadFromFile(shaderfile);
 			setShader(shader);
-			shaderflags = flags;
+			setShaderFlags(flags);
 		}
 		// Load textures
 		for (TiXmlNode *node = root->FirstChild("Texture");

@@ -1,5 +1,5 @@
 <Shader>
-	<Flag name="Lighting" default="true" />
+	<Flag name="ShowUV" default="false" />
 
 	<Text name="VS_GENERAL">
 	<![CDATA[
@@ -11,8 +11,7 @@
 		void main()
 		{
 			texcoord = texcoord0;
-			gl_Position = worldMat * vec4(pos * 0.1, 1.0);
-			//gl_Position = vec4(pos * 0.1, 1.0);
+			gl_Position = worldMat * vec4(pos * 0.15, 1.0);
 		}
 	]]>
 	</Text>
@@ -22,7 +21,11 @@
 		uniform sampler2D tex;
 		void main()
 		{
+			#if ShowUV
+			gl_FragColor = vec4(texcoord, 0.0, 1.0);
+			#else
 			gl_FragColor = texture2D(tex, texcoord);
+			#endif
 		}
 	]]>
 	</Text>
@@ -32,6 +35,9 @@
 	<Attrib name="texcoord0" />
 
 	<Uniform name="worldMat" type="mat4" />
+	<Uniform name="lightDir" type="float3" >
+		1.0, 1.0, -1.0
+	</Uniform>
 
 	<Texture name="tex" />
 

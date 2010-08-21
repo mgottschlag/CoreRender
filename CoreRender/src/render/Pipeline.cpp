@@ -71,12 +71,14 @@ namespace render
 		UniformData uniforms = job->material->getShader()->getUniformData();
 		uniforms.setValues(job->material->getUniformData());
 		uniforms.setValues(job->uniforms);
+		// Get flag values
+		ShaderText::Ptr text = job->material->getShader();
+		unsigned int flags = text->getFlags(job->material->getShaderFlags());
 		// Collect batch info
 		for (unsigned int i = 0; i < passes.size(); i++)
 		{
 			std::string context = passes[i]->getContext();
-			ShaderText::Ptr text = job->material->getShader();
-			Shader::Ptr shader = text->getShader(context, text->getFlags(""));
+			Shader::Ptr shader = text->getShader(context, flags);
 			if (!shader)
 				continue;
 			// TODO: Memory leak, use the memory pool here
