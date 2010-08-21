@@ -65,7 +65,6 @@ int main(int argc, char **argv)
 		modeljobs[i]->indices = model->getIndexBuffer();
 		cr::render::Model::Mesh *mesh = model->getMesh(i);
 		cr::render::Model::Batch *batch = model->getBatch(mesh->batch);
-		std::cout << "Mesh: " << i << "/" << mesh->batch << std::endl;
 		modeljobs[i]->material = mesh->material;
 		modeljobs[i]->layout = batch->layout;
 		modeljobs[i]->vertexcount = batch->vertexcount;

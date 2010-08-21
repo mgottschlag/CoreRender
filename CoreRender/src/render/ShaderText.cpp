@@ -439,8 +439,6 @@ namespace render
 				for (unsigned int i = 0; i < size; i++)
 				{
 					stream >> defdata[i];
-					getManager()->getLog()->warning("%s: Read: %f.",
-					                                getName().c_str(), defdata[i]);
 					char separator;
 					stream >> separator;
 				}
@@ -489,8 +487,6 @@ namespace render
 			const char *defstr = element->Attribute("default");
 			if (defstr && !strcmp(defstr, "true"))
 				defvalue = true;
-			getManager()->getLog()->warning("Flag: %s/%d",
-			                                name, (int)defvalue);
 			// Add flag
 			addFlag(name, defvalue);
 		}
