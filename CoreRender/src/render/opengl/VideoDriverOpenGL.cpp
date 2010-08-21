@@ -61,7 +61,7 @@ namespace opengl
 			return false;
 		}
 		// Init static OpenGL states
-		glCullFace(GL_FRONT);
+		glCullFace(GL_BACK);
 		glEnable(GL_CULL_FACE);
 		glDepthFunc(GL_LESS);
 		glEnable(GL_DEPTH_TEST);

@@ -1,5 +1,6 @@
 
 #include "tinyxml.h"
+#include "../../../CoreRender/include/CoreRender/render/GeometryFile.hpp"
 #include <assimp.hpp>
 #include <aiScene.h>
 #include <aiPostProcess.h>
@@ -7,51 +8,8 @@
 #include <vector>
 #include <fstream>
 
-struct VertexAttribFlags
-{
-	enum List
-	{
-		HasPositions = 0x1,
-		HasNormals = 0x2,
-		HasTangents = 0x4,
-		HasBitangents = 0x8,
-		HasTexCoords = 0x10,
-		HasJoints = 0x20,
-		HasColors = 0x40
-	};
-};
-struct VertexAttribInfo
-{
-	unsigned int flags;
-	unsigned char stride;
-	unsigned char posoffset;
-	unsigned char normaloffset;
-	unsigned char tangentoffset;
-	unsigned char bitangentoffset;
-	unsigned char jointoffset;
-	unsigned char jointweightoffset;
-	unsigned char texcoordcount;
-	unsigned char texcoordoffset[8];
-	unsigned char texcoordsize[8];
-	unsigned char coloroffset[4];
-	unsigned char colorcount;
-};
-struct GeometryDataInfo
-{
-	unsigned int vertexoffset;
-	unsigned int vertexsize;
-	unsigned int indexoffset;
-	unsigned int indexsize;
-	unsigned int indextype;
-	unsigned int indexcount;
-	unsigned int basevertex;
-};
-
-struct Mesh
-{
-	VertexAttribInfo attribs;
-	GeometryDataInfo geom;
-};
+using namespace cr;
+using namespace render;
 
 struct OutputInfo
 {
@@ -98,7 +56,7 @@ struct OutputInfo
 		return allocoffset;
 	}
 
-	std::vector<Mesh> meshes;
+	std::vector<GeometryFile::Batch> batches;
 	unsigned int vertexdatasize;
 	void *vertexdata;
 	unsigned int indexdatasize;
@@ -107,6 +65,8 @@ struct OutputInfo
 
 int main(int argc, char **argv)
 {
+	// TODO: Make this a switchable setting
+	bool swapyz = true;
 	if (argc != 2)
 	{
 		std::cout << "Usage: " << argv[0] << " <modelfile>" << std::endl;
@@ -126,7 +86,7 @@ int main(int argc, char **argv)
 	}
 	if (!scene->HasMeshes())
 	{
-		std::cerr << "Model contains no meshes." << std::endl;
+		std::cerr << "Model contains no batches." << std::endl;
 		return -1;
 	}
 	OutputInfo output;
@@ -136,22 +96,22 @@ int main(int argc, char **argv)
 		aiMesh *meshsrc = scene->mMeshes[i];
 		if (meshsrc->mPrimitiveTypes != aiPrimitiveType_TRIANGLE)
 		{
-			std::cout << "Warning: Non-triangle mesh." << std::endl;
+			std::cout << "Warning: Non-triangle batch." << std::endl;
 			continue;
 		}
-		Mesh meshinfo;
-		VertexAttribInfo &attribs = meshinfo.attribs;
-		memset(&meshinfo, 0, sizeof(meshinfo));
+		GeometryFile::Batch batch;
+		GeometryFile::AttribInfo &attribs = batch.attribs;
+		memset(&batch, 0, sizeof(batch));
 		// Get attribs
 		if (meshsrc->HasPositions())
-			attribs.flags |= VertexAttribFlags::HasPositions;
+			attribs.flags |= GeometryFile::AttribFlags::HasPositions;
 		if (meshsrc->HasNormals())
-			attribs.flags |= VertexAttribFlags::HasNormals;
+			attribs.flags |= GeometryFile::AttribFlags::HasNormals;
 		if (meshsrc->HasTangentsAndBitangents())
-			attribs.flags |= VertexAttribFlags::HasTangents |
-			                          VertexAttribFlags::HasBitangents;
+			attribs.flags |= GeometryFile::AttribFlags::HasTangents |
+			                 GeometryFile::AttribFlags::HasBitangents;
 		if (meshsrc->HasBones())
-			attribs.flags |= VertexAttribFlags::HasJoints;
+			attribs.flags |= GeometryFile::AttribFlags::HasJoints;
 		unsigned int uvcount = 0;
 		unsigned int uvsize[AI_MAX_NUMBER_OF_TEXTURECOORDS];
 		unsigned int uvindex[AI_MAX_NUMBER_OF_TEXTURECOORDS];
@@ -167,7 +127,7 @@ int main(int argc, char **argv)
 			}
 		}
 		if (uvcount > 0)
-			attribs.flags |= VertexAttribFlags::HasTexCoords;
+			attribs.flags |= GeometryFile::AttribFlags::HasTexCoords;
 		attribs.texcoordcount = uvcount;
 		unsigned int colorcount = 0;
 		unsigned int colorindex[AI_MAX_NUMBER_OF_COLOR_SETS];
@@ -182,7 +142,7 @@ int main(int argc, char **argv)
 			}
 		}
 		if (colorcount > 0)
-			attribs.flags |= VertexAttribFlags::HasColors;
+			attribs.flags |= GeometryFile::AttribFlags::HasColors;
 		attribs.colorcount = colorcount;
 		// Compute stride and offsets
 		unsigned int offset = 0;
@@ -227,20 +187,28 @@ int main(int argc, char **argv)
 		// TODO
 		// Allocate data
 		unsigned int size = meshsrc->mNumVertices * attribs.stride;
-		meshinfo.geom.vertexoffset = output.allocateVertexData(size);
-		meshinfo.geom.vertexsize = size;
+		batch.geom.vertexoffset = output.allocateVertexData(size);
+		batch.geom.vertexsize = size;
 		// Fill data in
-		float *vertices = (float*)((char*)output.vertexdata + meshinfo.geom.vertexoffset);
+		float *vertices = (float*)((char*)output.vertexdata + batch.geom.vertexoffset);
 		if (meshsrc->HasPositions())
 		{
 			float *pos = (float*)((char*)vertices + attribs.posoffset);
 			for (unsigned int j = 0; j < meshsrc->mNumVertices; j++)
 			{
 				pos[0] = meshsrc->mVertices[j].x;
-				pos[1] = meshsrc->mVertices[j].y;
-				pos[2] = meshsrc->mVertices[j].z;
+				if (swapyz)
+				{
+					pos[1] = meshsrc->mVertices[j].z;
+					pos[2] = meshsrc->mVertices[j].y;
+				}
+				else
+				{
+					pos[1] = meshsrc->mVertices[j].y;
+					pos[2] = meshsrc->mVertices[j].z;
+				}
 				std::cout << "Position: " << pos[0] << "/" << pos[1] << "/" << pos[2] << std::endl;
-				pos = (float*)((char*)pos + meshinfo.attribs.stride);
+				pos = (float*)((char*)pos + batch.attribs.stride);
 			}
 		}
 		if (meshsrc->HasNormals())
@@ -249,9 +217,17 @@ int main(int argc, char **argv)
 			for (unsigned int j = 0; j < meshsrc->mNumVertices; j++)
 			{
 				normal[0] = meshsrc->mNormals[j].x;
-				normal[1] = meshsrc->mNormals[j].y;
-				normal[2] = meshsrc->mNormals[j].z;
-				normal = (float*)((char*)normal + meshinfo.attribs.stride);
+				if (swapyz)
+				{
+					normal[1] = meshsrc->mNormals[j].z;
+					normal[2] = meshsrc->mNormals[j].y;
+				}
+				else
+				{
+					normal[1] = meshsrc->mNormals[j].y;
+					normal[2] = meshsrc->mNormals[j].z;
+				}
+				normal = (float*)((char*)normal + batch.attribs.stride);
 			}
 		}
 		if (meshsrc->HasTangentsAndBitangents())
@@ -261,13 +237,29 @@ int main(int argc, char **argv)
 			for (unsigned int j = 0; j < meshsrc->mNumVertices; j++)
 			{
 				tangent[0] = meshsrc->mTangents[j].x;
-				tangent[1] = meshsrc->mTangents[j].y;
-				tangent[2] = meshsrc->mTangents[j].z;
+				if (swapyz)
+				{
+					tangent[1] = meshsrc->mTangents[j].z;
+					tangent[2] = meshsrc->mTangents[j].y;
+				}
+				else
+				{
+					tangent[1] = meshsrc->mTangents[j].y;
+					tangent[2] = meshsrc->mTangents[j].z;
+				}
 				bitangent[0] = meshsrc->mBitangents[j].x;
-				bitangent[1] = meshsrc->mBitangents[j].y;
-				bitangent[2] = meshsrc->mBitangents[j].z;
-				tangent = (float*)((char*)tangent + meshinfo.attribs.stride);
-				bitangent = (float*)((char*)bitangent + meshinfo.attribs.stride);
+				if (swapyz)
+				{
+					bitangent[1] = meshsrc->mBitangents[j].z;
+					bitangent[2] = meshsrc->mBitangents[j].y;
+				}
+				else
+				{
+					bitangent[1] = meshsrc->mBitangents[j].y;
+					bitangent[2] = meshsrc->mBitangents[j].z;
+				}
+				tangent = (float*)((char*)tangent + batch.attribs.stride);
+				bitangent = (float*)((char*)bitangent + batch.attribs.stride);
 			}
 		}
 		for (unsigned int i = 0; i < uvcount; i++)
@@ -283,7 +275,7 @@ int main(int argc, char **argv)
 				if (attribs.texcoordsize[i] > 2)
 					texcoord[2] = texcoordsrc[j].z;
 				std::cout << "Texcoord: " << texcoord[0] << "/" << texcoord[1] << std::endl;
-				texcoord = (float*)((char*)texcoord + meshinfo.attribs.stride);
+				texcoord = (float*)((char*)texcoord + batch.attribs.stride);
 			}
 		}
 		for (unsigned int i = 0; i < colorcount; i++)
@@ -296,7 +288,7 @@ int main(int argc, char **argv)
 				color[1] = colorsrc[j].g;
 				color[2] = colorsrc[j].b;
 				color[3] = colorsrc[j].a;
-				color = (float*)((char*)color + meshinfo.attribs.stride);
+				color = (float*)((char*)color + batch.attribs.stride);
 			}
 		}
 		// TODO: Joints
@@ -322,23 +314,23 @@ int main(int argc, char **argv)
 			indexcount += 3;
 		}
 		// Allocate index data
-		meshinfo.geom.indexcount = indexcount;
+		batch.geom.indexcount = indexcount;
 		// TODO: Use smaller indices if possible
 		if (maxindex - minindex < 256)
-			meshinfo.geom.indextype = 1;
+			batch.geom.indextype = 1;
 		else if (maxindex - minindex < 65536)
-			meshinfo.geom.indextype = 2;
+			batch.geom.indextype = 2;
 		else
-			meshinfo.geom.indextype = 4;
-		meshinfo.geom.indexsize = meshinfo.geom.indextype * meshinfo.geom.indexcount;
-		meshinfo.geom.indexoffset = output.allocateIndexData(meshinfo.geom.indexsize,
-		                                                     meshinfo.geom.indextype);
-		meshinfo.geom.basevertex = minindex;
+			batch.geom.indextype = 4;
+		batch.geom.indexsize = batch.geom.indextype * batch.geom.indexcount;
+		batch.geom.indexoffset = output.allocateIndexData(batch.geom.indexsize,
+		                                                  batch.geom.indextype);
+		batch.geom.basevertex = minindex;
 		// Fill in indices
-		if (meshinfo.geom.indextype == 1)
+		if (batch.geom.indextype == 1)
 		{
 			unsigned char *indices = (unsigned char*)output.indexdata
-			                       + meshinfo.geom.indexoffset;
+			                       + batch.geom.indexoffset;
 			for (unsigned int j = 0; j < meshsrc->mNumFaces; j++)
 			{
 				indices[j * 3] = meshsrc->mFaces[j].mIndices[0] - minindex;
@@ -346,10 +338,10 @@ int main(int argc, char **argv)
 				indices[j * 3 + 2] = meshsrc->mFaces[j].mIndices[2] - minindex;
 			}
 		}
-		else if (meshinfo.geom.indextype == 2)
+		else if (batch.geom.indextype == 2)
 		{
 			unsigned short *indices = (unsigned short*)((char*)output.indexdata
-			                        + meshinfo.geom.indexoffset);
+			                        + batch.geom.indexoffset);
 			for (unsigned int j = 0; j < meshsrc->mNumFaces; j++)
 			{
 				indices[j * 3] = meshsrc->mFaces[j].mIndices[0] - minindex;
@@ -360,7 +352,7 @@ int main(int argc, char **argv)
 		else
 		{
 			unsigned int *indices = (unsigned int*)((char*)output.indexdata
-			                      + meshinfo.geom.indexoffset);
+			                      + batch.geom.indexoffset);
 			for (unsigned int j = 0; j < meshsrc->mNumFaces; j++)
 			{
 				indices[j * 3] = meshsrc->mFaces[j].mIndices[0] - minindex;
@@ -369,7 +361,7 @@ int main(int argc, char **argv)
 			}
 		}
 		// Add mesh to file
-		output.meshes.push_back(meshinfo);
+		output.batches.push_back(batch);
 	}
 	// Get base file name
 	std::string filename = argv[1];
@@ -394,21 +386,21 @@ int main(int argc, char **argv)
 		// TODO: Joints
 		file.write((char*)&output.vertexdatasize, 4);
 		file.write((char*)&output.indexdatasize, 4);
-		unsigned int meshcount = output.meshes.size();
-		file.write((char*)&meshcount, 4);
+		unsigned int batchcount = output.batches.size();
+		file.write((char*)&batchcount, 4);
 		std::cout << "Written:" << std::endl;
 		std::cout << output.vertexdatasize << " bytes vertices, ";
 		std::cout << output.indexdatasize << " bytes indices, ";
-		std::cout << meshcount << " meshes." << std::endl;
+		std::cout << batchcount << " batches." << std::endl;
 		// Write vertex/index data
 		file.write((char*)output.vertexdata, output.vertexdatasize);
 		file.write((char*)output.indexdata, output.indexdatasize);
 		// Write mesh info
-		for (unsigned int i = 0; i < meshcount; i++)
+		for (unsigned int i = 0; i < batchcount; i++)
 		{
-			Mesh &mesh = output.meshes[i];
-			file.write((char*)&mesh.attribs, sizeof(mesh.attribs));
-			file.write((char*)&mesh.geom, sizeof(mesh.geom));
+			GeometryFile::Batch &batch = output.batches[i];
+			file.write((char*)&batch.attribs, sizeof(batch.attribs));
+			file.write((char*)&batch.geom, sizeof(batch.geom));
 		}
 	}
 	// Create XML model file
@@ -418,8 +410,9 @@ int main(int argc, char **argv)
 	TiXmlElement *root = new TiXmlElement("Model");
 	xml.LinkEndChild(root);
 	root->SetAttribute("geometry",(relfilename + ".geo").c_str());
-	for (unsigned int i = 0; i < output.meshes.size(); i++)
+	for (unsigned int i = 0; i < output.batches.size(); i++)
 	{
+		// TODO: Node transformation
 		TiXmlElement *mesh = new TiXmlElement("Mesh");
 		root->LinkEndChild(mesh);
 		mesh->SetAttribute("index", i);
