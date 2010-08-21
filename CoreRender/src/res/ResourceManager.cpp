@@ -58,8 +58,15 @@ namespace res
 	}
 	bool ResourceManager::shutdown()
 	{
-		// Delete all resources
-		// TODO
+		// List resources still in use
+		tbb::mutex::scoped_lock lock(mutex);
+		for (ResourceMap::iterator it = resources.begin();
+		     it != resources.end(); it++)
+		{
+			log->error("Resource \"%s\" still referenced, expect crashes.",
+			           it->first.c_str());
+		}
+		// Deinitialize image loader
 		FreeImage_DeInitialise();
 		return true;
 	}
