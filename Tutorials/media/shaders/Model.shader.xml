@@ -3,7 +3,7 @@
 
 	<Text name="VS_GENERAL">
 	<![CDATA[
-		uniform mat4 worldMat;
+		#include "utility/defaultUniforms.glsl"
 		attribute vec3 pos;
 		attribute vec3 normal;
 		attribute vec2 texcoord0;

@@ -49,9 +49,19 @@ namespace render
 	{
 		if (autoinclude)
 		{
-			// TODO
+			core::FileSystem::Ptr fs = getManager()->getFileSystem();
+			std::string path = getPath();
+			std::string directory = core::FileSystem::getDirectory(path);
+			// Resolve includes
+			std::string processed;
+			if (!resolveIncludes(text, processed, directory))
+				return false;
+			texts[name] = processed;
 		}
-		texts[name] = text;
+		else
+		{
+			texts[name] = text;
+		}
 		return true;
 	}
 
@@ -229,6 +239,7 @@ namespace render
 		     node != 0;
 		     node = root->IterateChildren("Text", node))
 		{
+			// TODO: Load texts directly from files
 			getManager()->getLog()->debug("%s: Text.",
 			                              getName().c_str());
 			TiXmlElement *element = node->ToElement();
@@ -410,6 +421,92 @@ namespace render
 		// Add flags
 		// TODO
 		finishLoading(true);
+		return true;
+	}
+
+	bool ShaderText::resolveIncludes(const std::string &text,
+	                                 std::string &output,
+	                                 const std::string &directory)
+	{
+		core::FileSystem::Ptr fs = getManager()->getFileSystem();
+		// Reset output
+		output = "";
+		// Go through the string line by line
+		// TODO: Is there a faster way to do this?
+		std::istringstream stream(text);
+		std::string line;
+		while (!stream.eof())
+		{
+			std::getline(stream, line);
+			// Find #include
+			size_t includebegin = line.find("#include");
+			if (includebegin != std::string::npos)
+			{
+				if (line.find_first_not_of(" \t") < includebegin)
+				{
+					// #include not at the beginning of the line
+					output += line + "\n";
+					continue;
+				}
+				// Find area of file name
+				size_t filebegin = line.find("\"", includebegin + 8);
+				if (filebegin == std::string::npos
+				 || line.find_first_not_of(" \t", includebegin + 8) < filebegin)
+				{
+					// Non-whitespace chars between #include and the file
+					renderer->getLog()->error("%s: Invalid #include.",
+					                          getName().c_str());
+					return false;
+				}
+				size_t fileend = line.find("\"", filebegin + 1);
+				if (fileend == std::string::npos)
+				{
+					// Missing end of file name
+					renderer->getLog()->error("%s: Unterminated #include.",
+					                          getName().c_str());
+					return false;
+				}
+				// Data after the file name (only comments allowed)
+				size_t otherdatabegin = line.find_first_not_of(" \t", fileend + 1);
+				if (otherdatabegin != std::string::npos
+				 && line.find("//", fileend + 1) != otherdatabegin
+				 && line.find("/*", fileend + 1) != otherdatabegin)
+				{
+					// Non-whitespace chars between #include and the file
+					renderer->getLog()->error("%s: Garbage after #include.",
+					                          getName().c_str());
+					return false;
+				}
+				std::string otherdata = "";
+				if (otherdatabegin != std::string::npos)
+					line.substr(otherdatabegin);
+				// Get file name
+				std::string filename = line.substr(filebegin + 1,
+				                                   fileend - filebegin - 1);
+				filename = fs->getPath(filename, directory);
+				// Open file
+				core::File::Ptr file = fs->open(filename,
+				                                core::FileAccess::Read | core::FileAccess::Text);
+				if (!file)
+				{
+					getManager()->getLog()->error("#include: Could not open file \"%s\".",
+					                               filename.c_str());
+					return false;
+				}
+				std::string loadedtext = file->readAll();
+				// Recursively parse the file text
+				std::string newdir = core::FileSystem::getDirectory(filename);
+				std::string processed;
+				if (!resolveIncludes(loadedtext, processed, newdir))
+					return false;
+				// Add text to output
+				output += processed + "\n";
+				if (!otherdata.empty())
+					output += otherdata + "\n";
+			}
+			else
+				output += line + "\n";
+		}
 		return true;
 	}
 }

@@ -92,6 +92,10 @@ namespace render
 
 			typedef core::SharedPointer<ShaderText> Ptr;
 		private:
+			bool resolveIncludes(const std::string &text,
+			                     std::string &output,
+			                     const std::string &directory);
+
 			render::VideoDriver *driver;
 			render::Renderer *renderer;
 
