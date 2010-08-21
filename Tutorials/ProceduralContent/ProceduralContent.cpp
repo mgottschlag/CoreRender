@@ -93,11 +93,12 @@ static const std::string vs = "\n"
 "attribute vec2 texcoord;\n"
 "attribute vec3 normal;\n"
 "uniform vec2 scale;\n"
+"uniform mat4 worldMat;\n"
 "varying vec2 texcoord0;\n"
 "void main()\n"
 "{\n"
 "	texcoord0 = texcoord;\n"
-"	gl_Position = vec4(pos * vec3(scale, 1.0), 1.0);\n"
+"	gl_Position = worldMat * vec4(pos * vec3(scale, 1.0), 1.0);\n"
 "}\n";
 static const std::string fs = "\n"
 "uniform sampler2D tex;\n"
@@ -139,6 +140,7 @@ int main(int argc, char **argv)
 	shader->addTexture("tex");
 	float defscale[2] = {1.0f, 1.0f};
 	shader->addUniform("scale", cr::render::ShaderVariableType::Float2, defscale);
+	shader->addUniform("worldMat", cr::render::ShaderVariableType::Float4x4, 0);
 	cr::render::Material::Ptr material = graphics.createMaterial("testmat");
 	material->addTexture("tex", texture);
 	material->setShader(shader);
@@ -153,11 +155,14 @@ int main(int argc, char **argv)
 	job->vertexcount = 24;
 	job->indices = ib;
 	job->endindex = 36;
+	job->indextype = 2;
 	job->material = material;
 	job->layout = layout;
 	job->uniforms = shader->getUniformData();
 	cr::math::Vector2F scale(0.5f, 0.5f);
 	job->uniforms["scale"] = scale;
+	cr::math::Matrix4 matrix = cr::math::Matrix4::ScaleMat(cr::math::Vector3F(0.5f, 0.5f, 0.5f));
+	job->uniforms["worldMat"] = matrix;
 	// Setup pipeline
 	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();
 	cr::render::RenderPass::Ptr pass = new cr::render::RenderPass("AMBIENT");
@@ -194,6 +199,8 @@ int main(int argc, char **argv)
 		// Begin frame
 		graphics.beginFrame();
 		// Render objects
+		matrix = matrix * cr::math::Quaternion(cr::math::Vector3F(0.0, 0.1, 0.1)).toMatrix();
+		job->uniforms["worldMat"] = matrix;
 		pipeline->submit(job);
 		// Finish and render frame
 		graphics.endFrame();
