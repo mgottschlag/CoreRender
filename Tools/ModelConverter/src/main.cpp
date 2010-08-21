@@ -188,34 +188,41 @@ int main(int argc, char **argv)
 		unsigned int offset = 0;
 		if (meshsrc->HasPositions())
 		{
+			std::cout << "Position offset: " << offset << " bytes." << std::endl;
 			attribs.posoffset = offset;
 			offset += 3 * sizeof(float);
 		}
 		if (meshsrc->HasNormals())
 		{
+			std::cout << "Normal offset: " << offset << " bytes." << std::endl;
 			attribs.normaloffset = offset;
 			offset += 3 * sizeof(float);
 		}
 		if (meshsrc->HasTangentsAndBitangents())
 		{
+			std::cout << "Tangent offset: " << offset << " bytes." << std::endl;
 			attribs.tangentoffset = offset;
 			offset += 3 * sizeof(float);
+			std::cout << "Bitangent offset: " << offset << " bytes." << std::endl;
 			attribs.bitangentoffset = offset;
 			offset += 3 * sizeof(float);
 		}
 		for (unsigned int j = 0; j < uvcount; j++)
 		{
+			std::cout << "Texcoord " << j << " offset: " << offset << " bytes." << std::endl;
 			attribs.texcoordoffset[j] = offset;
 			attribs.texcoordsize[j] = uvsize[j];
 			offset += uvsize[j] * sizeof(float);
 		}
 		for (unsigned int j = 0; j < colorcount; j++)
 		{
+			std::cout << "Color " << j << " offset: " << offset << " bytes." << std::endl;
 			attribs.coloroffset[j] = offset;
 			offset += 4 * sizeof(float);
 		}
 		// TODO: Joints
 		attribs.stride = offset;
+		std::cout << "Stride: " << offset << std::endl;
 		// Round up stride
 		// TODO
 		// Allocate data
@@ -232,6 +239,7 @@ int main(int argc, char **argv)
 				pos[0] = meshsrc->mVertices[j].x;
 				pos[1] = meshsrc->mVertices[j].y;
 				pos[2] = meshsrc->mVertices[j].z;
+				std::cout << "Position: " << pos[0] << "/" << pos[1] << "/" << pos[2] << std::endl;
 				pos = (float*)((char*)pos + meshinfo.attribs.stride);
 			}
 		}
@@ -274,6 +282,7 @@ int main(int argc, char **argv)
 					texcoord[1] = texcoordsrc[j].y;
 				if (attribs.texcoordsize[i] > 2)
 					texcoord[2] = texcoordsrc[j].z;
+				std::cout << "Texcoord: " << texcoord[0] << "/" << texcoord[1] << std::endl;
 				texcoord = (float*)((char*)texcoord + meshinfo.attribs.stride);
 			}
 		}
@@ -387,6 +396,10 @@ int main(int argc, char **argv)
 		file.write((char*)&output.indexdatasize, 4);
 		unsigned int meshcount = output.meshes.size();
 		file.write((char*)&meshcount, 4);
+		std::cout << "Written:" << std::endl;
+		std::cout << output.vertexdatasize << " bytes vertices, ";
+		std::cout << output.indexdatasize << " bytes indices, ";
+		std::cout << meshcount << " meshes." << std::endl;
 		// Write vertex/index data
 		file.write((char*)output.vertexdata, output.vertexdatasize);
 		file.write((char*)output.indexdata, output.indexdatasize);

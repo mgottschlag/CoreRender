@@ -1,0 +1,39 @@
+<Shader>
+	<Flag name="Lighting" default="true" />
+
+	<Text name="VS_GENERAL">
+	<![CDATA[
+		uniform mat4 worldMat;
+		attribute vec3 pos;
+		attribute vec3 normal;
+		attribute vec2 texcoord0;
+		varying vec2 texcoord;
+		void main()
+		{
+			texcoord = texcoord0;
+			gl_Position = worldMat * vec4(pos * 0.1, 1.0);
+			//gl_Position = vec4(pos * 0.1, 1.0);
+		}
+	]]>
+	</Text>
+	<Text name="FS_AMBIENT">
+	<![CDATA[
+		varying vec2 texcoord;
+		uniform sampler2D tex;
+		void main()
+		{
+			gl_FragColor = texture2D(tex, texcoord);
+		}
+	]]>
+	</Text>
+
+	<Attrib name="pos" />
+	<Attrib name="normal" />
+	<Attrib name="texcoord0" />
+
+	<Uniform name="worldMat" type="mat4" />
+
+	<Texture name="tex" />
+
+	<Context name="AMBIENT" vs="VS_GENERAL" fs="FS_AMBIENT" />
+</Shader>

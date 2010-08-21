@@ -327,6 +327,27 @@ namespace render
 			return new Material(driver, renderer, rmgr, name);
 		}
 	}
+	Model::Ptr GraphicsEngine::loadModel(const std::string &path,
+	                                     const std::string &name)
+	{
+		Model::Ptr model;
+		if (name.size() == 0)
+			model = createModel(path);
+		else
+			model = createModel(name);
+		model->loadFromFile(path);
+		return model;
+	}
+	Model::Ptr GraphicsEngine::createModel(const std::string &name)
+	{
+		if (name == "")
+			return new Model(driver, renderer, rmgr, rmgr->getInternalName());
+		else
+		{
+			// TODO: Check whether a resource with that name already exists
+			return new Model(driver, renderer, rmgr, name);
+		}
+	}
 
 	void GraphicsEngine::setFileSystem(core::FileSystem::Ptr fs)
 	{

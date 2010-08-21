@@ -32,6 +32,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Pipeline.hpp"
 #include "ShaderText.hpp"
 #include "InputEvent.hpp"
+#include "Model.hpp"
 
 #include <queue>
 
@@ -90,6 +91,9 @@ namespace render
 			Material::Ptr loadMaterial(const std::string &path,
 			                           const std::string &name = "");
 			Material::Ptr createMaterial(const std::string &name = "");
+			Model::Ptr loadModel(const std::string &path,
+			                     const std::string &name = "");
+			Model::Ptr createModel(const std::string &name = "");
 
 			void setFileSystem(core::FileSystem::Ptr fs);
 			core::FileSystem::Ptr getFileSystem()

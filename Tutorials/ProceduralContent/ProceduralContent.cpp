@@ -117,7 +117,6 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	graphics.getLog()->setConsoleLevel(cr::core::LogLevel::Debug);
-	cr::res::ResourceManager *rmgr = graphics.getResourceManager();
 
 	// Load some resources
 	cr::render::Texture2D::Ptr texture = graphics.createTexture2D();

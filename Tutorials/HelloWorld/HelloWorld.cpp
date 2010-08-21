@@ -102,6 +102,8 @@ int main(int argc, char **argv)
 	graphics.getLog()->setConsoleLevel(cr::core::LogLevel::Debug);
 
 	// Load some resources
+	cr::render::Model::Ptr model = graphics.loadModel("/models/jeep.model.xml");
+
 	cr::render::VertexBuffer::Ptr vb = graphics.createVertexBuffer();
 	vb->set(24 * 8 * sizeof(float), vertices);
 	cr::render::IndexBuffer::Ptr ib = graphics.createIndexBuffer();
@@ -130,7 +132,27 @@ int main(int argc, char **argv)
 	pipeline->addPass(pass);
 	graphics.addPipeline(pipeline);
 	// Wait for resources to be loaded
+	model->waitForLoading(true);
 	material->waitForLoading(true);
+	// Model render job
+	std::vector<cr::render::RenderJob*> modeljobs(model->getMeshCount());
+	for (unsigned int i = 0; i < model->getMeshCount(); i++)
+	{
+		modeljobs[i] = new cr::render::RenderJob;
+		modeljobs[i]->vertices = model->getVertexBuffer();
+		modeljobs[i]->indices = model->getIndexBuffer();
+		cr::render::Model::Mesh *mesh = model->getMesh(i);
+		cr::render::Model::Batch *batch = model->getBatch(mesh->batch);
+		std::cout << "Mesh: " << i << "/" << mesh->batch << std::endl;
+		modeljobs[i]->material = mesh->material;
+		modeljobs[i]->layout = batch->layout;
+		modeljobs[i]->vertexcount = batch->vertexcount;
+		modeljobs[i]->startindex = batch->startindex;
+		modeljobs[i]->endindex = batch->startindex + batch->indexcount;
+		modeljobs[i]->vertexoffset = batch->vertexoffset;
+		modeljobs[i]->indextype = batch->indextype;
+		modeljobs[i]->uniforms.add("worldMat") = matrix;
+	}
 	// Render loop
 	bool stopping = false;
 	uint64_t fpstime = cr::core::Time::getSystemTime();
@@ -164,9 +186,13 @@ int main(int argc, char **argv)
 		// Begin frame
 		graphics.beginFrame();
 		// Render objects
-		matrix = matrix * cr::math::Quaternion(cr::math::Vector3F(0.0, 0.1, 0.1)).toMatrix();
+		matrix = matrix * cr::math::Quaternion(cr::math::Vector3F(0.0, 0.1, 0.0)).toMatrix();
 		job->uniforms["worldMat"] = matrix;
-		pipeline->submit(job);
+		for (unsigned int i = 0; i < modeljobs.size(); i++)
+		{
+			modeljobs[i]->uniforms["worldMat"] = matrix;
+			pipeline->submit(modeljobs[i]);
+		}
 		// Finish and render frame
 		graphics.endFrame();
 		fps++;
@@ -180,13 +206,17 @@ int main(int argc, char **argv)
 	}
 
 	// Delete resources
+	for (unsigned int i = 0; i < modeljobs.size(); i++)
+	{
+		delete modeljobs[i];
+	}
 	delete job;
 	vb = 0;
 	ib = 0;
 	material = 0;
 	pipeline = 0;
 	pass = 0;
-	// TODO: Other resources
+	model = 0;
 
 	graphics.shutdown();
 	return 0;
