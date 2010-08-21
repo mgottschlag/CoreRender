@@ -201,7 +201,8 @@ namespace render
 		}
 		// Open XML file
 		unsigned int filesize = file->getSize();
-		char *buffer = new char[filesize];
+		char *buffer = new char[filesize + 1];
+		buffer[filesize] = 0;
 		if (file->read(filesize, buffer) != (int)filesize)
 		{
 			getManager()->getLog()->error("%s: Could not read file content.",

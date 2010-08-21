@@ -179,7 +179,7 @@ namespace render
 		// Delete render data
 		for (unsigned int i = 0; i < pipelinecount; i++)
 		{
-			for (unsigned int j = 0; j < renderdata[i].passes->batchcount; j++)
+			for (unsigned int j = 0; j < renderdata[i].passcount; j++)
 			{
 				delete[] renderdata[i].passes[j].batches;
 			}
