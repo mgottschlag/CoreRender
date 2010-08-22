@@ -83,6 +83,40 @@ namespace render
 		return meshes.size();
 	}
 
+	Model::Node *Model::addNode(const std::string &name, Model::Node *parent)
+	{
+		Node *node = new Node(name, this, parent);
+		if (!parent)
+		{
+			// Set the node as the new root node
+			if (rootnode)
+				delete rootnode;
+			rootnode = node;
+		}
+		return node;
+	}
+	void Model::removeNode(const std::string &name)
+	{
+		Node *node = getNode(name);
+		if (node)
+			delete node;
+	}
+	void Model::removeNode(Model::Node *node)
+	{
+		delete node;
+	}
+	Model::Node *Model::getRootNode()
+	{
+		return rootnode;
+	}
+	Model::Node *Model::getNode(const std::string &name)
+	{
+		std::map<std::string, Node*>::iterator it = nodes.find(name);
+		if (it == nodes.end())
+			return 0;
+		return it->second;
+	}
+
 	void Model::setIndexBuffer(IndexBuffer::Ptr indexbuffer)
 	{
 		this->indexbuffer = indexbuffer;
@@ -155,66 +189,78 @@ namespace render
 			finishLoading(false);
 			return false;
 		}
-		// Get meshes
-		for (TiXmlNode *node = root->FirstChild("Mesh");
-		     node != 0;
-		     node = root->IterateChildren("Mesh", node))
+		// Load nodes
+		TiXmlElement *rootnodeelem = root->FirstChildElement("Node");
+		if (!rootnodeelem)
 		{
-			TiXmlElement *element = node->ToElement();
-			if (!element)
-				continue;
-			// Read mesh info
-			const char *indexstr = element->Attribute("index");
-			if (!indexstr)
+			getManager()->getLog()->error("%s: No node available.",
+			                              getName().c_str());
+			finishLoading(false);
+			return false;
+		}
+		if (!parseNode(rootnodeelem, 0))
+		{
+			finishLoading(false);
+			return false;
+		}
+		// Load joints
+		for (TiXmlElement *element = root->FirstChildElement("Armature");
+		     element != 0;
+		     element = element->NextSiblingElement("Armature"))
+		{
+			// Get batch index
+			const char *batchstr = element->Attribute("batch");
+			if (!batchstr)
 			{
-				getManager()->getLog()->warning("%s: Mesh index missing.",
+				getManager()->getLog()->warning("%s: Armature batch missing.",
 				                                getName().c_str());
 				continue;
 			}
-			const char *materialfile = element->Attribute("material");
-			if (!materialfile)
+			unsigned int batchidx = atoi(batchstr);
+			if (batchidx >= batches.size())
 			{
-				getManager()->getLog()->warning("%s: Mesh material missing.",
+				getManager()->getLog()->warning("%s: Invalid armature batch.",
 				                                getName().c_str());
 				continue;
 			}
-			unsigned int batchindex = atoi(indexstr);
-			if (batchindex >= batches.size())
+			// Load joints
+			for (TiXmlElement *jointelem = element->FirstChildElement("Joint");
+			     jointelem != 0;
+			     jointelem = jointelem->NextSiblingElement("Joint"))
 			{
-				getManager()->getLog()->warning("%s: Invalid batch index %d.",
-				                                getName().c_str(),
-				                                batchindex);
-				continue;
-			}
-			// Get transformation
-			TiXmlElement *transelem = 0;
-			for (TiXmlNode *node = element->FirstChild("Transformation");
-			     node != 0;
-			     node = element->IterateChildren("Transformation", node))
-			{
-				transelem = node->ToElement();
-				if (transelem)
-					break;
-			}
-			math::Matrix4 transmat;
-			if (transelem)
-			{
-				std::istringstream matstream(transelem->GetText());
-				for (unsigned int i = 0; i < 16; i++)
+				// Get and check joint index
+				const char *indexstr = jointelem->Attribute("index");
+				if (!indexstr)
 				{
-					matstream >> transmat.x[i];
-					char separator;
-					matstream >> separator;
+					getManager()->getLog()->warning("%s: Joint index missing.",
+					                                getName().c_str());
+					continue;
 				}
+				unsigned int index = atoi(indexstr);
+				if (index >= batches[batchidx].joints.size())
+				{
+					getManager()->getLog()->warning("%s: Joint index invalid.",
+					                                getName().c_str());
+					continue;
+				}
+				// Get and check joint name
+				const char *name = jointelem->Attribute("name");
+				if (!name)
+				{
+					getManager()->getLog()->warning("%s: Joint name missing.",
+					                                getName().c_str());
+					continue;
+				}
+				Node *node = getNode(name);
+				if (!node)
+				{
+					getManager()->getLog()->warning("%s: Joint node \"%s\" not found.",
+					                                getName().c_str(), name);
+					continue;
+				}
+				batches[batchidx].joints[index].name = name;
+				batches[batchidx].joints[index].node = node;
 			}
-			// Create and add mesh
-			res::ResourceManager *rmgr = getManager();
-			Mesh mesh;
-			mesh.batch = batchindex;
-			std::string materialpath = fs->getPath(materialfile, directory);
-			mesh.material = rmgr->getOrLoad<Material>("Material", materialpath);
-			mesh.transformation = transmat;
-			addMesh(mesh);
 		}
 		finishLoading(true);
 		return true;
@@ -228,7 +274,7 @@ namespace render
 		if (!file)
 		{
 			getManager()->getLog()->error("Could not open file \"%s\".",
-			                               filename.c_str());
+			                              filename.c_str());
 			return false;
 		}
 		// Read header
@@ -295,6 +341,17 @@ namespace render
 				                              getName().c_str());
 				return false;
 			}
+			// Joint matrices
+			if (geom.jointcount == 0)
+				continue;
+			int jointsize = sizeof(float) * geom.jointcount * 16;
+			batchdata[i].jointmatrices = std::vector<float>(geom.jointcount * 16);
+			if (file->read(jointsize, &batchdata[i].jointmatrices[0]) != jointsize)
+			{
+				getManager()->getLog()->error("%s: Could not joint matrices.",
+				                              getName().c_str());
+				return false;
+			}
 		}
 		// Construct batch info
 		std::vector<Batch> batches(header.batchcount);
@@ -315,6 +372,15 @@ namespace render
 			batches[i].startindex = geom.indexoffset / geom.indextype;
 			batches[i].vertexoffset = geom.vertexoffset;
 			batches[i].vertexcount = geom.vertexsize / attribs.stride;
+			// Create joints
+			batches[i].joints = std::vector<Joint>(batchdata[i].geom.jointcount);
+			for (unsigned int j = 0; j < batchdata[i].geom.jointcount; j++)
+			{
+				math::Matrix4 &jointmat = batches[i].joints[j].jointmat;
+				memcpy(&jointmat.x[0],
+				       &batchdata[i].jointmatrices[j * 16],
+				       sizeof(float) * 16);
+			}
 		}
 		this->batches = batches;
 		return true;
@@ -430,6 +496,83 @@ namespace render
 				                                                      highpriority);
 		}
 		return result;
+	}
+
+	bool Model::parseNode(TiXmlElement *xml, Model::Node *parent)
+	{
+		// Get name
+		const char *name = xml->Attribute("name");
+		if (!name)
+		{
+			getManager()->getLog()->error("%s: Node name missing.",
+			                              getName().c_str());
+			return false;
+		}
+		// Add node
+		Node *currentnode = addNode(name, parent);
+		// Read transformation
+		TiXmlElement *transelem = xml->FirstChildElement("Transformation");
+		math::Matrix4 transmat;
+		if (transelem)
+		{
+			std::istringstream matstream(transelem->GetText());
+			for (unsigned int i = 0; i < 16; i++)
+			{
+				matstream >> transmat.x[i];
+				char separator;
+				matstream >> separator;
+			}
+		}
+		currentnode->setTransformation(transmat);
+		// Read meshes
+		for (TiXmlElement *element = xml->FirstChildElement("Mesh");
+		     element != 0;
+		     element = element->NextSiblingElement("Mesh"))
+		{
+			// Read mesh info
+			const char *indexstr = element->Attribute("index");
+			if (!indexstr)
+			{
+				getManager()->getLog()->warning("%s: Mesh index missing.",
+				                                getName().c_str());
+				continue;
+			}
+			const char *materialfile = element->Attribute("material");
+			if (!materialfile)
+			{
+				getManager()->getLog()->warning("%s: Mesh material missing.",
+				                                getName().c_str());
+				continue;
+			}
+			unsigned int batchindex = atoi(indexstr);
+			if (batchindex >= batches.size())
+			{
+				getManager()->getLog()->warning("%s: Invalid batch index %d.",
+				                                getName().c_str(),
+				                                batchindex);
+				continue;
+			}
+			// Create and add mesh
+			std::string path = getPath();
+			std::string directory = core::FileSystem::getDirectory(path);
+			res::ResourceManager *rmgr = getManager();
+			core::FileSystem::Ptr fs = rmgr->getFileSystem();
+			Mesh mesh;
+			mesh.batch = batchindex;
+			std::string materialpath = fs->getPath(materialfile, directory);
+			mesh.material = rmgr->getOrLoad<Material>("Material", materialpath);
+			mesh.node = currentnode;
+			addMesh(mesh);
+		}
+		// Read child nodes
+		for (TiXmlElement *element = xml->FirstChildElement("Node");
+		     element != 0;
+		     element = element->NextSiblingElement("Node"))
+		{
+			if (!parseNode(element, currentnode))
+				return false;
+		}
+		return true;
 	}
 }
 }

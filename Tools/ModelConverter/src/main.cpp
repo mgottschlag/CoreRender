@@ -65,6 +65,45 @@ struct OutputInfo
 	void *indexdata;
 };
 
+void writeNode(const aiScene *scene,
+               aiNode *node,
+               TiXmlElement *xml,
+               const std::string &basename)
+{
+	// Create XML element
+	TiXmlElement *nodeelem = new TiXmlElement("Node");
+	nodeelem->SetAttribute("name", node->mName.data);
+	xml->LinkEndChild(nodeelem);
+	// Write transformation
+	aiMatrix4x4 transmat = node->mTransformation;
+	if (!transmat.IsIdentity())
+	{
+		TiXmlElement *transformation = new TiXmlElement("Transformation");
+		nodeelem->LinkEndChild(transformation);
+		std::ostringstream matstream;
+		for (unsigned int i = 0; i < 16; i++)
+		{
+			matstream << transmat[i%4][i / 4];
+			if (i != 15)
+				matstream << ", ";
+		}
+		transformation->LinkEndChild(new TiXmlText(matstream.str().c_str()));
+	}
+	// Write meshes
+	for (unsigned int i = 0; i < node->mNumMeshes; i++)
+	{
+		TiXmlElement *mesh = new TiXmlElement("Mesh");
+		nodeelem->LinkEndChild(mesh);
+		mesh->SetAttribute("index", node->mMeshes[i]);
+		mesh->SetAttribute("material", (basename + ".material.xml").c_str());
+	}
+	// Recursively write children
+	for (unsigned int i = 0; i < node->mNumChildren; i++)
+	{
+		writeNode(scene, node->mChildren[i], nodeelem, basename);
+	}
+}
+
 int main(int argc, char **argv)
 {
 	// TODO: Make this a switchable setting
@@ -361,6 +400,20 @@ int main(int argc, char **argv)
 				indices[j * 3 + 2] = meshsrc->mFaces[j].mIndices[2] - minindex;
 			}
 		}
+		// Joint bind matrices
+		batch.geom.jointcount = meshsrc->mNumBones;
+		if (meshsrc->mNumBones > 0)
+		{
+			batch.jointmatrices = std::vector<float>(meshsrc->mNumBones * 16);
+			for (unsigned int j = 0; j < meshsrc->mNumBones; j++)
+			{
+				float *matrix = &batch.jointmatrices[j * 16];
+				for (unsigned int k = 0; k < 16; k++)
+				{
+					matrix[k] = meshsrc->mBones[j]->mOffsetMatrix[k / 4][k % 4];
+				}
+			}
+		}
 		// Add mesh to file
 		output.batches.push_back(batch);
 	}
@@ -402,6 +455,9 @@ int main(int argc, char **argv)
 			GeometryFile::Batch &batch = output.batches[i];
 			file.write((char*)&batch.attribs, sizeof(batch.attribs));
 			file.write((char*)&batch.geom, sizeof(batch.geom));
+			if (batch.geom.jointcount)
+				file.write((char*)&batch.jointmatrices[0],
+				           sizeof(float) * batch.geom.jointcount * 16);
 		}
 	}
 	// Create XML model file
@@ -411,52 +467,27 @@ int main(int argc, char **argv)
 	TiXmlElement *root = new TiXmlElement("Model");
 	xml.LinkEndChild(root);
 	root->SetAttribute("geometry",(relfilename + ".geo").c_str());
-	// Traverse the scene node hierarchy
-	std::queue<aiNode*> nodes;
-	nodes.push(scene->mRootNode);
-	while (!nodes.empty())
+	// Write the armature
+	for (unsigned int i = 0; i < scene->mNumMeshes; i++)
 	{
-		aiNode *node = nodes.front();
-		nodes.pop();
-		// Add children to the queue
-		for (unsigned int i = 0; i < node->mNumChildren; i++)
+		aiMesh *mesh = scene->mMeshes[i];
+		if (mesh->mNumBones > 0)
 		{
-			nodes.push(node->mChildren[i]);
-		}
-		// Compute absolute transformation
-		aiMatrix4x4 transmat = node->mTransformation;
-		aiNode *parent = node->mParent;
-		while (parent)
-		{
-			transmat = parent->mTransformation * transmat;
-			if (parent == scene->mRootNode)
-				break;
-			parent = parent->mParent;
-		}
-		// Write meshes
-		for (unsigned int i = 0; i < node->mNumMeshes; i++)
-		{
-			// TODO: Node transformation
-			TiXmlElement *mesh = new TiXmlElement("Mesh");
-			root->LinkEndChild(mesh);
-			mesh->SetAttribute("index", node->mMeshes[i]);
-			mesh->SetAttribute("material", "/materials/Model.material.xml");
-			if (!transmat.IsIdentity())
+			TiXmlElement *armature = new TiXmlElement("Armature");
+			root->LinkEndChild(armature);
+			armature->SetAttribute("batch", i);
+			// Write joints
+			for (unsigned int j = 0; j < mesh->mNumBones; j++)
 			{
-				TiXmlElement *transformation = new TiXmlElement("Transformation");
-				mesh->LinkEndChild(transformation);
-				std::ostringstream matstream;
-				for (unsigned int i = 0; i < 16; i++)
-				{
-					matstream << transmat[i%4][i / 4];
-					if (i != 15)
-						matstream << ", ";
-				}
-				transformation->LinkEndChild(new TiXmlText(matstream.str().c_str()));
+				TiXmlElement *joint = new TiXmlElement("Joint");
+				armature->LinkEndChild(joint);
+				joint->SetAttribute("index", j);
+				joint->SetAttribute("name", mesh->mBones[j]->mName.data);
 			}
 		}
 	}
-	// TODO: Joints
+	// Write the node tree
+	writeNode(scene, scene->mRootNode, root, relfilename);
 	// Save file
 	xml.SaveFile();
 	return 0;

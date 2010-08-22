@@ -74,7 +74,7 @@ int main(int argc, char **argv)
 		modeljobs[i]->endindex = batch->startindex + batch->indexcount;
 		modeljobs[i]->vertexoffset = batch->vertexoffset;
 		modeljobs[i]->indextype = batch->indextype;
-		modeljobs[i]->uniforms.add("worldMat") = matrix * mesh->transformation;
+		modeljobs[i]->uniforms.add("worldMat") = matrix * mesh->node->getAbsTrans();
 	}
 	// Finished loading
 	graphics.getLog()->info("Starting rendering.");
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
 		matrix = matrix * cr::math::Quaternion(cr::math::Vector3F(0.0, 0.1, 0.0)).toMatrix();
 		for (unsigned int i = 0; i < modeljobs.size(); i++)
 		{
-			modeljobs[i]->uniforms["worldMat"] = matrix * model->getMesh(i)->transformation;
+			modeljobs[i]->uniforms["worldMat"] = matrix * model->getMesh(i)->node->getAbsTrans();
 			pipeline->submit(modeljobs[i]);
 		}
 		// Finish and render frame

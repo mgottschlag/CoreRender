@@ -1,24 +1,27 @@
 <?xml version="1.0" ?>
 <Model geometry="jeep.geo">
-    <Mesh index="0" material="jeep.material.xml">
+    <Node name="&lt;3DSDummyRoot&gt;">
         <Transformation>1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1</Transformation>
-    </Mesh>
-    <Mesh index="1" material="jeep.material.xml">
-        <Transformation>1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1</Transformation>
-    </Mesh>
-    <Mesh index="2" material="jeep.material.xml">
-        <Transformation>1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1</Transformation>
-    </Mesh>
-    <Mesh index="3" material="jeep.material.xml">
-        <Transformation>1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1</Transformation>
-    </Mesh>
-    <Mesh index="4" material="jeep.material.xml">
-        <Transformation>1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1</Transformation>
-    </Mesh>
-    <Mesh index="5" material="jeep.material.xml">
-        <Transformation>1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1</Transformation>
-    </Mesh>
-    <Mesh index="6" material="jeep.material.xml">
-        <Transformation>1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1</Transformation>
-    </Mesh>
+        <Node name="3DSMesh_0">
+            <Mesh index="0" material="jeep.material.xml" />
+        </Node>
+        <Node name="3DSMesh_1">
+            <Mesh index="1" material="jeep.material.xml" />
+        </Node>
+        <Node name="3DSMesh_2">
+            <Mesh index="2" material="jeep.material.xml" />
+        </Node>
+        <Node name="3DSMesh_3">
+            <Mesh index="3" material="jeep.material.xml" />
+        </Node>
+        <Node name="3DSMesh_4">
+            <Mesh index="4" material="jeep.material.xml" />
+        </Node>
+        <Node name="3DSMesh_5">
+            <Mesh index="5" material="jeep.material.xml" />
+        </Node>
+        <Node name="3DSMesh_6">
+            <Mesh index="6" material="jeep.material.xml" />
+        </Node>
+    </Node>
 </Model>

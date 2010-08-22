@@ -22,6 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_GEOMETRYFILE_HPP_INCLUDED_
 #define _CORERENDER_RENDER_GEOMETRYFILE_HPP_INCLUDED_
 
+#include <vector>
+
 namespace cr
 {
 namespace render
@@ -80,12 +82,15 @@ namespace render
 			unsigned int indextype;
 			unsigned int indexcount;
 			unsigned int basevertex;
+
+			unsigned int jointcount;
 		};
 
 		struct Batch
 		{
 			AttribInfo attribs;
 			GeometryInfo geom;
+			std::vector<float> jointmatrices;
 		};
 	};
 }
