@@ -45,9 +45,11 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	graphics.getLog()->setConsoleLevel(cr::core::LogLevel::Debug);
+	cr::res::ResourceManager *rmgr = graphics.getResourceManager();
 
 	// Load some resources
-	cr::render::Model::Ptr model = graphics.loadModel("/models/jeep.model.xml");
+	cr::render::Model::Ptr model = rmgr->getOrLoad<cr::render::Model>("Model",
+	                                                                  "/models/jeep.model.xml");
 	// Setup pipeline
 	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();
 	cr::render::RenderPass::Ptr pass = new cr::render::RenderPass("AMBIENT");

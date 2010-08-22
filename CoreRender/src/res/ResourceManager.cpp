@@ -71,6 +71,91 @@ namespace res
 		return true;
 	}
 
+	void ResourceManager::addFactory(const std::string &name, ResourceFactory::Ptr factory)
+	{
+		tbb::spin_mutex::scoped_lock lock(factorymutex);
+		factories[name] = factory;
+	}
+	void ResourceManager::removeFactory(const std::string &name)
+	{
+		tbb::spin_mutex::scoped_lock lock(factorymutex);
+		FactoryMap::iterator it = factories.find(name);
+		if (it == factories.end())
+			return;
+		factories.erase(it);
+	}
+	ResourceFactory::Ptr ResourceManager::getFactory(const std::string &name)
+	{
+		tbb::spin_mutex::scoped_lock lock(factorymutex);
+		FactoryMap::iterator it = factories.find(name);
+		if (it == factories.end())
+			return 0;
+		return it->second;
+	}
+
+	Resource::Ptr ResourceManager::getOrLoad(const std::string &type,
+	                                         const std::string &path,
+	                                         const std::string &name)
+	{
+		// Get existing resource
+		Resource::Ptr existing;
+		if (name == "")
+			existing = getResource(path);
+		else
+			existing = getResource(name);
+		if (existing)
+		{
+			// Check type of existing resource
+			if (type != existing->getType())
+				return 0;
+			return existing;
+		}
+		// Create resource
+		ResourceFactory::Ptr factory = getFactory(type);
+		if (!factory)
+			return 0;
+		Resource::Ptr created;
+		if (name == "")
+			created = factory->create(path);
+		else
+			created = factory->create(name);
+		// Load resource
+		created->loadFromFile(path);
+		return created;
+	}
+	Resource::Ptr ResourceManager::getOrCreate(const std::string &type,
+	                                           const std::string &name)
+	{
+		// Get existing resource
+		Resource::Ptr existing = getResource(name);
+		if (existing)
+		{
+			// Check type of existing resource
+			if (type != existing->getType())
+				return 0;
+			return existing;
+		}
+		// Create resource
+		ResourceFactory::Ptr factory = getFactory(type);
+		if (!factory)
+			return 0;
+		Resource::Ptr created = factory->create(name);
+		return created;
+	}
+	Resource::Ptr ResourceManager::createResource(const std::string &type,
+	                                              const std::string &name)
+	{
+		std::string resname = name;
+		if (resname == "")
+			resname = getInternalName();
+		// Create resource
+		ResourceFactory::Ptr factory = getFactory(type);
+		if (!factory)
+			return 0;
+		Resource::Ptr created = factory->create(resname);
+		return created;
+	}
+
 	void ResourceManager::addResource(Resource *res)
 	{
 		tbb::mutex::scoped_lock lock(mutex);

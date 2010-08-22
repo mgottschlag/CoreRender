@@ -19,31 +19,39 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_OPENGL_VERTEXBUFFEROPENGL_HPP_INCLUDED_
-#define _CORERENDER_RENDER_OPENGL_VERTEXBUFFEROPENGL_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_RENDERRESOURCEFACTORY_HPP_INCLUDED_
+#define _CORERENDER_RENDER_RENDERRESOURCEFACTORY_HPP_INCLUDED_
 
-#include "CoreRender/render/VertexBuffer.hpp"
+#include "../res/ResourceFactory.hpp"
 
 namespace cr
 {
 namespace render
 {
-namespace opengl
-{
-	class VertexBufferOpenGL : public VertexBuffer
+	class VideoDriver;
+	class Renderer;
+
+	template<class T> class RenderResourceFactory : public res::ResourceFactory
 	{
 		public:
-			VertexBufferOpenGL(Renderer *renderer,
-			                   res::ResourceManager *rmgr,
-			                   const std::string &name);
-			virtual ~VertexBufferOpenGL();
+			RenderResourceFactory(render::VideoDriver *driver,
+			                      render::Renderer *renderer,
+			                      res::ResourceManager *rmgr)
+				: res::ResourceFactory(rmgr), driver(driver), renderer(renderer)
+			{
+			}
+			virtual ~RenderResourceFactory()
+			{
+			}
 
-			virtual bool create();
-			virtual bool destroy();
-			virtual bool upload();
+			virtual res::Resource::Ptr create(const std::string &name)
+			{
+				return new T(driver, renderer, getManager(), name);
+			}
 		private:
+			render::VideoDriver *driver;
+			render::Renderer *renderer;
 	};
-}
 }
 }
 

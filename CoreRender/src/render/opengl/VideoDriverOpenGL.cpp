@@ -86,10 +86,9 @@ namespace opengl
 	}
 	VertexBuffer::Ptr VideoDriverOpenGL::createVertexBuffer(Renderer *renderer,
 	                                             res::ResourceManager *rmgr,
-	                                             const std::string &name,
-	                                             VertexBufferUsage::List usage)
+	                                             const std::string &name)
 	{
-		return new VertexBufferOpenGL(renderer, rmgr, name, usage);
+		return new VertexBufferOpenGL(renderer, rmgr, name);
 	}
 	Shader::Ptr VideoDriverOpenGL::createShader(Renderer *renderer,
 	                                            res::ResourceManager *rmgr,

@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "../core/FileSystem.hpp"
 #include "../core/Log.hpp"
 #include "Resource.hpp"
+#include "ResourceFactory.hpp"
 
 #include <map>
 #include <tbb/mutex.h>
@@ -43,6 +44,55 @@ namespace res
 
 			bool init();
 			bool shutdown();
+
+			void addFactory(const std::string &name, ResourceFactory::Ptr factory);
+			void removeFactory(const std::string &name);
+			ResourceFactory::Ptr getFactory(const std::string &name);
+
+			Resource::Ptr getOrLoad(const std::string &type,
+			                        const std::string &path,
+			                        const std::string &name = "");
+			/**
+			 * @note This function only does a static check of the pointer, so
+			 * take care that the factory produces instances of the correct+
+			 * class.
+			 */
+			template<class T> typename T::Ptr getOrLoad(const std::string &type,
+			                                            const std::string &path,
+			                                            const std::string &name = "")
+			{
+				// TODO: Dynamic checks in debug version?
+				Resource::Ptr res = getOrLoad(type, path, name);
+				typename T::Ptr derived = (T*)res.get();
+				return derived;
+			}
+
+			Resource::Ptr getOrCreate(const std::string &type,
+			                          const std::string &name);
+			/**
+			 * @note This function only does a static check of the pointer, so
+			 * take care that the factory produces instances of the correct+
+			 * class.
+			 */
+			template<class T> typename T::Ptr getOrCreate(const std::string &type,
+			                                              const std::string &name)
+			{
+				// TODO: Dynamic checks in debug version?
+				Resource::Ptr res = getOrLoad(type, name);
+				typename T::Ptr derived = (T*)res.get();
+				return derived;
+			}
+
+			Resource::Ptr createResource(const std::string &type,
+			                             const std::string &name = "");
+			template<class T> typename T::Ptr createResource(const std::string &type,
+			                                                 const std::string &name = "")
+			{
+				// TODO: Dynamic checks in debug version?
+				Resource::Ptr res = createResource(type, name);
+				typename T::Ptr derived = (T*)res.get();
+				return derived;
+			}
 
 			void addResource(Resource *res);
 			void removeResource(Resource *res);
@@ -66,6 +116,10 @@ namespace res
 		private:
 			typedef std::map<std::string, Resource*> ResourceMap;
 			ResourceMap resources;
+
+			tbb::spin_mutex factorymutex;
+			typedef std::map<std::string, ResourceFactory::Ptr> FactoryMap;
+			FactoryMap factories;
 
 			unsigned int namecounter;
 

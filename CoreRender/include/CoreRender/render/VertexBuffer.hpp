@@ -45,12 +45,12 @@ namespace render
 		public:
 			VertexBuffer(Renderer *renderer,
 			             res::ResourceManager *rmgr,
-			             const std::string &name,
-			             VertexBufferUsage::List usage);
+			             const std::string &name);
 			virtual ~VertexBuffer();
 
 			void set(unsigned int size,
 			         void *data,
+			         VertexBufferUsage::List usage = VertexBufferUsage::Static,
 			         bool copy = true);
 			void update(unsigned int offset,
 			            unsigned int size,

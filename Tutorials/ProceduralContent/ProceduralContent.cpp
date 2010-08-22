@@ -118,19 +118,20 @@ int main(int argc, char **argv)
 		return -1;
 	}
 	graphics.getLog()->setConsoleLevel(cr::core::LogLevel::Debug);
+	cr::res::ResourceManager *rmgr = graphics.getResourceManager();
 
 	// Load some resources
-	cr::render::Texture2D::Ptr texture = graphics.createTexture2D();
+	cr::render::Texture2D::Ptr texture = rmgr->createResource<cr::render::Texture2D>("Texture2D");
 	texture->set(8,
 	             8,
 	             cr::render::TextureFormat::RGBA8,
 	             cr::render::TextureFormat::RGBA8,
 	             texdata);
-	cr::render::VertexBuffer::Ptr vb = graphics.createVertexBuffer();
+	cr::render::VertexBuffer::Ptr vb = rmgr->createResource<cr::render::VertexBuffer>("VertexBuffer");
 	vb->set(24 * 8 * sizeof(float), vertices);
-	cr::render::IndexBuffer::Ptr ib = graphics.createIndexBuffer();
+	cr::render::IndexBuffer::Ptr ib = rmgr->createResource<cr::render::IndexBuffer>("IndexBuffer");
 	ib->set(36 * sizeof(unsigned short), indices);
-	cr::render::ShaderText::Ptr shader = graphics.createShaderText("testshader");
+	cr::render::ShaderText::Ptr shader = rmgr->createResource<cr::render::ShaderText>("ShaderText");
 	shader->addText("VS_COMMON", vs);
 	shader->addText("FS_AMBIENT", fs);
 	shader->addContext("AMBIENT", "VS_COMMON", "FS_AMBIENT");
@@ -141,7 +142,7 @@ int main(int argc, char **argv)
 	float defscale[2] = {1.0f, 1.0f};
 	shader->addUniform("scale", cr::render::ShaderVariableType::Float2, defscale);
 	shader->addUniform("worldMat", cr::render::ShaderVariableType::Float4x4, 0);
-	cr::render::Material::Ptr material = graphics.createMaterial("testmat");
+	cr::render::Material::Ptr material = rmgr->createResource<cr::render::Material>("Material");
 	material->addTexture("tex", texture);
 	material->setShader(shader);
 	// Create vertex layout

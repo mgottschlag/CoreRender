@@ -147,9 +147,8 @@ namespace render
 			if (flagattrib)
 				flags = flagattrib;
 			// Load shader
-			// TODO: Look for existing shader
-			ShaderText::Ptr shader = new ShaderText(driver, renderer, getManager(), shaderfile);
-			shader->loadFromFile(shaderfile);
+			ShaderText::Ptr shader;
+			shader = getManager()->getOrLoad<ShaderText>("ShaderText", shaderfile);
 			setShader(shader);
 			setShaderFlags(flags);
 		}
@@ -178,10 +177,9 @@ namespace render
 			}
 			// Load texture
 			// TODO: Texture types
-			Texture::Ptr texture = driver->createTexture2D(renderer,
-			                                               getManager(),
-														   fs->getPath(file, directory));
-			texture->loadFromFile(fs->getPath(file, directory));
+			Texture::Ptr texture;
+			texture = getManager()->getOrLoad<Texture2D>("Texture2D",
+			                                             fs->getPath(file, directory));
 			// Add texture
 			addTexture(name, texture);
 		}

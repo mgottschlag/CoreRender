@@ -64,10 +64,9 @@ namespace null
 			}
 			virtual VertexBuffer::Ptr createVertexBuffer(Renderer *renderer,
 			                                             res::ResourceManager *rmgr,
-			                                             const std::string &name,
-			                                             VertexBufferUsage::List usage)
+			                                             const std::string &name)
 			{
-				return new VertexBuffer(renderer, rmgr, name, usage);
+				return new VertexBuffer(renderer, rmgr, name);
 			}
 			virtual Shader::Ptr createShader(Renderer *renderer,
 			                                 res::ResourceManager *rmgr,

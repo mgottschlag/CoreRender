@@ -211,11 +211,8 @@ namespace render
 			res::ResourceManager *rmgr = getManager();
 			Mesh mesh;
 			mesh.batch = batchindex;
-			mesh.material = new Material(driver,
-			                             renderer,
-			                             rmgr,
-			                             rmgr->getInternalName());
-			mesh.material->loadFromFile(fs->getPath(materialfile, directory));
+			std::string materialpath = fs->getPath(materialfile, directory);
+			mesh.material = rmgr->getOrLoad<Material>("Material", materialpath);
 			mesh.transformation = transmat;
 			addMesh(mesh);
 		}
@@ -270,13 +267,8 @@ namespace render
 		}
 		// Construct vertex/index buffers
 		res::ResourceManager *rmgr = getManager();
-		vertexbuffer = driver->createVertexBuffer(renderer,
-		                                          rmgr,
-		                                          rmgr->getInternalName(),
-		                                          VertexBufferUsage::Static);
-		indexbuffer = driver->createIndexBuffer(renderer,
-		                                        rmgr,
-		                                        rmgr->getInternalName());
+		vertexbuffer = rmgr->createResource<VertexBuffer>("VertexBuffer");
+		indexbuffer = rmgr->createResource<IndexBuffer>("IndexBuffer");
 		if (!vertexbuffer || !indexbuffer)
 		{
 			getManager()->getLog()->error("%s: Could not create buffers.",
@@ -285,7 +277,10 @@ namespace render
 			free(indexdata);
 			return false;
 		}
-		vertexbuffer->set(header.vertexdatasize, vertexdata, false);
+		vertexbuffer->set(header.vertexdatasize,
+		                  vertexdata,
+		                  VertexBufferUsage::Static,
+		                  false);
 		indexbuffer->set(header.indexdatasize, indexdata, false);
 		// Read batch info
 		std::vector<GeometryFile::Batch> batchdata(header.batchcount);

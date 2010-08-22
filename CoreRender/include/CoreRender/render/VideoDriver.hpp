@@ -59,8 +59,7 @@ namespace render
 			                                           const std::string &name) = 0;
 			virtual VertexBuffer::Ptr createVertexBuffer(Renderer *renderer,
 			                                             res::ResourceManager *rmgr,
-			                                             const std::string &name,
-			                                             VertexBufferUsage::List usage) = 0;
+			                                             const std::string &name) = 0;
 			virtual Shader::Ptr createShader(Renderer *renderer,
 			                                 res::ResourceManager *rmgr,
 			                                 const std::string &name) = 0;

@@ -77,24 +77,6 @@ namespace render
 			bool beginFrame();
 			bool endFrame();
 
-			Texture2D::Ptr getTexture2D(const std::string &name);
-			Texture2D::Ptr loadTexture2D(const std::string &path,
-			                             const std::string &name = "");
-			Texture2D::Ptr createTexture2D(const std::string &name = "");
-
-			VertexBuffer::Ptr createVertexBuffer(const std::string &name = "",
-				VertexBufferUsage::List usage = VertexBufferUsage::Static);
-			IndexBuffer::Ptr createIndexBuffer(const std::string &name = "");
-			ShaderText::Ptr loadShaderText(const std::string &path,
-			                               const std::string &name = "");
-			ShaderText::Ptr createShaderText(const std::string &name = "");
-			Material::Ptr loadMaterial(const std::string &path,
-			                           const std::string &name = "");
-			Material::Ptr createMaterial(const std::string &name = "");
-			Model::Ptr loadModel(const std::string &path,
-			                     const std::string &name = "");
-			Model::Ptr createModel(const std::string &name = "");
-
 			void setFileSystem(core::FileSystem::Ptr fs);
 			core::FileSystem::Ptr getFileSystem()
 			{

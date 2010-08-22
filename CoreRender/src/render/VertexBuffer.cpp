@@ -30,9 +30,8 @@ namespace render
 {
 	VertexBuffer::VertexBuffer(Renderer *renderer,
 	             res::ResourceManager *rmgr,
-	             const std::string &name,
-	             VertexBufferUsage::List usage)
-		: RenderResource(renderer, rmgr, name), handle(0), usage(usage),
+	             const std::string &name)
+		: RenderResource(renderer, rmgr, name), handle(0),
 		size(0), data(0)
 	{
 	}
@@ -44,6 +43,7 @@ namespace render
 
 	void VertexBuffer::set(unsigned int size,
 	                       void *data,
+	                       VertexBufferUsage::List usage,
 	                       bool copy)
 	{
 		// Copy the data
@@ -62,6 +62,7 @@ namespace render
 			prevdata = this->data;
 			this->size = size;
 			this->data = datacopy;
+			this->usage = usage;
 		}
 		// Delete old data
 		if (prevdata)

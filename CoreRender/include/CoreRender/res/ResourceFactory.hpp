@@ -19,31 +19,39 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_OPENGL_VERTEXBUFFEROPENGL_HPP_INCLUDED_
-#define _CORERENDER_RENDER_OPENGL_VERTEXBUFFEROPENGL_HPP_INCLUDED_
+#ifndef _CORERENDER_RES_RESOURCEFACTORY_HPP_INCLUDED_
+#define _CORERENDER_RES_RESOURCEFACTORY_HPP_INCLUDED_
 
-#include "CoreRender/render/VertexBuffer.hpp"
+#include "Resource.hpp"
 
 namespace cr
 {
-namespace render
+namespace res
 {
-namespace opengl
-{
-	class VertexBufferOpenGL : public VertexBuffer
+	class ResourceManager;
+
+	class ResourceFactory : public core::ReferenceCounted
 	{
 		public:
-			VertexBufferOpenGL(Renderer *renderer,
-			                   res::ResourceManager *rmgr,
-			                   const std::string &name);
-			virtual ~VertexBufferOpenGL();
+			ResourceFactory(ResourceManager *rmgr)
+				: rmgr(rmgr)
+			{
+			}
+			virtual ~ResourceFactory()
+			{
+			}
 
-			virtual bool create();
-			virtual bool destroy();
-			virtual bool upload();
+			virtual Resource::Ptr create(const std::string &name) = 0;
+
+			ResourceManager *getManager()
+			{
+				return rmgr;
+			}
+
+			typedef core::SharedPointer<ResourceFactory> Ptr;
 		private:
+			ResourceManager *rmgr;
 	};
-}
 }
 }
 

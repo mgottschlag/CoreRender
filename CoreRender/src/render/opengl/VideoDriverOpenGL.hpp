@@ -49,8 +49,7 @@ namespace opengl
 			                                           const std::string &name);
 			virtual VertexBuffer::Ptr createVertexBuffer(Renderer *renderer,
 			                                             res::ResourceManager *rmgr,
-			                                             const std::string &name,
-			                                             VertexBufferUsage::List usage);
+			                                             const std::string &name);
 			virtual Shader::Ptr createShader(Renderer *renderer,
 			                                 res::ResourceManager *rmgr,
 			                                 const std::string &name);

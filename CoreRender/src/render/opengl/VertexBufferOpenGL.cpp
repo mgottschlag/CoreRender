@@ -31,9 +31,8 @@ namespace opengl
 {
 	VertexBufferOpenGL::VertexBufferOpenGL(Renderer *renderer,
 	                                       res::ResourceManager *rmgr,
-	                                       const std::string &name,
-	                                       VertexBufferUsage::List usage)
-		: VertexBuffer(renderer, rmgr, name, usage)
+	                                       const std::string &name)
+		: VertexBuffer(renderer, rmgr, name)
 	{
 	}
 	VertexBufferOpenGL::~VertexBufferOpenGL()

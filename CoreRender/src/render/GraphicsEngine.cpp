@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/RenderContextNull.hpp"
 #include "CoreRender/render/Renderer.hpp"
 #include "CoreRender/render/RenderThread.hpp"
+#include "CoreRender/render/RenderResourceFactory.hpp"
 
 #if defined(CORERENDER_USE_SDL)
 	#include "opengl/RenderContextSDL.hpp"
@@ -40,6 +41,70 @@ namespace cr
 {
 namespace render
 {
+	class Texture2DFactory : public res::ResourceFactory
+	{
+		public:
+			Texture2DFactory(render::VideoDriver *driver,
+			                      render::Renderer *renderer,
+			                      res::ResourceManager *rmgr)
+				: res::ResourceFactory(rmgr), driver(driver), renderer(renderer)
+			{
+			}
+			virtual ~Texture2DFactory()
+			{
+			}
+
+			virtual res::Resource::Ptr create(const std::string &name)
+			{
+				return driver->createTexture2D(renderer, getManager(), name);
+			}
+		private:
+			render::VideoDriver *driver;
+			render::Renderer *renderer;
+	};
+	class VertexBufferFactory : public res::ResourceFactory
+	{
+		public:
+			VertexBufferFactory(render::VideoDriver *driver,
+			                      render::Renderer *renderer,
+			                      res::ResourceManager *rmgr)
+				: res::ResourceFactory(rmgr), driver(driver), renderer(renderer)
+			{
+			}
+			virtual ~VertexBufferFactory()
+			{
+			}
+
+			virtual res::Resource::Ptr create(const std::string &name)
+			{
+				return driver->createVertexBuffer(renderer, getManager(), name);
+			}
+		private:
+			render::VideoDriver *driver;
+			render::Renderer *renderer;
+	};
+	class IndexBufferFactory : public res::ResourceFactory
+	{
+		public:
+			IndexBufferFactory(render::VideoDriver *driver,
+			                      render::Renderer *renderer,
+			                      res::ResourceManager *rmgr)
+				: res::ResourceFactory(rmgr), driver(driver), renderer(renderer)
+			{
+			}
+			virtual ~IndexBufferFactory()
+			{
+			}
+
+			virtual res::Resource::Ptr create(const std::string &name)
+			{
+				return driver->createIndexBuffer(renderer, getManager(), name);
+			}
+		private:
+			render::VideoDriver *driver;
+			render::Renderer *renderer;
+	};
+
 	GraphicsEngine::GraphicsEngine()
 		: rmgr(0), multithreaded(true), renderer(0), renderthread(0)
 	{
@@ -137,6 +202,20 @@ namespace render
 				return false;
 			}
 		}
+		// Register resource types
+		res::ResourceFactory::Ptr factory;
+		factory = new RenderResourceFactory<Material>(driver, renderer, rmgr);
+		rmgr->addFactory("Material", factory);
+		factory = new RenderResourceFactory<Model>(driver, renderer, rmgr);
+		rmgr->addFactory("Model", factory);
+		factory = new RenderResourceFactory<ShaderText>(driver, renderer, rmgr);
+		rmgr->addFactory("ShaderText", factory);
+		factory = new Texture2DFactory(driver, renderer, rmgr);
+		rmgr->addFactory("Texture2D", factory);
+		factory = new IndexBufferFactory(driver, renderer, rmgr);
+		rmgr->addFactory("IndexBuffer", factory);
+		factory = new VertexBufferFactory(driver, renderer, rmgr);
+		rmgr->addFactory("VertexBuffer", factory);
 		return true;
 	}
 	bool GraphicsEngine::resize(unsigned int width,
@@ -236,117 +315,6 @@ namespace render
 	{
 		tbb::spin_mutex::scoped_lock lock(pipelinemutex);
 		return pipelines.size();
-	}
-
-	Texture2D::Ptr GraphicsEngine::getTexture2D(const std::string &name)
-	{
-		// TODO
-		return 0;
-	}
-	Texture2D::Ptr GraphicsEngine::loadTexture2D(const std::string &path,
-	                                             const std::string &name)
-	{
-		Texture2D::Ptr texture;
-		if (name.size() == 0)
-			texture = createTexture2D(path);
-		else
-			texture = createTexture2D(name);
-		texture->loadFromFile(path);
-		return texture;
-	}
-	Texture2D::Ptr GraphicsEngine::createTexture2D(const std::string &name)
-	{
-		if (name == "")
-			return driver->createTexture2D(renderer, rmgr, rmgr->getInternalName());
-		else
-		{
-			// TODO: Check whether a resource with that name already exists
-			return driver->createTexture2D(renderer, rmgr, name);
-		}
-	}
-	VertexBuffer::Ptr GraphicsEngine::createVertexBuffer(const std::string &name,
-	                                                     VertexBufferUsage::List usage)
-	{
-		if (name == "")
-			return driver->createVertexBuffer(renderer, rmgr, rmgr->getInternalName(), usage);
-		else
-		{
-			// TODO: Check whether a resource with that name already exists
-			return driver->createVertexBuffer(renderer, rmgr, name, usage);
-		}
-	}
-	IndexBuffer::Ptr GraphicsEngine::createIndexBuffer(const std::string &name)
-	{
-		if (name == "")
-			return driver->createIndexBuffer(renderer, rmgr, rmgr->getInternalName());
-		else
-		{
-			// TODO: Check whether a resource with that name already exists
-			return driver->createIndexBuffer(renderer, rmgr, name);
-		}
-	}
-	ShaderText::Ptr GraphicsEngine::loadShaderText(const std::string &path,
-	                                               const std::string &name)
-	{
-		ShaderText::Ptr shader;
-		if (name.size() == 0)
-			shader = createShaderText(path);
-		else
-			shader = createShaderText(name);
-		shader->loadFromFile(path);
-		return shader;
-	}
-	ShaderText::Ptr GraphicsEngine::createShaderText(const std::string &name)
-	{
-		if (name == "")
-			return new ShaderText(driver, renderer, rmgr, rmgr->getInternalName());
-		else
-		{
-			// TODO: Check whether a resource with that name already exists
-			return new ShaderText(driver, renderer, rmgr, name);
-		}
-	}
-	Material::Ptr GraphicsEngine::loadMaterial(const std::string &path,
-	                                           const std::string &name)
-	{
-		Material::Ptr material;
-		if (name.size() == 0)
-			material = createMaterial(path);
-		else
-			material = createMaterial(name);
-		material->loadFromFile(path);
-		return material;
-	}
-	Material::Ptr GraphicsEngine::createMaterial(const std::string &name)
-	{
-		if (name == "")
-			return new Material(driver, renderer, rmgr, rmgr->getInternalName());
-		else
-		{
-			// TODO: Check whether a resource with that name already exists
-			return new Material(driver, renderer, rmgr, name);
-		}
-	}
-	Model::Ptr GraphicsEngine::loadModel(const std::string &path,
-	                                     const std::string &name)
-	{
-		Model::Ptr model;
-		if (name.size() == 0)
-			model = createModel(path);
-		else
-			model = createModel(name);
-		model->loadFromFile(path);
-		return model;
-	}
-	Model::Ptr GraphicsEngine::createModel(const std::string &name)
-	{
-		if (name == "")
-			return new Model(driver, renderer, rmgr, rmgr->getInternalName());
-		else
-		{
-			// TODO: Check whether a resource with that name already exists
-			return new Model(driver, renderer, rmgr, name);
-		}
 	}
 
 	void GraphicsEngine::setFileSystem(core::FileSystem::Ptr fs)
