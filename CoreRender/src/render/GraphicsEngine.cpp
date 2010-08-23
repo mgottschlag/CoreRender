@@ -26,6 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/Renderer.hpp"
 #include "CoreRender/render/RenderThread.hpp"
 #include "CoreRender/render/RenderResourceFactory.hpp"
+#include "CoreRender/render/Animation.hpp"
 
 #if defined(CORERENDER_USE_SDL)
 	#include "opengl/RenderContextSDL.hpp"
@@ -103,6 +104,22 @@ namespace render
 		private:
 			render::VideoDriver *driver;
 			render::Renderer *renderer;
+	};
+	class AnimationFactory : public res::ResourceFactory
+	{
+		public:
+			AnimationFactory(res::ResourceManager *rmgr)
+				: res::ResourceFactory(rmgr)
+			{
+			}
+			virtual ~AnimationFactory()
+			{
+			}
+
+			virtual res::Resource::Ptr create(const std::string &name)
+			{
+				return new Animation(getManager(), name);
+			}
 	};
 
 	GraphicsEngine::GraphicsEngine()
@@ -216,6 +233,8 @@ namespace render
 		rmgr->addFactory("IndexBuffer", factory);
 		factory = new VertexBufferFactory(driver, renderer, rmgr);
 		rmgr->addFactory("VertexBuffer", factory);
+		factory = new AnimationFactory(rmgr);
+		rmgr->addFactory("Animation", factory);
 		return true;
 	}
 	bool GraphicsEngine::resize(unsigned int width,

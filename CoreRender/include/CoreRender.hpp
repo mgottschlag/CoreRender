@@ -48,6 +48,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/res/LoadingThread.hpp"
 #include "CoreRender/res/Resource.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
+#include "CoreRender/render/Animation.hpp"
 #include "CoreRender/render/RenderBatch.hpp"
 #include "CoreRender/render/RenderResource.hpp"
 #include "CoreRender/render/RenderThread.hpp"

@@ -36,6 +36,9 @@ set(SRC
 	include/CoreRender/res/LoadingThread.hpp
 	include/CoreRender/res/Resource.hpp
 	include/CoreRender/res/ResourceManager.hpp
+	include/CoreRender/render/Animation.hpp
+	include/CoreRender/render/AnimationFile.hpp
+	include/CoreRender/render/GeometryFile.hpp
 	include/CoreRender/render/IndexBuffer.hpp
 	include/CoreRender/render/Model.hpp
 	include/CoreRender/render/Pipeline.hpp
@@ -73,6 +76,7 @@ set(SRC
 	src/core/StandardFileSystem.cpp
 	src/core/Thread.cpp
 	src/core/Time.cpp
+	src/render/Animation.cpp
 	src/render/GraphicsEngine.cpp
 	src/render/IndexBuffer.cpp
 	src/render/Material.cpp

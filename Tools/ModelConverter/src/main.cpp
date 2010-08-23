@@ -1,6 +1,7 @@
 
 #include "tinyxml.h"
 #include "../../../CoreRender/include/CoreRender/render/GeometryFile.hpp"
+#include "../../../CoreRender/include/CoreRender/render/AnimationFile.hpp"
 #include <assimp.hpp>
 #include <aiScene.h>
 #include <aiPostProcess.h>
@@ -102,6 +103,152 @@ void writeNode(const aiScene *scene,
 	{
 		writeNode(scene, node->mChildren[i], nodeelem, basename);
 	}
+}
+
+AnimationFile::Frame getAnimationFrame(aiNodeAnim *channel, unsigned int time)
+{
+	AnimationFile::Frame frame;
+	// Default values
+	frame.position[0] = frame.position[1] = frame.position[2] = 0.0f;
+	frame.scale[0] = frame.scale[1] = frame.scale[2] = 1.0f;
+	frame.rotation[0] = frame.rotation[1] = frame.rotation[2] = 0.0f;
+	frame.rotation[3] = 1.0f;
+	// Get position
+	if (channel->mNumPositionKeys > 0)
+	{
+		int secondkey = -1;
+		int firstkey = -1;
+		for (unsigned int i = 0; i < channel->mNumPositionKeys; i++)
+		{
+			if (channel->mPositionKeys[i].mTime >= (double)time)
+			{
+				secondkey = i;
+				break;
+			}
+			else
+			{
+				firstkey = i;
+			}
+		}
+		if (secondkey == -1)
+		{
+			// Just take the last key
+			frame.position[0] = channel->mPositionKeys[firstkey].mValue.x;
+			frame.position[1] = channel->mPositionKeys[firstkey].mValue.y;
+			frame.position[2] = channel->mPositionKeys[firstkey].mValue.z;
+		}
+		else if (firstkey == -1)
+		{
+			// Just take the first key
+			frame.position[0] = channel->mPositionKeys[0].mValue.x;
+			frame.position[1] = channel->mPositionKeys[0].mValue.y;
+			frame.position[2] = channel->mPositionKeys[0].mValue.z;
+		}
+		else
+		{
+			// Interpolate
+			aiVectorKey &first = channel->mPositionKeys[firstkey];
+			aiVectorKey &second = channel->mPositionKeys[secondkey];
+			float factor = ((double)time - first.mTime) / (second.mTime - first.mTime);
+			frame.position[0] = factor * second.mValue.x + (1 - factor) * first.mValue.x;
+			frame.position[1] = factor * second.mValue.y + (1 - factor) * first.mValue.y;
+			frame.position[2] = factor * second.mValue.z + (1 - factor) * first.mValue.z;
+		}
+	}
+	// Get rotation
+	if (channel->mNumRotationKeys > 0)
+	{
+		int secondkey = -1;
+		int firstkey = -1;
+		for (unsigned int i = 0; i < channel->mNumRotationKeys; i++)
+		{
+			if (channel->mRotationKeys[i].mTime >= (double)time)
+			{
+				secondkey = i;
+				break;
+			}
+			else
+			{
+				firstkey = i;
+			}
+		}
+		if (secondkey == -1)
+		{
+			// Just take the last key
+			aiQuaternion rot = channel->mRotationKeys[firstkey].mValue;
+			frame.rotation[0] = rot.x;
+			frame.rotation[1] = rot.y;
+			frame.rotation[2] = rot.z;
+			frame.rotation[3] = rot.w;
+		}
+		else if (firstkey == -1)
+		{
+			// Just take the first key
+			aiQuaternion rot = channel->mRotationKeys[0].mValue;
+			frame.rotation[0] = rot.x;
+			frame.rotation[1] = rot.y;
+			frame.rotation[2] = rot.z;
+			frame.rotation[3] = rot.w;
+		}
+		else
+		{
+			// Interpolate
+			aiQuatKey &first = channel->mRotationKeys[firstkey];
+			aiQuatKey &second = channel->mRotationKeys[secondkey];
+			float factor = ((double)time - first.mTime) / (second.mTime - first.mTime);
+			aiQuaternion rot1 = channel->mRotationKeys[firstkey].mValue;
+			aiQuaternion rot2 = channel->mRotationKeys[secondkey].mValue;
+			aiQuaternion rot;
+			aiQuaternion::Interpolate(rot, rot1, rot2, factor);
+			frame.rotation[0] = rot.x;
+			frame.rotation[1] = rot.y;
+			frame.rotation[2] = rot.z;
+			frame.rotation[3] = rot.w;
+		}
+	}
+	// Get scale
+	if (channel->mNumScalingKeys > 0)
+	{
+		int secondkey = -1;
+		int firstkey = -1;
+		for (unsigned int i = 0; i < channel->mNumScalingKeys; i++)
+		{
+			if (channel->mScalingKeys[i].mTime >= (double)time)
+			{
+				secondkey = i;
+				break;
+			}
+			else
+			{
+				firstkey = i;
+			}
+		}
+		if (secondkey == -1)
+		{
+			// Just take the last key
+			frame.scale[0] = channel->mScalingKeys[firstkey].mValue.x;
+			frame.scale[1] = channel->mScalingKeys[firstkey].mValue.y;
+			frame.scale[2] = channel->mScalingKeys[firstkey].mValue.z;
+		}
+		else if (firstkey == -1)
+		{
+			// Just take the first key
+			frame.scale[0] = channel->mScalingKeys[0].mValue.x;
+			frame.scale[1] = channel->mScalingKeys[0].mValue.y;
+			frame.scale[2] = channel->mScalingKeys[0].mValue.z;
+		}
+		else
+		{
+			// Interpolate
+			aiVectorKey &first = channel->mScalingKeys[firstkey];
+			aiVectorKey &second = channel->mScalingKeys[secondkey];
+			float factor = ((double)time - first.mTime) / (second.mTime - first.mTime);
+			frame.scale[0] = factor * second.mValue.x + (1 - factor) * first.mValue.x;
+			frame.scale[1] = factor * second.mValue.y + (1 - factor) * first.mValue.y;
+			frame.scale[2] = factor * second.mValue.z + (1 - factor) * first.mValue.z;
+		}
+	}
+	return frame;
 }
 
 int main(int argc, char **argv)
@@ -222,7 +369,17 @@ int main(int argc, char **argv)
 			attribs.coloroffset[j] = offset;
 			offset += 4 * sizeof(float);
 		}
-		// TODO: Joints
+		// Joints
+		if (meshsrc->HasBones())
+		{
+			std::cout << "Joint index offset: " << offset << " bytes." << std::endl;
+			attribs.jointoffset = offset;
+			offset += 4;
+			std::cout << "Joint weight offset: " << offset << " bytes." << std::endl;
+			attribs.jointweightoffset = offset;
+			offset += 4 * sizeof(float);
+		}
+		// Compute stride
 		attribs.stride = offset;
 		std::cout << "Stride: " << offset << std::endl;
 		// Round up stride
@@ -331,7 +488,45 @@ int main(int argc, char **argv)
 				color = (float*)((char*)color + batch.attribs.stride);
 			}
 		}
-		// TODO: Joints
+		// Joints
+		if (meshsrc->HasBones())
+		{
+			std::vector<unsigned int> jointcount(meshsrc->mNumVertices, 0);
+			float *firstweight = (float*)((char*)vertices + attribs.jointweightoffset);
+			unsigned char *firstindex = ((unsigned char*)vertices + attribs.jointoffset);
+			// Clear joint info
+			for (unsigned int i = 0; i < meshsrc->mNumBones; i++)
+			{
+				float *weight = (float*)((char*)firstweight + i * batch.attribs.stride);
+				weight[0] = 0.0f;
+				weight[1] = 0.0f;
+				weight[2] = 0.0f;
+				weight[3] = 0.0f;
+				unsigned char *index = (unsigned char*)firstindex + i * batch.attribs.stride;
+				index[0] = 0;
+				index[1] = 0;
+				index[2] = 0;
+				index[3] = 0;
+			}
+			// Add joints
+			for (unsigned int i = 0; i < meshsrc->mNumBones; i++)
+			{
+				aiBone *bone = meshsrc->mBones[i];
+				for (unsigned int j = 0; j < bone->mNumWeights; j++)
+				{
+					unsigned int vertexidx = bone->mWeights[j].mVertexId;
+					float weight = bone->mWeights[j].mWeight;
+					if (jointcount[vertexidx] >= 4)
+						continue;
+					unsigned int vboffset = vertexidx * batch.attribs.stride;
+					float *weightptr = (float*)((char*)firstweight + vboffset);
+					unsigned char *indexptr = firstindex + vboffset;
+					indexptr[jointcount[vertexidx]] = i;
+					weightptr[jointcount[vertexidx]] = weight;
+					jointcount[vertexidx]++;
+				}
+			}
+		}
 		// Get index count
 		unsigned int indexcount = 0;
 		unsigned int minindex = 0xFFFFFFFF;
@@ -355,7 +550,7 @@ int main(int argc, char **argv)
 		}
 		// Allocate index data
 		batch.geom.indexcount = indexcount;
-		// TODO: Use smaller indices if possible
+		// Use smaller indices if possible
 		if (maxindex - minindex < 256)
 			batch.geom.indextype = 1;
 		else if (maxindex - minindex < 65536)
@@ -433,24 +628,22 @@ int main(int argc, char **argv)
 			return -1;
 		}
 		// File header
-		char tag[4] = "CRG";
-		file.write(tag, 4);
-		unsigned int version = 0;
-		file.write((char*)&version, 4);
-		// TODO: Joints
-		file.write((char*)&output.vertexdatasize, 4);
-		file.write((char*)&output.indexdatasize, 4);
-		unsigned int batchcount = output.batches.size();
-		file.write((char*)&batchcount, 4);
+		GeometryFile::Header header;
+		header.tag = GeometryFile::tag;
+		header.version = GeometryFile::version;
+		header.vertexdatasize = output.vertexdatasize;
+		header.indexdatasize = output.indexdatasize;
+		header.batchcount = output.batches.size();
+		file.write((char*)&header, sizeof(header));
 		std::cout << "Written:" << std::endl;
 		std::cout << output.vertexdatasize << " bytes vertices, ";
 		std::cout << output.indexdatasize << " bytes indices, ";
-		std::cout << batchcount << " batches." << std::endl;
+		std::cout << output.batches.size() << " batches." << std::endl;
 		// Write vertex/index data
 		file.write((char*)output.vertexdata, output.vertexdatasize);
 		file.write((char*)output.indexdata, output.indexdatasize);
 		// Write mesh info
-		for (unsigned int i = 0; i < batchcount; i++)
+		for (unsigned int i = 0; i < output.batches.size(); i++)
 		{
 			GeometryFile::Batch &batch = output.batches[i];
 			file.write((char*)&batch.attribs, sizeof(batch.attribs));
@@ -490,5 +683,49 @@ int main(int argc, char **argv)
 	writeNode(scene, scene->mRootNode, root, relfilename);
 	// Save file
 	xml.SaveFile();
+	// Write animations
+	for (unsigned int i = 0; i < scene->mNumAnimations; i++)
+	{
+		aiAnimation *anim = scene->mAnimations[i];
+		std::string animfilename = filename + "." + anim->mName.data + ".anim";
+		if (!strcmp(anim->mName.data, ""))
+			animfilename = filename + ".anim";
+		std::ofstream file(animfilename.c_str());
+		if (!file)
+		{
+			std::cerr << "Could not open " << animfilename + ".geo" << std::endl;
+			return -1;
+		}
+		// Get animation length
+		unsigned int framecount = (unsigned int)anim->mDuration;
+		// Write animation header
+		AnimationFile::Header header;
+		header.tag = AnimationFile::tag;
+		header.version = AnimationFile::version;
+		header.channelcount = anim->mNumChannels;
+		header.framecount = framecount;
+		header.framespersecond = anim->mTicksPerSecond;
+		file.write((char*)&header, sizeof(header));
+		// Write channels
+		for (unsigned int i = 0; i < anim->mNumChannels; i++)
+		{
+			aiNodeAnim *channel = anim->mChannels[i];
+			// Channel header
+			AnimationFile::Channel channelhdr;
+			memset(&channelhdr, 0, sizeof(channelhdr));
+			strncpy(channelhdr.name,
+			        channel->mNodeName.data,
+			        AnimationFile::maxnamesize);
+			channelhdr.constant = 0;
+			// Write frames
+			AnimationFile::Frame *frames = new AnimationFile::Frame[framecount];
+			for (unsigned int i = 0; i < framecount; i++)
+			{
+				frames[i] = getAnimationFrame(channel, i);
+			}
+			file.write((char*)frames, sizeof(AnimationFile::Frame) * framecount);
+			delete[] frames;
+		}
+	}
 	return 0;
 }

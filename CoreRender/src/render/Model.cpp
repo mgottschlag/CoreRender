@@ -402,6 +402,8 @@ namespace render
 			elemcount++;
 		if (attribs.flags & GeometryFile::AttribFlags::HasBitangents)
 			elemcount++;
+		if (attribs.flags & GeometryFile::AttribFlags::HasJoints)
+			elemcount += 2;
 		elemcount += attribs.texcoordcount;
 		elemcount += attribs.colorcount;
 		if (elemcount == 0)
@@ -477,6 +479,25 @@ namespace render
 			                   4,
 			                   attribs.coloroffset[i],
 			                   VertexElementType::Float,
+			                   attribs.stride);
+			elemidx++;
+		}
+		if (attribs.flags & GeometryFile::AttribFlags::HasJoints)
+		{
+			layout->setElement(elemidx,
+			                   "jointweight",
+			                   0,
+			                   4,
+			                   attribs.jointweightoffset,
+			                   VertexElementType::Float,
+			                   attribs.stride);
+			elemidx++;
+			layout->setElement(elemidx,
+			                   "jointindex",
+			                   0,
+			                   4,
+			                   attribs.jointweightoffset,
+			                   VertexElementType::Byte,
 			                   attribs.stride);
 			elemidx++;
 		}
