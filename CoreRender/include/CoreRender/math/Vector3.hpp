@@ -45,7 +45,7 @@ namespace math
 			/**
 			 * Constructor.
 			 */
-			template <class T2> Vector3(T2 x, T2 y, T2 z) : x(x), y(y), z(z)
+			Vector3(T x, T y, T z) : x(x), y(y), z(z)
 			{
 			}
 			/**

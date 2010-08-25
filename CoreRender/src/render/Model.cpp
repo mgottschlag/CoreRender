@@ -377,7 +377,7 @@ namespace render
 			for (unsigned int j = 0; j < batchdata[i].geom.jointcount; j++)
 			{
 				math::Matrix4 &jointmat = batches[i].joints[j].jointmat;
-				memcpy(&jointmat.x[0],
+				memcpy(&jointmat.m[0],
 				       &batchdata[i].jointmatrices[j * 16],
 				       sizeof(float) * 16);
 			}
@@ -533,13 +533,13 @@ namespace render
 		Node *currentnode = addNode(name, parent);
 		// Read transformation
 		TiXmlElement *transelem = xml->FirstChildElement("Transformation");
-		math::Matrix4 transmat;
+		math::Matrix4 transmat = math::Matrix4::Identity();
 		if (transelem)
 		{
 			std::istringstream matstream(transelem->GetText());
 			for (unsigned int i = 0; i < 16; i++)
 			{
-				matstream >> transmat.x[i];
+				matstream >> transmat.m[i];
 				char separator;
 				matstream >> separator;
 			}

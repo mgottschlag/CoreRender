@@ -38,24 +38,25 @@ namespace math
 			{
 				for (unsigned int i = 0; i < 9; i++)
 				{
-					x[i] = other.x[i];
+					m[i] = other.m[i];
 				}
 			}
 			Matrix3(float m00, float m01, float m02,
 			        float m10, float m11, float m12,
 			        float m20, float m21, float m22)
 			{
-				m[0][0] = m00;
-				m[0][1] = m01;
-				m[0][2] = m02;
+				Matrix3 &m = *this;
+				m(0, 0) = m00;
+				m(0, 1) = m01;
+				m(0, 2) = m02;
 
-				m[1][0] = m10;
-				m[1][1] = m11;
-				m[1][2] = m12;
+				m(1, 0) = m10;
+				m(1, 1) = m11;
+				m(1, 2) = m12;
 
-				m[2][0] = m20;
-				m[2][1] = m21;
-				m[2][2] = m22;
+				m(2, 0) = m20;
+				m(2, 1) = m21;
+				m(2, 2) = m22;
 			}
 			static Matrix3 Identity()
 			{
@@ -64,32 +65,36 @@ namespace math
 				               0, 0, 1);
 			}
 
-			Matrix3 operator*(const Matrix3 &o)
+			Matrix3 operator*(const Matrix3 &o) const
 			{
-				return Matrix3(m[0][0] * o.m[0][0] + m[1][0] * o.m[0][1] + m[2][0] * o.m[0][2],
-				               m[0][1] * o.m[0][0] + m[1][1] * o.m[0][1] + m[2][1] * o.m[0][2],
-				               m[0][2] * o.m[0][0] + m[1][2] * o.m[0][1] + m[2][2] * o.m[0][2],
+				const Matrix3 &m = *this;
+				return Matrix3(m(0, 0) * o(0, 0) + m(1, 0) * o(0, 1) + m(2, 0) * o(0, 2),
+				               m(0, 1) * o(0, 0) + m(1, 1) * o(0, 1) + m(2, 1) * o(0, 2),
+				               m(0, 2) * o(0, 0) + m(1, 2) * o(0, 1) + m(2, 2) * o(0, 2),
 
-				               m[0][0] * o.m[1][0] + m[1][0] * o.m[1][1] + m[2][0] * o.m[1][2],
-				               m[0][1] * o.m[1][0] + m[1][1] * o.m[1][1] + m[2][1] * o.m[1][2],
-				               m[0][2] * o.m[1][0] + m[1][2] * o.m[1][1] + m[2][2] * o.m[1][2],
+				               m(0, 0) * o(1, 0) + m(1, 0) * o(1, 1) + m(2, 0) * o(1, 2),
+				               m(0, 1) * o(1, 0) + m(1, 1) * o(1, 1) + m(2, 1) * o(1, 2),
+				               m(0, 2) * o(1, 0) + m(1, 2) * o(1, 1) + m(2, 2) * o(1, 2),
 
-				               m[0][0] * o.m[2][0] + m[1][0] * o.m[2][1] + m[2][0] * o.m[2][2],
-				               m[0][1] * o.m[2][0] + m[1][1] * o.m[2][1] + m[2][1] * o.m[2][2],
-				               m[0][2] * o.m[2][0] + m[1][2] * o.m[2][1] + m[2][2] * o.m[2][2]);
+				               m(0, 0) * o(2, 0) + m(1, 0) * o(2, 1) + m(2, 0) * o(2, 2),
+				               m(0, 1) * o(2, 0) + m(1, 1) * o(2, 1) + m(2, 1) * o(2, 2),
+				               m(0, 2) * o(2, 0) + m(1, 2) * o(2, 1) + m(2, 2) * o(2, 2));
 			}
 
-			union
+			float &operator()(int row, int column)
 			{
-				/**
-				 * Matrix data. First index is the row, the second the column.
-				 */
-				float m[3][3];
-				/**
-				 * Matrix data for linear access.
-				 */
-				float x[9];
-			};
+				return m[row + column * 3];
+			}
+			const float &operator()(int row, int column) const
+			{
+				return m[row + column * 3];
+			}
+
+			/**
+			 * Matrix data for linear access. The values are stored in a
+			 * row-major format, so the first row is at indices 0-2.
+			 */
+			float m[9];
 	};
 }
 }

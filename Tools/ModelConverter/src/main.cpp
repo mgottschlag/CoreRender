@@ -266,8 +266,7 @@ int main(int argc, char **argv)
 	                                         aiProcess_CalcTangentSpace |
 	                                         aiProcess_Triangulate |
 	                                         aiProcess_JoinIdenticalVertices |
-	                                         aiProcess_SortByPType |
-	                                         aiProcess_FlipWindingOrder);
+	                                         aiProcess_SortByPType);
 	if (!scene)
 	{
 		std::cerr << "Importing the model failed: " << importer.GetErrorString() << std::endl;

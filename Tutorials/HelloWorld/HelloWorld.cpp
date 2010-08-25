@@ -55,10 +55,14 @@ int main(int argc, char **argv)
 	cr::render::RenderPass::Ptr pass = new cr::render::RenderPass("AMBIENT");
 	pipeline->addPass(pass);
 	graphics.addPipeline(pipeline);
+	// Setup camera matrix
+	cr::math::Matrix4 projmat = cr::math::Matrix4::PerspectiveFOV(60.0f, 4.0f/3.0f, 1.0f, 1000.0f);
+	projmat = projmat * cr::math::Matrix4::TransMat(cr::math::Vector3F(0, 0, -2.5));
+	projmat = projmat * cr::math::Quaternion(cr::math::Vector3F(-45.0, 0.0, 0.0)).toMatrix();
 	// Wait for resources to be loaded
 	model->waitForLoading(true);
 	// Model render job
-	cr::math::Matrix4 matrix = cr::math::Matrix4::ScaleMat(cr::math::Vector3F(0.5f, 0.5f, 0.5f));
+	cr::math::Matrix4 matrix = projmat;
 	std::vector<cr::render::RenderJob*> modeljobs(model->getMeshCount());
 	for (unsigned int i = 0; i < model->getMeshCount(); i++)
 	{
