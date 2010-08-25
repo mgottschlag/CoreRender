@@ -19,45 +19,55 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_PIPELINE_HPP_INCLUDED_
-#define _CORERENDER_RENDER_PIPELINE_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_MODELRENDERABLE_HPP_INCLUDED_
+#define _CORERENDER_RENDER_MODELRENDERABLE_HPP_INCLUDED_
 
-#include "RenderPass.hpp"
-#include "RenderJob.hpp"
-#include "PipelineInfo.hpp"
+#include "SpatialRenderable.hpp"
+#include "Model.hpp"
+#include "Animation.hpp"
 
 namespace cr
 {
 namespace render
 {
-	class RenderJob;
-	class Renderable;
-
-	class Pipeline : public core::ReferenceCounted
+	class ModelRenderable : public SpatialRenderable
 	{
 		public:
-			Pipeline();
-			virtual ~Pipeline();
+			ModelRenderable();
+			virtual ~ModelRenderable();
 
-			/**
-			 * @note Not thread-safe.
-			 */
-			void addPass(RenderPass::Ptr pass);
-			void removePass(RenderPass::Ptr pass);
-			void removePass(unsigned int index);
-			RenderPass::Ptr getPass(unsigned int index);
-			unsigned int getPassCount();
+			void setModel(Model::Ptr model);
+			Model::Ptr getModel();
 
-			void submit(Renderable *renderable);
-			void submit(RenderJob *job);
+			struct AnimStage
+			{
+				Animation::Ptr anim;
+				float weight;
+				bool additive;
+				std::string startnode;
+			};
 
-			void beginFrame();
-			void prepare(PipelineInfo *info);
-			void render(VideoDriver *driver);
+			unsigned int addAnimStage(Animation::Ptr anim,
+			                          float weight,
+			                          bool additive = false,
+			                          std::string startnode = "");
+			AnimStage *getAnimStage(unsigned int index);
+			void removeAnimStage(unsigned int index);
+			unsigned int getAnimStateCount();
 
-			typedef core::SharedPointer<Pipeline> Ptr;
+			virtual unsigned int beginRendering();
+			virtual RenderJob *getJob(unsigned int index);
+			virtual void endRendering();
+
+			UniformData &getUniformData()
+			{
+				return uniforms;
+			}
 		private:
-			std::vector<RenderPass::Ptr> passes;
+			Model::Ptr model;
+			std::vector<AnimStage> animstages;
+			UniformData uniforms;
+			std::vector<cr::render::RenderJob> jobs;
 	};
 }
 }

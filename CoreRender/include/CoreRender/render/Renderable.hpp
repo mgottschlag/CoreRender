@@ -19,45 +19,31 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_PIPELINE_HPP_INCLUDED_
-#define _CORERENDER_RENDER_PIPELINE_HPP_INCLUDED_
-
-#include "RenderPass.hpp"
-#include "RenderJob.hpp"
-#include "PipelineInfo.hpp"
+#ifndef _CORERENDER_RENDER_RENDERABLE_HPP_INCLUDED_
+#define _CORERENDER_RENDER_RENDERABLE_HPP_INCLUDED_
 
 namespace cr
 {
 namespace render
 {
 	class RenderJob;
-	class Renderable;
 
-	class Pipeline : public core::ReferenceCounted
+	class Renderable
 	{
 		public:
-			Pipeline();
-			virtual ~Pipeline();
+			Renderable()
+			{
+			}
+			virtual ~Renderable()
+			{
+			}
 
-			/**
-			 * @note Not thread-safe.
-			 */
-			void addPass(RenderPass::Ptr pass);
-			void removePass(RenderPass::Ptr pass);
-			void removePass(unsigned int index);
-			RenderPass::Ptr getPass(unsigned int index);
-			unsigned int getPassCount();
-
-			void submit(Renderable *renderable);
-			void submit(RenderJob *job);
-
-			void beginFrame();
-			void prepare(PipelineInfo *info);
-			void render(VideoDriver *driver);
-
-			typedef core::SharedPointer<Pipeline> Ptr;
+			virtual unsigned int beginRendering() = 0;
+			virtual RenderJob *getJob(unsigned int index) = 0;
+			virtual void endRendering()
+			{
+			}
 		private:
-			std::vector<RenderPass::Ptr> passes;
 	};
 }
 }

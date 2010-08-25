@@ -21,6 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "CoreRender/render/Pipeline.hpp"
 #include "CoreRender/render/RenderBatch.hpp"
+#include "CoreRender/render/Renderable.hpp"
 
 #include <cstring>
 
@@ -65,6 +66,14 @@ namespace render
 		return passes.size();
 	}
 
+	void Pipeline::submit(Renderable *renderable)
+	{
+		unsigned int jobcount = renderable->beginRendering();
+		// TODO: Reduce these calls to one?
+		for (unsigned int i = 0; i < jobcount; i++)
+			submit(renderable->getJob(i));
+		renderable->endRendering();
+	}
 	void Pipeline::submit(RenderJob *job)
 	{
 		// Get uniform data

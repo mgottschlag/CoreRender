@@ -65,6 +65,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/Material.hpp"
 #include "CoreRender/render/RenderTarget.hpp"
 #include "CoreRender/render/GraphicsEngine.hpp"
+#include "CoreRender/render/ModelRenderable.hpp"
 
 namespace cr
 {

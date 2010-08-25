@@ -61,31 +61,18 @@ int main(int argc, char **argv)
 	projmat = projmat * cr::math::Quaternion(cr::math::Vector3F(-45.0, 0.0, 0.0)).toMatrix();
 	// Wait for resources to be loaded
 	model->waitForLoading(true);
-	// Model render job
-	cr::math::Matrix4 matrix = projmat;
-	std::vector<cr::render::RenderJob*> modeljobs(model->getMeshCount());
-	for (unsigned int i = 0; i < model->getMeshCount(); i++)
-	{
-		modeljobs[i] = new cr::render::RenderJob;
-		modeljobs[i]->vertices = model->getVertexBuffer();
-		modeljobs[i]->indices = model->getIndexBuffer();
-		cr::render::Model::Mesh *mesh = model->getMesh(i);
-		cr::render::Model::Batch *batch = model->getBatch(mesh->batch);
-		modeljobs[i]->material = mesh->material;
-		modeljobs[i]->layout = batch->layout;
-		modeljobs[i]->vertexcount = batch->vertexcount;
-		modeljobs[i]->startindex = batch->startindex;
-		modeljobs[i]->endindex = batch->startindex + batch->indexcount;
-		modeljobs[i]->vertexoffset = batch->vertexoffset;
-		modeljobs[i]->indextype = batch->indextype;
-		modeljobs[i]->uniforms.add("worldMat") = matrix * mesh->node->getAbsTrans();
-	}
+	// Create renderable
+	cr::render::ModelRenderable *renderable = new cr::render::ModelRenderable();
+	renderable->setModel(model);
+	renderable->setProjMat(projmat);
+	renderable->setTransMat(cr::math::Quaternion(cr::math::Vector3F(0.0, 45.0, 0.0)).toMatrix());
 	// Finished loading
 	graphics.getLog()->info("Starting rendering.");
 	// Render loop
 	bool stopping = false;
 	uint64_t fpstime = cr::core::Time::getSystemTime();
 	int fps = 0;
+	float rotation = 0.0f;
 	while (!stopping)
 	{
 		// Process input
@@ -104,12 +91,10 @@ int main(int argc, char **argv)
 		// Begin frame
 		graphics.beginFrame();
 		// Render objects
-		matrix = matrix * cr::math::Quaternion(cr::math::Vector3F(0.0, 0.1, 0.0)).toMatrix();
-		for (unsigned int i = 0; i < modeljobs.size(); i++)
-		{
-			modeljobs[i]->uniforms["worldMat"] = matrix * model->getMesh(i)->node->getAbsTrans();
-			pipeline->submit(modeljobs[i]);
-		}
+		rotation += 0.1f;
+		cr::math::Quaternion quat(cr::math::Vector3F(0.0, rotation, 0.0));
+		renderable->setTransMat(quat.toMatrix());
+		pipeline->submit(renderable);
 		// Finish and render frame
 		graphics.endFrame();
 		fps++;
@@ -123,10 +108,7 @@ int main(int argc, char **argv)
 	}
 
 	// Delete resources
-	for (unsigned int i = 0; i < modeljobs.size(); i++)
-	{
-		delete modeljobs[i];
-	}
+	delete renderable;
 	pipeline = 0;
 	pass = 0;
 	model = 0;

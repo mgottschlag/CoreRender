@@ -26,7 +26,10 @@ namespace cr
 {
 namespace math
 {
-	// TODO: Fast float functions go here
+	struct Math
+	{
+		// TODO: Fast float functions go here
+	};
 }
 }
 

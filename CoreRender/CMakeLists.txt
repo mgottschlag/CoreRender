@@ -41,7 +41,9 @@ set(SRC
 	include/CoreRender/render/GeometryFile.hpp
 	include/CoreRender/render/IndexBuffer.hpp
 	include/CoreRender/render/Model.hpp
+	include/CoreRender/render/ModelRenderable.hpp
 	include/CoreRender/render/Pipeline.hpp
+	include/CoreRender/render/Renderable.hpp
 	include/CoreRender/render/RenderBatch.hpp
 	include/CoreRender/render/RenderPass.hpp
 	include/CoreRender/render/RenderResource.hpp
@@ -60,6 +62,7 @@ set(SRC
 	include/CoreRender/render/Material.hpp
 	include/CoreRender/render/RenderTarget.hpp
 	include/CoreRender/render/GraphicsEngine.hpp
+	include/CoreRender/render/SpatialRenderable.hpp
 	include/CoreRender/render/Texture.hpp
 	include/CoreRender/render/Texture1D.hpp
 	include/CoreRender/render/Texture2D.hpp
@@ -81,6 +84,7 @@ set(SRC
 	src/render/IndexBuffer.cpp
 	src/render/Material.cpp
 	src/render/Model.cpp
+	src/render/ModelRenderable.cpp
 	src/render/null/VideoDriverNull.hpp
 	src/render/opengl/IndexBufferOpenGL.cpp
 	src/render/opengl/IndexBufferOpenGL.hpp
