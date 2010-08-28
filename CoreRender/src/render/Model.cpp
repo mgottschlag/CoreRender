@@ -548,14 +548,6 @@ namespace render
 
 	bool Model::parseNode(TiXmlElement *xml, Model::Node *parent)
 	{
-		// Dump attributes
-		TiXmlAttribute *attr = xml->FirstAttribute();
-		while (attr)
-		{
-		getManager()->getLog()->info("%s: Attribute: %s/%s",
-		                              getName().c_str(), attr->Name(), attr->Value());
-			attr = attr->Next();
-		}
 		// Get name
 		const char *name = xml->Attribute("name");
 		if (!name)

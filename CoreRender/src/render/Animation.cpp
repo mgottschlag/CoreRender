@@ -198,7 +198,6 @@ namespace render
 				return false;
 			}
 			channelhdr.name[AnimationFile::maxnamesize - 1] = 0;
-			getManager()->getLog()->info("Channel read: %s", channelhdr.name);
 			// Read frames
 			unsigned int framecount = header.framecount;
 			if (channelhdr.constant)
