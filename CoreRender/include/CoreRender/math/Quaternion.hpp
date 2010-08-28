@@ -56,20 +56,17 @@ namespace math
 			 */
 			Quaternion()
 			{
-				q[0] = 0;
-				q[1] = 0;
-				q[2] = 0;
-				q[3] = 1;
+				x = 0;
+				y = 0;
+				z = 0;
+				w = 1;
 			}
 			/**
 			 * Constructor.
 			 */
 			Quaternion(float x, float y, float z, float w)
+				: x(x), y(y), z(z), w(w)
 			{
-				q[0] = x;
-				q[1] = y;
-				q[2] = z;
-				q[3] = w;
 			}
 			/**
 			 * Constructor.
@@ -99,10 +96,10 @@ namespace math
 				float cpsy = cp * sy;
 				float spsy = sp * sy; //quaternion fix by jox
 
-				q[0] = sr * cpcy - cr * spsy;
-				q[1] = cr * spcy + sr * cpsy;
-				q[2] = cr * cpsy - sr * spcy;
-				q[3] = cr * cpcy + sr * spsy;
+				x = sr * cpcy - cr * spsy;
+				y= cr * spcy + sr * cpsy;
+				z = cr * cpsy - sr * spcy;
+				w = cr * cpcy + sr * spsy;
 
 				normalize();
 			}
@@ -111,10 +108,10 @@ namespace math
 			 */
 			Quaternion(const Quaternion &other)
 			{
-				q[0] = other.q[0];
-				q[1] = other.q[1];
-				q[2] = other.q[2];
-				q[3] = other.q[3];
+				x = other.x;
+				y = other.y;
+				z = other.z;
+				w = other.w;
 			}
 
 			/**
@@ -122,7 +119,7 @@ namespace math
 			 */
 			void normalize()
 			{
-				float s = q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3];
+				float s = x * x + y * y + z * z + w * w;
 				if (s == 1)
 					return;
 				*this /= sqrtf(s);
@@ -147,78 +144,94 @@ namespace math
 			 */
 			Matrix4 toMatrix()
 			{
-				Matrix4 m1(q[3], q[2], -q[1], q[0],
-				           -q[2], q[3], q[0], q[1],
-				           q[1], -q[0], q[3], q[2],
-				           -q[0], -q[1], -q[2], q[3]);
-				Matrix4 m2(q[3], q[2], -q[1], -q[0],
-				           -q[2], q[3], q[0], -q[1],
-				           q[1], -q[0], q[3], -q[2],
-				           q[0], q[1], q[2], q[3]);
-				return m1 * m2;
+				Matrix4 m;
+				m(0, 0) = 1.0f - 2.0f * (y * y + z * z);
+				m(0, 1) = 2.0f * (x * y - z * w);
+				m(0, 2) = 2.0f * (x * z + y * w);
+				m(0, 3) = 0.0f;
+
+				m(1, 0) = 2.0f * (x * y + z * w);
+				m(1, 1) = 1.0f - 2.0f * (x * x + z * z);
+				m(1, 2) = 2.0f * (y * z - x * w);
+				m(1, 3) = 0.0f;
+
+				m(2, 0) = 2.0f * (x * z - y * w);
+				m(2, 1) = 2.0f * (y * z + x * w);
+				m(2, 2) = 1.0f - 2.0f * (x * x + y * y);
+				m(2, 3) = 0.0f;
+
+				m(3, 0) = 0.0f;
+				m(3, 1) = 0.0f;
+				m(3, 2) = 0.0f;
+				m(3, 3) = 1.0f;
+				return m;
 			}
 
 			Quaternion operator*(float s) const
 			{
-				return Quaternion(q[0] * s, q[1] * s, q[2] * s, q[3] * s);
+				return Quaternion(x * s, y * s, z * s, w * s);
 			}
 			Quaternion &operator*=(float s)
 			{
-				q[0] = q[0] * s;
-				q[1] = q[1] * s;
-				q[2] = q[2] * s;
-				q[3] = q[3] * s;
+				x *= s;
+				y *= s;
+				z *= s;
+				w *= s;
 				return *this;
 			}
 			Quaternion operator/(float s) const
 			{
-				return Quaternion(q[0] / s, q[1] / s, q[2] / s, q[3] / s);
+				return Quaternion(x / s, y / s, z / s, w / s);
 			}
 			Quaternion &operator/=(float s)
 			{
-				q[0] = q[0] / s;
-				q[1] = q[1] / s;
-				q[2] = q[2] / s;
-				q[3] = q[3] / s;
+				x /= s;
+				y /= s;
+				z /= s;
+				w /= s;
 				return *this;
 			}
 			Quaternion operator+(const Quaternion &other) const
 			{
-				return Quaternion(q[0] + other.q[0], q[1] + other.q[1],
-					q[2] + other.q[2], q[3] + other.q[3]);
+				return Quaternion(x + other.x, y + other.y,
+					z + other.z, w + other.w);
 			}
 			Quaternion &operator+=(const Quaternion &other)
 			{
-				q[0] = q[0] + other.q[0];
-				q[1] = q[1] + other.q[1];
-				q[2] = q[2] + other.q[2];
-				q[3] = q[3] + other.q[3];
+				x += other.x;
+				y += other.y;
+				z += other.z;
+				w += other.w;
 				return *this;
 			}
 			Quaternion operator-(const Quaternion &other) const
 			{
-				return Quaternion(q[0] - other.q[0], q[1] - other.q[1],
-					q[2] - other.q[2], q[3] - other.q[3]);
+				return Quaternion(x - other.x, y - other.y,
+					z - other.z, w - other.w);
 			}
 			Quaternion &operator-=(const Quaternion &other)
 			{
-				q[0] = q[0] - other.q[0];
-				q[1] = q[1] - other.q[1];
-				q[2] = q[2] - other.q[2];
-				q[3] = q[3] - other.q[3];
+				x -= other.x;
+				y -= other.y;
+				z -= other.z;
+				w -= other.w;
 				return *this;
 			}
 			Quaternion &operator=(const Quaternion &other)
 			{
-				for (unsigned int i = 0; i < 4; i++)
-					q[i] = other.q[i];
+				x = other.x;
+				y = other.y;
+				z = other.z;
+				w = other.w;
 				return *this;
 			}
 			bool operator==(const Quaternion &other) const
 			{
-				for (unsigned int i = 0; i < 4; i++)
-					if (other.q[i] != q[i])
-						return false;
+				if (x != other.x
+				 || y != other.y
+				 || z != other.z
+				 || w != other.w)
+					return false;
 				return true;
 			}
 			bool operator!=(const Quaternion &other) const
@@ -226,7 +239,10 @@ namespace math
 				return !(*this == other);
 			}
 
-			float q[4];
+			float x;
+			float y;
+			float z;
+			float w;
 	};
 }
 }

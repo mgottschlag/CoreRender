@@ -197,7 +197,7 @@ namespace math
 				       (m(0, 2) * m(1, 3) - m(0, 3) * m(1, 2)) * (m(2, 0) * m(3, 1) - m(2, 1) * m(3, 0));
 			}
 
-			Matrix4 inverse()
+			Matrix4 inverse() const
 			{
 				Matrix4 out;
 				float d = determinant();
@@ -205,7 +205,7 @@ namespace math
 					return out;
 				d = 1 / d;
 
-				Matrix4 &m = *this;
+				const Matrix4 &m = *this;
 				out(0, 0) = d * (m(1, 1) * (m(2, 2) * m(3, 3) - m(2, 3) * m(3, 2)) +
 				                 m(1, 2) * (m(2, 3) * m(3, 1) - m(2, 1) * m(3, 3)) +
 				                 m(1, 3) * (m(2, 1) * m(3, 2) - m(2, 2) * m(3, 1)));
@@ -282,7 +282,7 @@ namespace math
 				return newmat;
 			}
 
-			Vector4F operator*(const Vector4F &v)
+			Vector4F operator*(const Vector4F &v) const
 			{
 				Vector4F out;
 				const Matrix4 &m = *this;
@@ -293,7 +293,7 @@ namespace math
 				return out;
 			}
 
-			Matrix4 operator*(const Matrix4 &o)
+			Matrix4 operator*(const Matrix4 &o) const
 			{
 				Matrix4 out;
 				const Matrix4 &m = *this;
@@ -329,16 +329,16 @@ namespace math
 				return m[row + column * 4];
 			}
 
-			bool operator==(const Matrix4 &other)
+			bool operator==(const Matrix4 &other) const
 			{
 				for (unsigned int i = 0; i < 16; i++)
 				{
-					if (m[i] != other.m[i])
+					if (fabs(m[i] - other.m[i]) > 0.0001f)
 						return false;
 				}
 				return true;
 			}
-			bool operator!=(const Matrix4 &other)
+			bool operator!=(const Matrix4 &other) const
 			{
 				return !(*this == other);
 			}
