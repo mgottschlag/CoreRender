@@ -292,10 +292,13 @@ namespace render
 		{
 			pipelines[i]->prepare(&renderdata[i]);
 		}
-		// Render
-		// TODO: This still deadlocks on the first frame already
+		// Wait for last frame to end
 		if (multithreaded)
 			renderthread->waitForFrame();
+		// Fetch statistics from the last frame
+		stats = driver->getStats();
+		driver->getStats().reset();
+		// Render
 		renderer->prepareRendering(renderdata, pipelines.size());
 		if (multithreaded)
 			renderthread->startFrame();

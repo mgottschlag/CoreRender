@@ -29,6 +29,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "IndexBuffer.hpp"
 #include "VertexBuffer.hpp"
 #include "Shader.hpp"
+#include "RenderStats.hpp"
 
 namespace cr
 {
@@ -76,7 +77,13 @@ namespace render
 
 			virtual VideoDriverType::List getType() = 0;
 			virtual const RenderCaps &getCaps() = 0;
+
+			RenderStats &getStats()
+			{
+				return stats;
+			}
 		private:
+			RenderStats stats;
 	};
 }
 }

@@ -22,6 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/RenderThread.hpp"
 #include "CoreRender/core/Functor.hpp"
 #include "CoreRender/render/Renderer.hpp"
+#include "CoreRender/core/Time.hpp"
+#include "CoreRender/render/VideoDriver.hpp"
 
 namespace cr
 {
@@ -67,14 +69,22 @@ namespace render
 		// We do not want the first access to waitForFrame() to deadlock
 		frameend.post();
 		// Render loop
+		uint64_t time = core::Time::getSystemTime();
 		while (true)
 		{
 			// Wait for next frame to begin
 			framestart.wait();
 			if (stopping)
 				break;
+			// We take the end time from the last frame here because this
+			// improves computation of fps numbers.
+			renderer->getDriver()->getStats().setFrameBegin(time);
 			// Render
+			time = core::Time::getSystemTime();
+			renderer->getDriver()->getStats().setRenderBegin(time);
 			renderer->render();
+			time = core::Time::getSystemTime();
+			renderer->getDriver()->getStats().setFrameEnd(time);
 			// Notify other thread that the frame has ended
 			frameend.post();
 		}

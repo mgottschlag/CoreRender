@@ -35,6 +35,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Model.hpp"
 
 #include <queue>
+#include "RenderStats.hpp"
 
 namespace cr
 {
@@ -95,6 +96,10 @@ namespace render
 			{
 				return rmgr;
 			}
+			const RenderStats &getRenderStats()
+			{
+				return stats;
+			}
 		private:
 			RenderContext::Ptr createContext(VideoDriverType::List type,
 			                                 unsigned int width,
@@ -119,6 +124,8 @@ namespace render
 
 			tbb::spin_mutex inputmutex;
 			std::queue<InputEvent> inputqueue;
+
+			RenderStats stats;
 	};
 }
 }

@@ -111,6 +111,9 @@ int main(int argc, char **argv)
 		if (currenttime - fpstime >= 1000000)
 		{
 			std::cout << "FPS: " << fps << std::endl;
+			const cr::render::RenderStats &stats = graphics.getRenderStats();
+			std::cout << stats.getPolygonCount() << " triangles, ";
+			std::cout << stats.getBatchCount() << " batches." << std::endl;
 			fpstime = currenttime;
 			fps = 0;
 		}

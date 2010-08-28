@@ -252,28 +252,31 @@ namespace opengl
 			            batch->textures[i].textureindex);
 		}
 		// Render triangles
+		unsigned int indexcount = batch->endindex - batch->startindex;
 		if (batch->indextype == 1)
 		{
 			glDrawElements(GL_TRIANGLES,
-			               batch->endindex - batch->startindex,
+			               indexcount,
 			               GL_UNSIGNED_BYTE,
 			               (void*)(batch->startindex));
 		}
 		else if (batch->indextype == 2)
 		{
 			glDrawElements(GL_TRIANGLES,
-			               batch->endindex - batch->startindex,
+			               indexcount,
 			               GL_UNSIGNED_SHORT,
 			               (void*)(batch->startindex * 2));
 		}
 		else if (batch->indextype == 4)
 		{
 			glDrawElements(GL_TRIANGLES,
-			               batch->endindex - batch->startindex,
+			               indexcount,
 			               GL_UNSIGNED_INT,
 			               (void*)(batch->startindex * 4));
 		}
-		// TODO: Index type
+		// Increase polygon/batch counters
+		getStats().increaseBatchCount(1);
+		getStats().increasePolygonCount(indexcount / 3);
 		// Clean up attribs
 		for (unsigned int i = 0; i < batch->attribcount; i++)
 		{
