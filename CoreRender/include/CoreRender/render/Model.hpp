@@ -97,6 +97,10 @@ namespace render
 					{
 						return parent;
 					}
+					const std::vector<Node*> &getChildren()
+					{
+						return children;
+					}
 				private:
 					void addChild(Node *child)
 					{
@@ -116,6 +120,21 @@ namespace render
 					Node *parent;
 					std::vector<Node*> children;
 					math::Matrix4 transformation;
+			};
+			struct AnimationNode
+			{
+				math::Matrix4 getAbsTrans()
+				{
+					// TODO: Optimize this
+					if (parent)
+						return parent->getAbsTrans() * transformation;
+					else
+						return transformation;
+				}
+
+				std::string name;
+				AnimationNode *parent;
+				math::Matrix4 transformation;
 			};
 
 			struct Joint
@@ -159,6 +178,7 @@ namespace render
 			void removeNode(Node *node);
 			Node *getRootNode();
 			Node *getNode(const std::string &name);
+			void getNodeList(std::map<std::string, AnimationNode*> &nodelist);
 
 			void setIndexBuffer(IndexBuffer::Ptr indexbuffer);
 			IndexBuffer::Ptr getIndexBuffer();

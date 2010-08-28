@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "../3rdparty/tinyxml.h"
 
 #include <sstream>
+#include <queue>
 
 namespace cr
 {
@@ -34,7 +35,7 @@ namespace render
 	             render::Renderer *renderer,
 	             res::ResourceManager *rmgr,
 	             const std::string &name)
-		: Resource(rmgr, name), driver(driver), renderer(renderer)
+		: Resource(rmgr, name), driver(driver), renderer(renderer), rootnode(0)
 	{
 	}
 	Model::~Model()
@@ -115,6 +116,30 @@ namespace render
 		if (it == nodes.end())
 			return 0;
 		return it->second;
+	}
+	void Model::getNodeList(std::map<std::string, Model::AnimationNode*> &nodelist)
+	{
+		std::queue<Node*> currentnodes;
+		currentnodes.push(rootnode);
+		while (currentnodes.size() > 0)
+		{
+			Node *node = currentnodes.front();
+			currentnodes.pop();
+			AnimationNode *newnode = new AnimationNode;
+			newnode->name = node->getName();
+			if (node->getParent())
+				newnode->parent = nodelist.find(node->getParent()->getName())->second;
+			else
+				newnode->parent = 0;
+			newnode->transformation = node->getTransformation();
+			nodelist.insert(std::make_pair(newnode->name, newnode));
+			// Child nodes
+			const std::vector<Node*> &children = node->getChildren();
+			for (unsigned int i = 0; i < children.size(); i++)
+			{
+				currentnodes.push(children[i]);
+			}
+		}
 	}
 
 	void Model::setIndexBuffer(IndexBuffer::Ptr indexbuffer)
@@ -484,6 +509,8 @@ namespace render
 		}
 		if (attribs.flags & GeometryFile::AttribFlags::HasJoints)
 		{
+			//getManager()->getLog()->info("%s: Offset: %d/%d.",
+			//                              getName().c_str(), attribs.jointweightoffset, attribs.jointoffset);
 			layout->setElement(elemidx,
 			                   "jointweight",
 			                   0,
@@ -496,7 +523,7 @@ namespace render
 			                   "jointindex",
 			                   0,
 			                   4,
-			                   attribs.jointweightoffset,
+			                   attribs.jointoffset,
 			                   VertexElementType::Byte,
 			                   attribs.stride);
 			elemidx++;
@@ -521,6 +548,14 @@ namespace render
 
 	bool Model::parseNode(TiXmlElement *xml, Model::Node *parent)
 	{
+		// Dump attributes
+		TiXmlAttribute *attr = xml->FirstAttribute();
+		while (attr)
+		{
+		getManager()->getLog()->info("%s: Attribute: %s/%s",
+		                              getName().c_str(), attr->Name(), attr->Value());
+			attr = attr->Next();
+		}
 		// Get name
 		const char *name = xml->Attribute("name");
 		if (!name)
@@ -529,6 +564,8 @@ namespace render
 			                              getName().c_str());
 			return false;
 		}
+		getManager()->getLog()->info("%s: Node name: %s",
+		                              getName().c_str(), name);
 		// Add node
 		Node *currentnode = addNode(name, parent);
 		// Read transformation

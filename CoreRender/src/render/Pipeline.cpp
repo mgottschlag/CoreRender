@@ -76,6 +76,8 @@ namespace render
 	}
 	void Pipeline::submit(RenderJob *job)
 	{
+		if (!job->material->getShader())
+			return;
 		// Get uniform data
 		UniformData uniforms = job->material->getShader()->getUniformData();
 		uniforms.setValues(job->material->getUniformData());

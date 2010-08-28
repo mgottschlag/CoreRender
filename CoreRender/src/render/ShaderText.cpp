@@ -425,6 +425,22 @@ namespace render
 				                                getName().c_str(), name);
 				continue;
 			}
+			// Check whether we are supposed to create an array
+			// TODO: This is ugly and slow
+			const char *countstr = element->Attribute("count");
+			if (countstr)
+			{
+				// Add uniform array
+				// In this case we do not support default data
+				unsigned int count = atoi(countstr);
+				for (unsigned int i = 0; i < count; i++)
+				{
+					std::ostringstream namestream;
+					namestream << name << "[" << i << "]";
+					addUniform(namestream.str(), type);
+				}
+				continue;
+			}
 			// Get uniform default value
 			unsigned int size = ShaderVariableType::getSize(type);
 			float *defdata = new float[size];

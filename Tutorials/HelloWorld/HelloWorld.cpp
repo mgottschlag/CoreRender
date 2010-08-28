@@ -49,7 +49,9 @@ int main(int argc, char **argv)
 
 	// Load some resources
 	cr::render::Model::Ptr model = rmgr->getOrLoad<cr::render::Model>("Model",
-	                                                                  "/models/jeep.model.xml");
+	                                                                  "/models/dwarf.model.xml");
+	cr::render::Animation::Ptr anim = rmgr->getOrLoad<cr::render::Animation>("Animation",
+	                                                                         "/models/dwarf.anim");
 	// Setup pipeline
 	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();
 	cr::render::RenderPass::Ptr pass = new cr::render::RenderPass("AMBIENT");
@@ -57,15 +59,17 @@ int main(int argc, char **argv)
 	graphics.addPipeline(pipeline);
 	// Setup camera matrix
 	cr::math::Matrix4 projmat = cr::math::Matrix4::PerspectiveFOV(60.0f, 4.0f/3.0f, 1.0f, 1000.0f);
-	projmat = projmat * cr::math::Matrix4::TransMat(cr::math::Vector3F(0, 0, -2.5));
-	projmat = projmat * cr::math::Quaternion(cr::math::Vector3F(-45.0, 0.0, 0.0)).toMatrix();
+	projmat = projmat * cr::math::Matrix4::TransMat(cr::math::Vector3F(0, 0, -100));
+	projmat = projmat * cr::math::Quaternion(cr::math::Vector3F(45.0, 0.0, 0.0)).toMatrix();
 	// Wait for resources to be loaded
 	model->waitForLoading(true);
+	anim->waitForLoading(true);
 	// Create renderable
 	cr::render::ModelRenderable *renderable = new cr::render::ModelRenderable();
 	renderable->setModel(model);
 	renderable->setProjMat(projmat);
 	renderable->setTransMat(cr::math::Quaternion(cr::math::Vector3F(0.0, 45.0, 0.0)).toMatrix());
+	renderable->addAnimStage(anim, 1.0);
 	// Finished loading
 	graphics.getLog()->info("Starting rendering.");
 	// Render loop
@@ -73,6 +77,7 @@ int main(int argc, char **argv)
 	uint64_t fpstime = cr::core::Time::getSystemTime();
 	int fps = 0;
 	float rotation = 0.0f;
+	float animtime = 0.0f;
 	while (!stopping)
 	{
 		// Process input
@@ -91,6 +96,10 @@ int main(int argc, char **argv)
 		// Begin frame
 		graphics.beginFrame();
 		// Render objects
+		animtime += 0.001f;
+		if (animtime >= anim->getFrameCount() / anim->getFramesPerSecond())
+			animtime -= anim->getFrameCount() / anim->getFramesPerSecond();
+		renderable->getAnimStage(0)->time = animtime;
 		rotation += 0.1f;
 		cr::math::Quaternion quat(cr::math::Vector3F(0.0, rotation, 0.0));
 		renderable->setTransMat(quat.toMatrix());
@@ -112,6 +121,7 @@ int main(int argc, char **argv)
 	pipeline = 0;
 	pass = 0;
 	model = 0;
+	anim = 0;
 
 	graphics.shutdown();
 	return 0;

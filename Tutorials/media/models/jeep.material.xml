@@ -1,5 +1,5 @@
 <Material>
-	<Shader file="/shaders/Model.shader.xml" flags="ShowUV=false" />
+	<Shader file="/shaders/Model.shader.xml" flags="Skinning=false" />
 
 	<Texture name="tex" file="jeep.jpg" />
 </Material>

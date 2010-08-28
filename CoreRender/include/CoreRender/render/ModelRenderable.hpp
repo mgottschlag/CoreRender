@@ -45,6 +45,7 @@ namespace render
 				float weight;
 				bool additive;
 				std::string startnode;
+				float time;
 			};
 
 			unsigned int addAnimStage(Animation::Ptr anim,

@@ -604,7 +604,7 @@ int main(int argc, char **argv)
 				float *matrix = &batch.jointmatrices[j * 16];
 				for (unsigned int k = 0; k < 16; k++)
 				{
-					matrix[k] = meshsrc->mBones[j]->mOffsetMatrix[k / 4][k % 4];
+					matrix[k] = meshsrc->mBones[j]->mOffsetMatrix[k % 4][k / 4];
 				}
 			}
 		}
@@ -716,6 +716,7 @@ int main(int argc, char **argv)
 			        channel->mNodeName.data,
 			        AnimationFile::maxnamesize);
 			channelhdr.constant = 0;
+			file.write((char*)&channelhdr, sizeof(channelhdr));
 			// Write frames
 			AnimationFile::Frame *frames = new AnimationFile::Frame[framecount];
 			for (unsigned int i = 0; i < framecount; i++)

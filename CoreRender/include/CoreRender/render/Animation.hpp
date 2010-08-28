@@ -65,6 +65,10 @@ namespace render
 			Channel *getChannel(const std::string &node);
 			Channel *getChannel(unsigned int index);
 			unsigned int getChannelCount();
+			/**
+			 * @todo Pass frame as reference.
+			 */
+			Frame getFrame(Channel *channel, float time);
 
 			virtual bool load();
 

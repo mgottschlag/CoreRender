@@ -24,6 +24,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/res/ResourceManager.hpp"
 #include "CoreRender/render/AnimationFile.hpp"
 
+#include <cmath>
+
 namespace cr
 {
 namespace render
@@ -104,6 +106,47 @@ namespace render
 	{
 		return channels.size();
 	}
+	Animation::Frame Animation::getFrame(Animation::Channel *channel,
+	                                     float time)
+	{
+		// Constant channel?
+		if (channel->constant)
+			return channel->frames[0];
+		// Get frame index
+		// TODO: A float version of this function should exist?
+		double frameindex;
+		float ratio = modf((double)time * fps, &frameindex);
+		if (frameindex < 0)
+		{
+			frameindex = 0;
+			ratio = 0.0f;
+		}
+		if (frameindex > (float)(framecount - 1))
+		{
+			frameindex = framecount - 1;
+			ratio = 0.0f;
+		}
+		unsigned int frameindex1 = frameindex;
+		unsigned int frameindex2 = frameindex + 1;
+		if (frameindex2 >= framecount)
+			frameindex2 = frameindex1;
+		// Get frame
+		if (ratio == 0.0f)
+			return channel->frames[frameindex1];
+		Frame &frame1 = channel->frames[frameindex1];
+		Frame &frame2 = channel->frames[frameindex2];
+		Frame frame;
+		frame.position = frame2.position * ratio +
+		                 frame1.position * (1 - ratio);
+		frame.scale = frame2.scale * ratio+
+		              frame1.scale * (1 - ratio);
+		math::Quaternion rotation;
+		rotation.interpolate(frame1.rotation,
+		                     frame2.rotation,
+		                     ratio);
+		frame.rotation = rotation;
+		return frame;
+	}
 
 	bool Animation::load()
 	{
@@ -137,6 +180,11 @@ namespace render
 			finishLoading(false);
 			return false;
 		}
+		setFrameCount(header.framecount);
+		if (header.framespersecond != 0.0f)
+			setFramesPerSecond(header.framespersecond);
+		else
+			setFramesPerSecond(50);
 		// Load channels
 		for (unsigned int i = 0; i < header.channelcount; i++)
 		{
@@ -150,6 +198,7 @@ namespace render
 				return false;
 			}
 			channelhdr.name[AnimationFile::maxnamesize - 1] = 0;
+			getManager()->getLog()->info("Channel read: %s", channelhdr.name);
 			// Read frames
 			unsigned int framecount = header.framecount;
 			if (channelhdr.constant)
@@ -171,10 +220,10 @@ namespace render
 			{
 				AnimationFile::Frame &src = framedata[i];
 				Frame &dest = channel->frames[i];
-				dest.rotation.q[0] = src.rotation[0];
-				dest.rotation.q[1] = src.rotation[1];
-				dest.rotation.q[2] = src.rotation[2];
-				dest.rotation.q[3] = src.rotation[3];
+				dest.rotation.x = src.rotation[0];
+				dest.rotation.y = src.rotation[1];
+				dest.rotation.z = src.rotation[2];
+				dest.rotation.w = src.rotation[3];
 				dest.position.x = src.position[0];
 				dest.position.y = src.position[1];
 				dest.position.z = src.position[2];

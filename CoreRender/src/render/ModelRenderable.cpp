@@ -22,6 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/ModelRenderable.hpp"
 #include "CoreRender/render/RenderJob.hpp"
 
+#include <sstream>
+
 namespace cr
 {
 namespace render
@@ -54,6 +56,7 @@ namespace render
 		newstage.weight = weight;
 		newstage.additive = additive;
 		newstage.startnode = startnode;
+		newstage.time = 0.0f;
 		animstages.push_back(newstage);
 		return animstages.size() - 1;
 	}
@@ -78,30 +81,80 @@ namespace render
 	{
 		if (!model)
 			return 0;
+		// Get list with model nodes (needed for joints)
+		// TODO: Cache these
+		std::map<std::string, Model::AnimationNode*> nodes;
+		model->getNodeList(nodes);
+		// Prepare skeletal animation
+		for (std::map<std::string, Model::AnimationNode*>::iterator it = nodes.begin();
+		     it != nodes.end(); it++)
+		{
+			for (unsigned int i = 0; i < animstages.size(); i++)
+			{
+				Animation::Ptr anim = animstages[i].anim;
+				// TODO: Proper mixing
+				Animation::Channel *channel = anim->getChannel(it->first);
+				if (!channel)
+					continue;
+				Animation::Frame frame = anim->getFrame(channel, animstages[i].time);
+				math::Matrix4 animmatrix = math::Matrix4::TransMat(frame.position)
+					* frame.rotation.toMatrix()
+					* math::Matrix4::ScaleMat(frame.scale);
+				it->second->transformation = animmatrix;
+			}
+		}
 		// Prepare batches
 		jobs.resize(model->getMeshCount());
 		for (unsigned int i = 0; i < model->getMeshCount(); i++)
 		{
-			jobs[i].vertices = model->getVertexBuffer();
-			jobs[i].indices = model->getIndexBuffer();
-			cr::render::Model::Mesh *mesh = model->getMesh(i);
-			cr::render::Model::Batch *batch = model->getBatch(mesh->batch);
-			jobs[i].material = mesh->material;
-			jobs[i].layout = batch->layout;
-			jobs[i].vertexcount = batch->vertexcount;
-			jobs[i].startindex = batch->startindex;
-			jobs[i].endindex = batch->startindex + batch->indexcount;
-			jobs[i].vertexoffset = batch->vertexoffset;
-			jobs[i].indextype = batch->indextype;
-			jobs[i].basevertex = 0;
-			jobs[i].uniforms = uniforms;
+			RenderJob &job = jobs[i];
+			job.vertices = model->getVertexBuffer();
+			job.indices = model->getIndexBuffer();
+			Model::Mesh *mesh = model->getMesh(i);
+			Model::Batch *batch = model->getBatch(mesh->batch);
+			job.material = mesh->material;
+			job.layout = batch->layout;
+			job.vertexcount = batch->vertexcount;
+			job.startindex = batch->startindex;
+			job.endindex = batch->startindex + batch->indexcount;
+			job.vertexoffset = batch->vertexoffset;
+			job.indextype = batch->indextype;
+			job.basevertex = 0;
+			job.uniforms = uniforms;
+			// Apply animations
+			std::map<std::string, Model::AnimationNode*>::iterator it;
+			for (unsigned int i = 0; i < batch->joints.size(); i++)
+			{
+				// Get uniform name
+				std::ostringstream namestream;
+				namestream << "skinMat[" << i << "]";
+				// Find joint node
+				Model::Joint &joint = batch->joints[i];
+				std::string jointname = joint.name;
+				it = nodes.find(jointname);
+				if (it == nodes.end())
+				{
+					// TODO: Log warning
+					job.uniforms.add(namestream.str()) = math::Matrix4::Identity();
+					continue;
+				}
+				Model::AnimationNode *jointnode = it->second;
+				// Compute and set joint matrix
+				math::Matrix4 matrix = joint.jointmat;
+				// TODO: Slow.
+				job.uniforms.add(namestream.str()) = mesh->node->getAbsTrans().inverse() * jointnode->getAbsTrans() * joint.jointmat;
+			}
 			// Set standard uniforms
-			// TODO: This is a hack, slow, and ugly.
+			// TODO: We only have to do this if we do not use skinning
 			math::Matrix4 oldtransmat = getTransMat();
-			setTransMat(oldtransmat * mesh->node->getAbsTrans());
-			uniforms["worldMat"] = getWorldMat();
+			uniforms["worldMat"] = getWorldMat() * mesh->node->getAbsTrans();
 			uniforms["worldNormalMat"] = getWorldNormalMat();
-			setTransMat(oldtransmat);
+		}
+		// Clear node list again
+		for (std::map<std::string, Model::AnimationNode*>::iterator it = nodes.begin();
+		     it != nodes.end(); it++)
+		{
+			delete it->second;
 		}
 		return model->getMeshCount();
 	}
