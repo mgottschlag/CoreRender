@@ -26,11 +26,22 @@ namespace cr
 {
 namespace render
 {
+	/**
+	 * Type of the implementation of the rendering backend. This can for example
+	 * be OpenGL.
+	 */
 	struct VideoDriverType
 	{
 		enum List
 		{
+			/**
+			 * Null video driver which does not do any rendering. Can be used to
+			 * profile the application with relation to CPU load.
+			 */
 			Null,
+			/**
+			 * OpenGL 2.0 video driver.
+			 */
 			OpenGL
 		};
 	};

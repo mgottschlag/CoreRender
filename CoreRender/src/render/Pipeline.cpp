@@ -118,7 +118,8 @@ namespace render
 					attribs[i].components = attrib->components;
 					attribs[i].stride = attrib->stride;
 					attribs[i].type = attrib->type;
-					attribs[i].address = job->layout->getSlotOffset(attrib->vbslot)
+					attribs[i].address = job->layout->getSlotOffset(job->vertexcount,
+					                                                attrib->vbslot)
 					                   + attrib->offset;
 				}
 			}

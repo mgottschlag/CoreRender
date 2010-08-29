@@ -30,6 +30,9 @@ namespace cr
 {
 	namespace render
 	{
+		/**
+		 * Type of a single vertex attribute component.
+		 */
 		struct VertexElementType
 		{
 			enum List
@@ -43,31 +46,97 @@ namespace cr
 			};
 		};
 
+		/**
+		 * Single element within a vertex layout.
+		 */
 		struct VertexLayoutElement
 		{
+			/**
+			 * Name of the attrib in shaders.
+			 */
 			std::string name;
+			/**
+			 * Vertex buffer slot of this element.
+			 */
 			unsigned int vbslot;
+			/**
+			 * Number of components of the vertex attrib.
+			 */
 			unsigned int components;
+			/**
+			 * Byte offset from the beginning of a vertex.
+			 */
 			unsigned int offset;
+			/**
+			 * Component type.
+			 */
 			VertexElementType::List type;
+			/**
+			 * Stride of the vertex data in the vertex slot.
+			 */
 			unsigned int stride;
 		};
 
 		/**
-		 * @note Not thread-safe.
+		 * Class describing the layout of vertex attributes in memory. This
+		 * class can describe any combination of structure-of-arrays or
+		 * array-of-structure layouts, but is limited to one vertex buffer.
+		 * The layout has a fixed number of elements which is set in the
+		 * constructor. Every element in the layout has a name which is used for
+		 * the attrib in shaders, a vertex buffer slot which relates to the
+		 * index in a structure-of-arrays-layout, a byte offset to the beginning
+		 * of one vertex in the slow, a number of vector components, a data type
+		 * and the stride (byte offset from one vertex to the other).
+		 *
+		 * So, if you want to have a normal layout containing positions, normals
+		 * and 2d texture coords, create the layout like this:
+		 * @code
+		 * VertexLayout::Ptr layout = new VertexLayout(3);
+		 * layout->setElement(0, "pos", 0, 3, 0, VertexElementType::Float, 32);
+		 * layout->setElement(1, "normal", 0, 3, 12, VertexElementType::Float, 32);
+		 * layout->setElement(2, "texcoord0", 0, 2, 24, VertexElementType::Float, 32);
+		 * @endcode
+		 * If you wanted to put the texture coords into a second stream/slot
+		 * instead of an interleaved layout, use this:
+		 * @code
+		 * VertexLayout::Ptr layout = new VertexLayout(3);
+		 * layout->setElement(0, "pos", 0, 3, 0, VertexElementType::Float, 24);
+		 * layout->setElement(1, "normal", 0, 3, 12, VertexElementType::Float, 24);
+		 * layout->setElement(2, "texcoord0", 1, 2, 0, VertexElementType::Float, 8);
+		 * @endcode
+		 * @note Do not modify existing instances of this class while they are
+		 * in use. Rather think about creating a new instance and using that.
 		 */
 		class VertexLayout : public core::ReferenceCounted
 		{
 			public:
+				/**
+				 * Constructor.
+				 * @param elemcount Number of elements in the layout.
+				 */
 				VertexLayout(unsigned int elemcount) : elemcount(elemcount)
 				{
 					elements = new VertexLayoutElement[elemcount];
 				}
+				/**
+				 * Dstructor.
+				 */
 				~VertexLayout()
 				{
 					delete[] elements;
 				}
 
+				/**
+				 * Fills a single element with information about position/type
+				 * in the vertex buffer.
+				 * @param element Index of the element.
+				 * @param name Name of the attrib in shaders.
+				 * @param vbslot Vertex buffer slot this element is placed in.
+				 * @param components Number of components for this element.
+				 * @param offset Byte offset from the beginning of one vertex.
+				 * @param type Memory type of a single component.
+				 * @param stride Stride of one vertex in this slot.
+				 */
 				void setElement(unsigned int element,
 				                const std::string &name,
 				                unsigned int vbslot,
@@ -84,10 +153,20 @@ namespace cr
 					elements[element].stride = stride;
 				}
 
+				/**
+				 * Returns the element with the given index.
+				 * @param index Element index.
+				 * @return Element at the given index.
+				 */
 				VertexLayoutElement *getElement(unsigned int index)
 				{
 					return &elements[index];
 				}
+				/**
+				 * Returns the element with the given name.
+				 * @param name Element name.
+				 * @return Element with the given name.
+				 */
 				VertexLayoutElement *getElement(const std::string &name)
 				{
 					for (unsigned int i = 0; i < elemcount; i++)
@@ -97,17 +176,33 @@ namespace cr
 					}
 					return 0;
 				}
+				/**
+				 * Returns the number of elements in the layout.
+				 */
 				unsigned int getElementCount()
 				{
 					return elemcount;
 				}
 
-				unsigned int getSlotOffset(unsigned int slot)
+				/**
+				 * Returns the offset of a certain slot for the given number of
+				 * vertices.
+				 * @param vertexcount Number of vertices in the vertex buffer.
+				 * @param slot Index of the slot.
+				 * @return Byte offset of the slot.
+				 */
+				unsigned int getSlotOffset(unsigned int vertexcount,
+				                           unsigned int slot)
 				{
 					// TODO
 					return 0;
 				}
 
+				/**
+				 * Returns the size in bytes for a certain component type.
+				 * @param type Component type.
+				 * @return Size of one component.
+				 */
 				static unsigned int getElementSize(VertexElementType::List type)
 				{
 					switch (type)

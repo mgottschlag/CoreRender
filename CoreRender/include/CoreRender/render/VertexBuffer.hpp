@@ -30,37 +30,102 @@ namespace cr
 {
 namespace render
 {
+	/**
+	 * Hint for the video driver where to store the vertex buffer.
+	 */
 	struct VertexBufferUsage
 	{
 		enum List
 		{
+			/**
+			 * Static data which is never or rarely modified. Usually stored in
+			 * fast VRAM. This maps to GL_STATIC_DRAW in OpenGL.
+			 */
 			Static,
+			/**
+			 * Data which is written once per frame and then used only once.
+			 * This maps to GL_STREAM_DRAW in OpenGL.
+			 */
 			Stream,
+			/**
+			 * Data which is changed and used multiple times. This maps to
+			 * GL_DYNAMIC_DRAW in OpenGL.
+			 */
 			Dynamic
 		};
 	};
 
+	/**
+	 * Resource holding vertex data for one or multiple meshes. This directly
+	 * translates into an OpenGL VBO. Multiple meshes even with different layout
+	 * can be stored within one buffer to minimize state switches.
+	 *
+	 * For best performance you have to specify the correct usage hint in set().
+	 *
+	 * This class should be created via ResourceManager::getOrCreate().
+	 */
 	class VertexBuffer : public RenderResource
 	{
 		public:
+			/**
+			 * Constructor.
+			 * @param renderer Renderer to be used with this vertex buffer.
+			 * @param rmgr Resource manager for this resource.
+			 * @param name Name of this resource.
+			 */
 			VertexBuffer(Renderer *renderer,
 			             res::ResourceManager *rmgr,
 			             const std::string &name);
+			/**
+			 * Destructor.
+			 */
 			virtual ~VertexBuffer();
 
+			/**
+			 * Fills the whole vertex buffer with new data, erasing all previous
+			 * content.
+			 * @param size New size of the buffer in bytes.
+			 * @param data New content of the buffer. Must hold at least "size"
+			 * bytes.
+			 * @param usage Usage hint for best performance.
+			 * @param copy If set to false, the buffer creates no copy of the
+			 * data but rather takes over ownership of it and frees it itself
+			 * later. For this, data has to be allocated with malloc() as it is
+			 * later freed with free().
+			 */
 			void set(unsigned int size,
 			         void *data,
 			         VertexBufferUsage::List usage = VertexBufferUsage::Static,
 			         bool copy = true);
+			/**
+			 * Updates a part of the vertex buffer. This can be used if multiple
+			 * meshes share one vertex buffer.
+			 * @param offset Byte offset of the area to be updated.
+			 * @param size Number of bytes to be updated.
+			 * @param data New data of this buffer area.
+			 */
 			void update(unsigned int offset,
 			            unsigned int size,
 			            const void *data);
+			/**
+			 * Discards the buffer data in RAM and only keeps the copy in VRAM
+			 * if possible.
+			 */
 			void discardData();
 
+			/**
+			 * Returns the handle to this vertex buffer.
+			 * @return Handle of the buffer. Usually this is the OpenGL VBO
+			 * handle.
+			 */
 			int getHandle()
 			{
 				return handle;
 			}
+			/**
+			 * Returns the current usage hint used for the buffer.
+			 * @return Usage hint.
+			 */
 			VertexBufferUsage::List getUsage()
 			{
 				return usage;

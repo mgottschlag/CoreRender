@@ -26,11 +26,11 @@ namespace cr
 {
 namespace render
 {
+	/**
+	 * Key code value used for keyboard events.
+	 */
 	struct KeyCode
 	{
-		/**
-		 * Key code value used for keyboard events.
-		 */
 		enum List
 		{
 			Invalid = 0x0,

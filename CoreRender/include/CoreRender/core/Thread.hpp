@@ -35,13 +35,33 @@ namespace cr
 {
 namespace core
 {
+	/**
+	 * Platform-independent thread class.
+	 *
+	 * The entry function for the thread is passed to create() as a functor with
+	 * no arguments.
+	 */
 	class Thread
 	{
 		public:
+			/**
+			 * Constructor.
+			 */
 			Thread();
+			/**
+			 * Destructor.
+			 */
 			~Thread();
 
+			/**
+			 * Starts the thread.
+			 * @param code Entry point for the thread.
+			 * @return False if starting the thread failed.
+			 */
 			bool create(Functor *code);
+			/**
+			 * Waits for the thread to exit.
+			 */
 			void wait();
 		private:
 #if defined(CORERENDER_UNIX)

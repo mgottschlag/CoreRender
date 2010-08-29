@@ -32,6 +32,9 @@ namespace render
 {
 	class RenderCaps;
 
+	/**
+	 * Color format of the texture data in RAM/VRAM.
+	 */
 	struct TextureFormat
 	{
 		enum List
@@ -59,11 +62,33 @@ namespace render
 			Depth24
 		};
 
+		/**
+		 * Checks whether the format is supported with the available render
+		 * capabilities.
+		 * @param caps Render capabilities.
+		 * @param internalformat Format on the GPU.
+		 * @param format Specifies the format in memory. If this is set to
+		 * Invalid, then format==internalformat is assumed, if not, the function
+		 * also checks whether the conversion from format to internalformat is
+		 * supported.
+		 * @return True if the combination of formats is supported.
+		 */
 		static bool supported(RenderCaps *caps,
 		                      List internalformat,
 		                      List format = Invalid);
+		/**
+		 * Returns the size in bytes for a certain number of texels with a
+		 * format.
+		 * @param format Texture format.
+		 * @param texels Number of texels.
+		 * @return Size of the texture data in bytes.
+		 */
 		static unsigned int getSize(TextureFormat::List format,
 		                            unsigned int texels);
+		/**
+		 * Returns whether a format is compressed.
+		 * @return True if the format is compressed.
+		 */
 		static bool isCompressed(TextureFormat::List format)
 		{
 			switch (format)
@@ -77,6 +102,10 @@ namespace render
 					return false;
 			}
 		}
+		/**
+		 * Returns true if the format is a floating point format.
+		 * @return True if the format contains floating point data.
+		 */
 		static bool isFloat(TextureFormat::List format)
 		{
 			switch (format)
@@ -93,30 +122,68 @@ namespace render
 			}
 		}
 	};
+	/**
+	 * Type of the texture.
+	 */
 	struct TextureType
 	{
 		enum List
 		{
+			/**
+			 * 1D texture, can be used e.g. for lookup tables in shaders.
+			 */
 			Texture1D,
+			/**
+			 * Standard 2D texture.
+			 */
 			Texture2D,
+			/**
+			 * 3D texture.
+			 */
 			Texture3D,
+			/**
+			 * Cube map.
+			 */
 			TextureCube
 		};
 	};
 
+	/**
+	 * Texture resource class. This class is subclassed by 2D, 3D and cube
+	 * textures and never used directly.
+	 */
 	class Texture : public RenderResource
 	{
 		public:
+			/**
+			 * Constructor.
+			 * @param renderer Renderer to be used with this texture.
+			 * @param rmgr Resource manager for this resource.
+			 * @param name Name of this resource.
+			 * @param type Type of the texture.
+			 */
 			Texture(Renderer *renderer,
 			        res::ResourceManager *rmgr,
 			        const std::string &name,
 			        TextureType::List type);
+			/**
+			 * Destructor.
+			 */
 			virtual ~Texture();
 
+			/**
+			 * Returns the handle to the texture. Usually this is the OpenGL
+			 * texture handle.
+			 * @return Handle to the texture.
+			 */
 			int getHandle()
 			{
 				return handle;
 			}
+			/**
+			 * Returns the texture type (2D, 3D, cube map).
+			 * @return Texture type.
+			 */
 			TextureType::List getTextureType()
 			{
 				return type;
