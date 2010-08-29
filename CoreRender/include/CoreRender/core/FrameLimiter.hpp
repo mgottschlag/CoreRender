@@ -29,7 +29,7 @@ namespace cr
 namespace core
 {
 	/**
-	 * Class which ensures that a loop (e.g. world update loop) is only run a
+	 * Class which ensures that a loop (for example render loop) is only run a
 	 * certain number of times per second. Note that the interval is set in
 	 * microseconds, but you will never get that accuracy - on Windows for
 	 * example the times can vary for about 16 milliseconds. The FrameLimiter

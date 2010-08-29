@@ -29,7 +29,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <map>
 #include <tbb/mutex.h>
-#include <stdlib.h>
 
 namespace cr
 {

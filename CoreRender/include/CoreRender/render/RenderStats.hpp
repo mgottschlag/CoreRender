@@ -28,15 +28,24 @@ namespace cr
 {
 namespace render
 {
+	/**
+	 * Class containing some statistics about the last rendered frame.
+	 */
 	class RenderStats
 	{
 		public:
+			/**
+			 * Constructor.
+			 */
 			RenderStats()
 				: polygons(0), batches(0), fps(0.0f), frametime(0),
 				rendertime(0), waittime(0), framebegin(0), renderbegin(0),
 				frameend(0)
 			{
 			}
+			/**
+			 * Copy constructor.
+			 */
 			RenderStats(const RenderStats &other)
 			{
 				polygons = other.polygons;
@@ -49,35 +58,64 @@ namespace render
 				renderbegin = other.renderbegin;
 				frameend = other.frameend;
 			}
+			/**
+			 * Destructor.
+			 */
 			~RenderStats()
 			{
 			}
 
+			/**
+			 * Returns the number of polygons (usually triangles) rendered.
+			 */
 			unsigned int getPolygonCount() const
 			{
 				return polygons;
 			}
+			/**
+			 * Returns the number of calls to VideoDriver::draw(). These usually
+			 * correspond to GPU drawing operations.
+			 */
 			unsigned int getBatchCount() const
 			{
 				return batches;
 			}
+			/**
+			 * Returns the number of frames rendered per second. Note that this
+			 * is only measured based on the time of one single frame, so this
+			 * number will vary wildly.
+			 */
 			float getFPS() const
 			{
 				return fps;
 			}
+			/**
+			 * Returns the time needed to for the frame. This includes both the
+			 * time needed for rendering (getRenderTime()) and the time lost for
+			 * syncronization with the main thread (getWaitTime()).
+			 */
 			unsigned int getFrameTime() const
 			{
 				return frametime;
 			}
+			/**
+			 * Returns the time needed for only rendering.
+			 */
 			unsigned int getRenderTime() const
 			{
 				return rendertime;
 			}
+			/**
+			 * Returns the time lost for waiting for the main thread.
+			 */
 			unsigned int getWaitTime() const
 			{
 				return waittime;
 			}
 
+			/**
+			 * Resets all statistics and sets them to 0.
+			 */
 			void reset()
 			{
 				polygons = 0;
@@ -90,15 +128,27 @@ namespace render
 				renderbegin = 0;
 				frameend = 0;
 			}
+			/**
+			 * Signals the class that the frame has started. This is called
+			 * before waiting for the main thread.
+			 */
 			void setFrameBegin(uint64_t time)
 			{
 				framebegin = time;
 			}
+			/**
+			 * Signals the class that rendering has started. This is called
+			 * after waiting for the main thread.
+			 */
 			void setRenderBegin(uint64_t time)
 			{
 				renderbegin = time;
 				waittime = renderbegin - framebegin;
 			}
+			/**
+			 * Signals the class that rendering has finished. This also computes
+			 * the different statistics like times or fps.
+			 */
 			void setFrameEnd(uint64_t time)
 			{
 				frameend = time;
@@ -107,10 +157,18 @@ namespace render
 				// Compute frame per second
 				fps = 1000000.0f / frametime;
 			}
+			/**
+			 * Signals the class that a certain number of batches has been
+			 * rendered. This is called by VideoDriver::draw().
+			 */
 			void increaseBatchCount(unsigned int batches)
 			{
 				this->batches += batches;
 			}
+			/**
+			 * Signals the class that a certain number of polygons has been
+			 * rendered. This is called by VideoDriver::draw().
+			 */
 			void increasePolygonCount(unsigned int polygons)
 			{
 				this->polygons += polygons;

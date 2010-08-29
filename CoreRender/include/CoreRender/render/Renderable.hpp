@@ -28,18 +28,47 @@ namespace render
 {
 	class RenderJob;
 
+	/**
+	 * Renderable object which consists of one or more render jobs. This class
+	 * can be subclassed to simplify rendering for a certain object type, e.g.
+	 * ModelRenderable to render models.
+	 */
 	class Renderable
 	{
 		public:
+			/**
+			 * Constructor.
+			 */
 			Renderable()
 			{
 			}
+			/**
+			 * Destructor.
+			 */
 			virtual ~Renderable()
 			{
 			}
 
+			/**
+			 * Is called before any calls to getJob(). Has to return the number
+			 * of batches which shall be rendered. Here the renderable object
+			 * can also dynamically prepare render jobs for rendering. This is
+			 * called by Pipeline::submit().
+			 * @return Number of render jobs available.
+			 */
 			virtual unsigned int beginRendering() = 0;
+			/**
+			 * Returns a rendering job to be rendered. Pipeline::submit() calls
+			 * this for all indices from 0 to one less than the number returned
+			 * by beginRendering().
+			 * @return index Index of the render job.
+			 */
 			virtual RenderJob *getJob(unsigned int index) = 0;
+			/**
+			 * Is called by Pipeline::submit() after all calls to getJob().
+			 * Until this is called, the pointer returned by getJob() have to
+			 * be valid, here they can be destroyed.
+			 */
 			virtual void endRendering()
 			{
 			}

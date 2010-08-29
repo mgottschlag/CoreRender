@@ -150,8 +150,8 @@ namespace render
 			 * objects, so make sure you do not manipulate any resources after
 			 * you have called this which you might use within this frame.
 			 *
-			 * After having called this function, you may call submit() to fill
-			 * the render queue with batches.
+			 * After having called this function, you may call
+			 * Pipeline::submit() to fill the render queue with batches.
 			 * @return Returns true if the frame was successfully started.
 			 */
 			bool beginFrame();

@@ -29,7 +29,7 @@ namespace cr
 namespace math
 {
 	/**
-	 * Class for three-dimensional vectors, used for positions/rotation.
+	 * Class for four-dimensional vectors. These are column vectors usually.
 	 */
 	template<typename T> class Vector4
 	{

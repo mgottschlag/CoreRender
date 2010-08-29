@@ -187,12 +187,5 @@ namespace render
 			passes[i]->prepare(&info->passes[i]);
 		}
 	}
-	void Pipeline::render(VideoDriver *driver)
-	{
-		for (unsigned int i = 0; i < passes.size(); i++)
-		{
-			passes[i]->render(driver);
-		}
-	}
 }
 }

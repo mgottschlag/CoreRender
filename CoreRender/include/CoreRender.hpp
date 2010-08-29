@@ -79,7 +79,7 @@ namespace cr
  * CoreRender is a shader-based multithreaded 3d engine designed for flexibility
  * and speed. It is modular and unlike other 3d engines does not contain any
  * scene graph, instead it uses submission style rendering (see
- * GraphicsEngine::submit()).
+ * Pipeline::submit()).
  *
  * @subsection quickstart Quick start
  * TBD

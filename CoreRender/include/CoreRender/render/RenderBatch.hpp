@@ -50,6 +50,9 @@ namespace render
 		unsigned int components;
 		VertexElementType::List type;
 	};
+	/**
+	 * Raw optimized batch data to be passed to the render thread.
+	 */
 	struct RenderBatch
 	{
 		TextureEntry *textures;

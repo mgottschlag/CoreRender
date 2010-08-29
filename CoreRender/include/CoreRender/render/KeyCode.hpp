@@ -28,6 +28,9 @@ namespace render
 {
 	struct KeyCode
 	{
+		/**
+		 * Key code value used for keyboard events.
+		 */
 		enum List
 		{
 			Invalid = 0x0,
