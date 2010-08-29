@@ -67,8 +67,51 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/GraphicsEngine.hpp"
 #include "CoreRender/render/ModelRenderable.hpp"
 
+/**
+ * Main namespace containing the CoreRender classes.
+ */
 namespace cr
 {
+/**
+ * @mainpage CoreRender
+ *
+ * @section about About
+ * CoreRender is a shader-based multithreaded 3d engine designed for flexibility
+ * and speed. It is modular and unlike other 3d engines does not contain any
+ * scene graph, instead it uses submission style rendering (see
+ * GraphicsEngine::submit()).
+ *
+ * @subsection quickstart Quick start
+ * TBD
+ *
+ * @subsection example Example
+ * TBD
+ */
+
+/**
+ * Namespace containing all 3d math classes.
+ */
+namespace math
+{
+}
+/**
+ * Namespace containing all core utility classes.
+ */
+namespace core
+{
+}
+/**
+ * Namespace containing all rendering classes.
+ */
+namespace render
+{
+}
+/**
+ * Namespace containing all resource management classes.
+ */
+namespace res
+{
+}
 }
 
 #endif

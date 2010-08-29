@@ -244,7 +244,7 @@ namespace render
 		// TODO
 		return false;
 	}
-	bool GraphicsEngine::shutdown()
+	void GraphicsEngine::shutdown()
 	{
 		// Stop and destroy render thread
 		if (multithreaded)
@@ -271,7 +271,6 @@ namespace render
 		// Delete contexts
 		secondcontext = 0;
 		context = 0;
-		return true;
 	}
 
 	bool GraphicsEngine::beginFrame()

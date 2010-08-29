@@ -37,11 +37,6 @@ namespace res
 		rmgr->removeResource(this);
 	}
 	
-	void Resource::setName(const std::string &name)
-	{
-		// TODO: This and getName needs to be thread-safe?
-		this->name = name;
-	}
 	std::string Resource::getName()
 	{
 		return name;

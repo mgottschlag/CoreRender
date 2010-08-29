@@ -97,6 +97,7 @@ namespace res
 	                                         const std::string &path,
 	                                         const std::string &name)
 	{
+		// TODO: This is not thread-safe!
 		// Get existing resource
 		Resource::Ptr existing;
 		if (name == "")
@@ -169,7 +170,8 @@ namespace res
 			return;
 		if (it->second != res)
 		{
-			std::cout << "Warning: duplicated resource name." << std::endl;
+			log->warning("Duplicated resource name: \"%s\"",
+			             res->getName().c_str());
 			return;
 		}
 		resources.erase(it);
