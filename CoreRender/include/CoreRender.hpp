@@ -79,13 +79,62 @@ namespace cr
  * CoreRender is a shader-based multithreaded 3d engine designed for flexibility
  * and speed. It is modular and unlike other 3d engines does not contain any
  * scene graph, instead it uses submission style rendering (see
- * Pipeline::submit()).
+ * cr::render::Pipeline::submit()).
  *
  * @subsection quickstart Quick start
  * TBD
  *
  * @subsection example Example
  * TBD
+ *
+ * @subsection multithreading Multithreading
+ * The engine uses two threads by default (unless told to use only one thread),
+ * one thread dedicated to rendering and one which processes the scene and fills
+ * the render queues (although this can be splitted up into multiple threads
+ * again).
+ *
+ * This multithreading however needs the user of the engine to take care of some
+ * things in order to maintain thread-safety as most of the engine by design is
+ * not thread-safe.
+ *
+ * As resource loading happens in two steps (first new resources are created at
+ * the beginning of a frame in the main thread, then they are uploaded in the
+ * render thread), the user must take care not to create any resources after
+ * cr::render::GraphicsEngine::beginFrame(), and must be careful when
+ * manipulating resources which just have been queued for uploading the frame
+ * before as one could then possible manipulate the resource already before it
+ * was uploaded in the render thread. In the first case, the engine might not
+ * render correctly as no handles to the newly created resource are available,
+ * in the second the manipulated resource would be updated one frame too early
+ * possibly causing wrong rendering as well. The latter can be prevented by
+ * calling cr::render::RenderResource::waitForUpload() though which waits until
+ * the upload of the resource has been finished.
+ *
+ * As a general guideline, if you call functions of the engine in parallel, only
+ * do that with functions which are marked to be thread-safe. Even calling a
+ * non-thread-safe function while at the same time calling a thread-safe
+ * function might have side effects which let the engine crash.
+ *
+ * @subsection pipeline Rendering pipeline
+ * The rendering pipeline in CoreRender is completely programmable. It mainly
+ * consists of the two classes cr::render::Pipeline and cr::render::RenderPass.
+ * While cr::render::GraphicsEngine holds multiple pipelines, each pipeline
+ * again can hold more than one render pass.
+ *
+ * A pipeline defines a complete render operation, e.g. rendering the scene from
+ * a camera. This can be done in multiple passes, where every pass is related to
+ * a certain shader context. As an example, you might want to first render the
+ * context "AMBIENT" for all renderable objects which draws all non-translucent
+ * objects, then draw the context "TRANSLUCENT" which is only defined for your
+ * translucent render jobs. In this case you would have one pipeline containing
+ * two render passes. The first render pass additionally would have to dop a
+ * clear operation to clear the screen before drawing. You might as well want to
+ * have a second pipeline after that to render maybe a GUI, or a pipeline before
+ * that to render an additional camera to a texture.
+ *
+ * Contexts are defined in cr::render::ShaderText and can have arbitrary names.
+ * A shader can support a number of different contexts, so can e.g. the same
+ * shader have contexts for forward and deferred rendering.
  */
 
 /**
