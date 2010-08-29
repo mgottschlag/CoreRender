@@ -53,6 +53,8 @@ namespace core
 			return;
 		if (mode & FileAccess::Text)
 			modestring += "t";
+		else
+			modestring += "b";
 		file = fopen(abspath.c_str(), modestring.c_str());
 		if (!file)
 			return;
@@ -71,16 +73,12 @@ namespace core
 			fstat(fd, &buf);
 			size = buf.st_size;
 #elif defined(CORERENDER_WINDOWS)
-			WIN32_FIND_DATA finddata;
-			HANDLE find = FindFirstFile((LPCSTR)abspath.c_str(), &finddata);
-			if (find == INVALID_HANDLE_VALUE)
-				size = 0;
-			else
-			{
-				// TODO: 64bit size?
-				size = finddata.nFileSizeLow;
-				FindClose(find);
-			}
+			// TODO: Can anybody tell me how I can get the size of a text file
+			// under windows? -.-
+			size = 0;
+			while (fgetc(file) != EOF)
+				size++;
+			fseek(file, 0, SEEK_SET);
 #else
 	#error Unimplemented.
 #endif
