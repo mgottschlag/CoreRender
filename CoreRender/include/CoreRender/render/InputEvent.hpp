@@ -28,11 +28,11 @@ namespace cr
 {
 namespace render
 {
+	/**
+	 * Basic event type.
+	 */
 	struct InputEventType
 	{
-		/**
-		 * Basic event type.
-		 */
 		enum List
 		{
 			/**

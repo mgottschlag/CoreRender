@@ -37,33 +37,113 @@ namespace cr
 {
 namespace core
 {
+	/**
+	 * Severity level of log messages.
+	 */
 	struct LogLevel
 	{
 		enum List
 		{
+			/**
+			 * No log level, but rather a value to prevent everything from
+			 * being written to the log in Log::setConsoleLevel() and
+			 * Log::setFileLevel().
+			 */
 			Nothing = 4,
+			/**
+			 * Error messages.
+			 */
 			Error = 3,
+			/**
+			 * Warning messages.
+			 */
 			Warning = 2,
+			/**
+			 * General information.
+			 */
 			Information = 1,
+			/**
+			 * Debug information.
+			 */
 			Debug = 0
 		};
 	};
+	/**
+	 * Class to log to a file or to the console.
+	 */
 	class Log : public ReferenceCounted
 	{
 		public:
+			/**
+			 * Constructor. Opens a file for logging and if that fails only logs
+			 * to the console.
+			 * @param fs File system to be used for the log file.
+			 * @param filename File name of the log file.
+			 */
 			Log(FileSystem::Ptr fs, const std::string &filename);
+			/**
+			 * Destructor.
+			 */
 			~Log();
 
+			/**
+			 * Sets the minimum log level for the console. Only lines with a
+			 * higher or equal severity than this are printed out.
+			 *
+			 * The default is LogLevel::Warning.
+			 * @param level New minimum log level.
+			 */
 			void setConsoleLevel(LogLevel::List level);
+			/**
+			 * Returns the minimum log level for the console.
+			 * @return Minimum log level.
+			 */
 			LogLevel::List getConsoleLevel();
+			/**
+			 * Sets the minimum log level for the log file. Only lines with a
+			 * higher or equal severity than this are printed out.
+			 *
+			 * The default is LogLevel::Information.
+			 * @param level New minimum log level.
+			 */
 			void setFileLevel(LogLevel::List level);
+			/**
+			 * Returns the minimum log level for the log file.
+			 * @return Minimum log level.
+			 */
 			LogLevel::List getFileLevel();
 
+			/**
+			 * Prints a line with the log level LogLevel::Error.
+			 * @param format Format string which uses the same formatting as
+			 * printf().
+			 */
 			void error(const char *format, ...);
+			/**
+			 * Prints a line with the log level LogLevel::Warning.
+			 * @param format Format string which uses the same formatting as
+			 * printf().
+			 */
 			void warning(const char *format, ...);
+			/**
+			 * Prints a line with the log level LogLevel::Information.
+			 * @param format Format string which uses the same formatting as
+			 * printf().
+			 */
 			void info(const char *format, ...);
+			/**
+			 * Prints a line with the log level LogLevel::Debug.
+			 * @param format Format string which uses the same formatting as
+			 * printf().
+			 */
 			void debug(const char *format, ...);
 
+			/**
+			 * Prints a line with a certain log level.
+			 * @param level Log level of the line.
+			 * @param format Format string which uses the same formatting as
+			 * printf().
+			 */
 			void write(LogLevel::List level, const char *format, ...);
 
 			typedef SharedPointer<Log> Ptr;

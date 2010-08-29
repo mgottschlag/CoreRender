@@ -30,47 +30,87 @@ namespace cr
 {
 namespace render
 {
+	/**
+	 * Renderable object which has a 3D position/rotation. This is the base
+	 * class for most renderable objects in a scene.
+	 *
+	 * This class contains some matrices which then are used for standard
+	 * uniforms in shaders, which are "worldMat" for the world matrix
+	 * (projection matrix * transformation matrix) and "worldNormalMat" to
+	 * transform normals.
+	 */
 	class SpatialRenderable : public Renderable
 	{
 		public:
+			/**
+			 * Constructor.
+			 */
 			SpatialRenderable()
 				: transmat(math::Matrix4::Identity()),
 				projmat(math::Matrix4::Identity()),
 				dirty(false)
 			{
 			}
+			/**
+			 * Destructor.
+			 */
 			virtual ~SpatialRenderable()
 			{
 			}
 
+			/**
+			 * Sets the transformation matrix for this renderable object.
+			 * @param transmat New transformation matrix.
+			 */
 			void setTransMat(const math::Matrix4 &transmat)
 			{
 				this->transmat = transmat;
 				dirty = true;
 			}
+			/**
+			 * Sets the projection matrix for rendering.
+			 * * @param projmat New projection matrix.
+			 */
 			void setProjMat(const math::Matrix4 &projmat)
 			{
 				this->projmat = projmat;
 				dirty = true;
 			}
+			/**
+			 * Returns the transformation matrix.
+			 * @return Transformation matrix.
+			 */
 			const math::Matrix4 &getTransMat()
 			{
 				if (dirty)
 					updateMatrices();
 				return transmat;
 			}
+			/**
+			 * Returns the projection matrix.
+			 * @return Projection matrix.
+			 */
 			const math::Matrix4 &getProjMat()
 			{
 				if (dirty)
 					updateMatrices();
 				return projmat;
 			}
+			/**
+			 * Returns the world matrix (projection * transformation).
+			 * @return World matrix.
+			 */
 			const math::Matrix4 &getWorldMat()
 			{
 				if (dirty)
 					updateMatrices();
 				return worldmat;
 			}
+			/**
+			 * Returns the world normal matrix (transposed inverse of the world
+			 * matrix).
+			 * @return World normal matrix.
+			 */
 			const math::Matrix4 &getWorldNormalMat()
 			{
 				if (dirty)

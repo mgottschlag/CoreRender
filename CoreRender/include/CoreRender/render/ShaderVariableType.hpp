@@ -26,6 +26,11 @@ namespace cr
 {
 namespace render
 {
+	/**
+	 * Type of a single shader uniform. Note that uniform arrays currently
+	 * are realized via many single uniforms with different names (like
+	 * "array[0]").
+	 */
 	struct ShaderVariableType
 	{
 		enum List
@@ -42,6 +47,11 @@ namespace render
 			// TODO: 2x2, 3x2, 4x2, 2x3, 2x4
 		};
 
+		/**
+		 * Returns the number of components for a variable type.
+		 * @param type Shader variable type.
+		 * @return Number of components. 0 for invalid types.
+		 */
 		static unsigned int getSize(ShaderVariableType::List type)
 		{
 			switch (type)

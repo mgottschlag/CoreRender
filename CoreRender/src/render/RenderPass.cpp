@@ -66,23 +66,5 @@ namespace render
 		// Clean up
 		batches.clear();
 	}
-	void RenderPass::render(VideoDriver *driver)
-	{
-		/*// Set render target
-		driver->setRenderTarget(target);
-		// Clear background
-		// TODO
-		driver->clear(true, true);
-		// Draw batches
-		for (unsigned int i = 0; i < preparedcount; i++)
-		{
-			driver->draw(prepared[i]);
-		}
-		// Clean up
-		// TODO: Not necessary with proper memory manager
-		delete[] prepared;
-		prepared = 0;
-		preparedcount = 0;*/
-	}
 }
 }

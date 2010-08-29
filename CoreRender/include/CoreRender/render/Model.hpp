@@ -34,15 +34,36 @@ namespace cr
 {
 namespace render
 {
+	/**
+	 * Class containing several meshes and joint information.
+	 *
+	 * A model contains a node hierarchy, and every node can contain zero or more
+	 * meshes. The nodes also are used for animation as joints, as every node
+	 * contains a transformation and joints just link to a certain node (by
+	 * name).
+	 */
 	class Model : public res::Resource
 	{
 		public:
+			/**
+			 * Constructor.
+			 * @param driver Video driver to be used for the model.
+			 * @param renderer Renderer to be used with this model.
+			 * @param rmgr Resource manager for this resource.
+			 * @param name Name of this resource.
+			 */
 			Model(render::VideoDriver *driver,
 			      render::Renderer *renderer,
 			      res::ResourceManager *rmgr,
 			      const std::string &name);
+			/**
+			 * Destructor.
+			 */
 			virtual ~Model();
 
+			/**
+			 * Model node holding zero or more meshes and zero or more joints.
+			 */
 			class Node
 			{
 				public:
@@ -58,6 +79,9 @@ namespace render
 							parent->addChild(this);
 						model->nodes[name] = this;
 					}
+					/**
+					 * Destructor.
+					 */
 					~Node()
 					{
 						for (int i = children.size() - 1; i >= 0; i--)
@@ -72,14 +96,27 @@ namespace render
 							model->nodes.erase(it);
 					}
 
+					/**
+					 * Sets the relative transformation of the model node.
+					 * @param transformation Transformation relative to the
+					 * parent.
+					 */
 					void setTransformation(const math::Matrix4 &transformation)
 					{
 						this->transformation = transformation;
 					}
+					/**
+					 * Returns the transformation relative to the parent.
+					 * @return Relative transformation.
+					 */
 					const math::Matrix4 &getTransformation()
 					{
 						return transformation;
 					}
+					/**
+					 * Returns the absolute transformation of the model node.
+					 * @return Absolute transformation.
+					 */
 					math::Matrix4 getAbsTrans()
 					{
 						// TODO: Optimize this
@@ -89,14 +126,26 @@ namespace render
 							return transformation;
 					}
 
+					/**
+					 * Returns the name of the node.
+					 * @return Name.
+					 */
 					std::string getName()
 					{
 						return name;
 					}
+					/**
+					 * Returns the parent of the node.
+					 * @return Parent.
+					 */
 					Node *getParent()
 					{
 						return parent;
 					}
+					/**
+					 * Returns a list of all children of this node.
+					 * @return List of all children.
+					 */
 					const std::vector<Node*> &getChildren()
 					{
 						return children;
@@ -121,8 +170,16 @@ namespace render
 					std::vector<Node*> children;
 					math::Matrix4 transformation;
 			};
+			/**
+			 * Stripped-down version of Node to be used within ModelRenderable
+			 * for animations.
+			 */
 			struct AnimationNode
 			{
+				/**
+				 * Returns the absolute transformation of the model node.
+				 * @return Absolute transformation.
+				 */
 				math::Matrix4 getAbsTrans()
 				{
 					// TODO: Optimize this
@@ -132,57 +189,194 @@ namespace render
 						return transformation;
 				}
 
+				/**
+				 * Name of the model node.
+				 */
 				std::string name;
+				/**
+				 * Parent of this node, if 0, then this node is the root node.
+				 */
 				AnimationNode *parent;
+				/**
+				 * Transformation of this node relative to the parent.
+				 */
 				math::Matrix4 transformation;
 			};
 
+			/**
+			 * Joint information.
+			 */
 			struct Joint
 			{
+				/**
+				 * Name of the joint. This is the name of the node it is linked
+				 * to.
+				 */
 				std::string name;
+				/**
+				 * Inverse joint bind matrix. Multiply vertices with this matrix
+				 * to get their position in bone space.
+				 */
 				math::Matrix4 jointmat;
+				/**
+				 * Node this joint is linked to.
+				 */
 				Node *node;
 			};
 
+			/**
+			 * Batch of geometry to be used in Mesh. One batch can be used by
+			 * multiple meshes with different transformation.
+			 *
+			 * For a better description of most these fields see RenderJob.
+			 */
 			struct Batch
 			{
+				/**
+				 * Vertex layout.
+				 */
 				VertexLayout::Ptr layout;
+				/**
+				 * Index size, can be 1, 2 or 4.
+				 */
 				unsigned int indextype;
+				/**
+				 * Start index in the index buffer.
+				 */
 				unsigned int startindex;
+				/**
+				 * Number of indices in the index buffer.
+				 */
 				unsigned int indexcount;
+				/**
+				 * Base vertex (offset added to all indices).
+				 */
 				unsigned int basevertex;
+				/**
+				 * Byte offset to the first vertex.
+				 */
 				unsigned int vertexoffset;
+				/**
+				 * Number of vertices in the vertex buffer.
+				 */
 				unsigned int vertexcount;
+				/**
+				 * Joints influencing this batch.
+				 */
 				std::vector<Joint> joints;
 			};
 
+			/**
+			 * Model mesh, contains a batch and a material.
+			 */
 			struct Mesh
 			{
+				/**
+				 * Batch to be used for this mesh.
+				 */
 				unsigned int batch;
+				/**
+				 * Material to be used for this mesh.
+				 */
 				Material::Ptr material;
+				/**
+				 * Node which is used for transformation of the mesh.
+				 */
 				Node *node;
 			};
 
+			/**
+			 * Adds a batch to the model.
+			 * @param batch Batch information.
+			 */
 			void addBatch(const Batch &batch);
+			/**
+			 * Returns the batch at a certain index.
+			 * @param index Batch index.
+			 * @return Batch at the index, or 0 if the batch was not found.
+			 */
 			Batch *getBatch(unsigned int index);
+			/**
+			 * Removes the batch at a certain index.
+			 */
 			void removeBatch(unsigned int index);
+			/**
+			 * Returns the number of batches in the model.
+			 */
 			unsigned int getBatchCount();
 
+			/**
+			 * Adds a mesh to the model.
+			 * @param mesh Mesh information.
+			 */
 			void addMesh(const Mesh &mesh);
+			/**
+			 * Returns the mesh at a certain index.
+			 * @param index mesh index.
+			 * @return Mesh at the index, or 0 if the mesh was not found.
+			 */
 			Mesh *getMesh(unsigned int index);
+			/**
+			 * Removes the mesh at a certain index.
+			 */
 			void removeMesh(unsigned int index);
+			/**
+			 * Returns the number of meshes in the model.
+			 */
 			unsigned int getMeshCount();
 
+			/**
+			 * Inserts a new model node into the node hierarchy.
+			 * @param name Name of the new node.
+			 * @param parent Parent of the node, if this is 0, the root node
+			 * will be replaced with the node.
+			 * @return New node.
+			 */
 			Model::Node *addNode(const std::string &name, Node *parent);
+			/**
+			 * Removes a node from the model.
+			 * @param name Node name.
+			 */
 			void removeNode(const std::string &name);
+			/**
+			 * @param node Node to be removed.
+			 */
 			void removeNode(Node *node);
+			/**
+			 * Returns the root model node.
+			 * @return Root mode node.
+			 */
 			Node *getRootNode();
+			/**
+			 * Returns the node with a certain name.
+			 * @return Node, or 0 if the node was not found.
+			 */
 			Node *getNode(const std::string &name);
+			/**
+			 * Returns a map with all nodes usable for animation.
+			 * @param nodelist List which is filled with all mode nodes.
+			 */
 			void getNodeList(std::map<std::string, AnimationNode*> &nodelist);
 
+			/**
+			 * Sets the index buffer used for all batches in the model.
+			 * @param indexbuffer Model index buffer.
+			 */
 			void setIndexBuffer(IndexBuffer::Ptr indexbuffer);
+			/**
+			 * Returns the index buffer used for this model.
+			 * @return Index buffer.
+			 */
 			IndexBuffer::Ptr getIndexBuffer();
-			void setVertexBuffer(VertexBuffer::Ptr indexbuffer);
+			/**
+			 * Sets the vertex buffer used for all batches in the model.
+			 * @param vertexbuffer Model vertex buffer.
+			 */
+			void setVertexBuffer(VertexBuffer::Ptr vertexbuffer);
+			/**
+			 * Returns the vertex buffer used for this model.
+			 * @return Vertex buffer.
+			 */
 			VertexBuffer::Ptr getVertexBuffer();
 
 			virtual bool load();

@@ -31,32 +31,101 @@ namespace render
 {
 	class ShaderText;
 
+	/**
+	 * Resource containing a single shader instance.
+	 *
+	 * This class should be created via ShaderText::getShader().
+	 */
 	class Shader : public RenderResource
 	{
 		public:
+			/**
+			 * Constructor.
+			 * @param renderer Renderer to be used with this shader.
+			 * @param rmgr Resource manager for this resource.
+			 * @param name Name of this resource.
+			 */
 			Shader(Renderer *renderer,
 			       res::ResourceManager *rmgr,
 			       const std::string &name);
+			/**
+			 * Destructor.
+			 */
 			virtual ~Shader();
 
+			/**
+			 * Sets the vertex shader text for this shader.
+			 * @param vs Vertex shader content.
+			 */
 			void setVertexShader(const std::string &vs);
+			/**
+			 * Sets the fragment shader text for this shader.
+			 * @param fs Fragment shader content.
+			 */
 			void setFragmentShader(const std::string &fs);
+			/**
+			 * Sets the geometry shader text for this shader.
+			 * @param gs Geometry shader content.
+			 */
 			void setGeometryShader(const std::string &gs);
+			/**
+			 * Sets the tesselation shader text for this shader.
+			 * @param ts Tesselation shader content.
+			 */
 			void setTesselationShader(const std::string &ts);
 
+			/**
+			 * Adds an attrib name to the shader. Only attribs added like this
+			 * get valid shader handles.
+			 * @param name Attrib name.
+			 */
 			void addAttrib(const std::string &name);
+			/**
+			 * Returns the shader handle to an attrib.
+			 * @param name Attrib name.
+			 * @return Shader handle.
+			 */
 			int getAttrib(const std::string &name);
+			/**
+			 * Adds a uniform name to the shader. Only uniforms added like this
+			 * get valid shader handles.
+			 * @param name Uniform name.
+			 */
 			void addUniform(const std::string &name);
+			/**
+			 * Returns the shader handle to a uniform.
+			 * @param name Uniform name.
+			 * @return Shader handle.
+			 */
 			int getUniform(const std::string &name);
+			/**
+			 * Adds a sampler name to the shader. Only textures added like this
+			 * get valid shader handles.
+			 * @param name Sampler name.
+			 */
 			void addTexture(const std::string &name);
+			/**
+			 * Returns the shader handle to a texture.
+			 * @param name Sampler name.
+			 * @return Shader handle.
+			 */
 			int getTexture(const std::string &name);
 
+			/**
+			 * Updates the shader. This registers the shader for reupload.
+			 * This is called by ShaderText::getShader().
+			 */
 			void updateShader();
 
 			virtual void uploadShader()
 			{
 			}
 
+			/**
+			 * Returns the handle to this shader. This usually is the OpenGL
+			 * program handle.
+			 * @return Handle to the shader.
+			 */
 			int getHandle()
 			{
 				return handle;
@@ -66,10 +135,19 @@ namespace render
 				return "Shader";
 			}
 
+			/**
+			 * Sets the shader text resource this shader belongs to. This is
+			 * called by ShaderText::getShader().
+			 * @param text Shader text resource.
+			 */
 			void setShaderText(ShaderText *text)
 			{
 				this->text = text;
 			}
+			/**
+			 * Returns the shader text this shader belongs to.
+			 * @return Shader text resource.
+			 */
 			ShaderText *getShaderText()
 			{
 				return text;

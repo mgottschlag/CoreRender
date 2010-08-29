@@ -30,18 +30,60 @@ namespace render
 {
 	class Renderer;
 
+	/**
+	 * Base class for all resources which are uploaded to the GPU. Those need
+	 * to be treated differently as they have to be uploaded and destroyed in a
+	 * thread with a valid render context.
+	 *
+	 * Basically, these resources register themselves first for creation
+	 * (Renderer::registerNew()) which the happens at
+	 * GraphicsEngine::beginFrame() and then for upload
+	 * (Renderer::registerUpload()) which happens in the render thread.
+	 * onDelete() also is overridden and just calls Renderer::registerDelete()
+	 * when the reference count reaches 0 which causes the resource to be
+	 * deleted in the render thread later.
+	 */
 	class RenderResource : public res::Resource
 	{
 		public:
+			/**
+			 * Constructor.
+			 * @param renderer Renderer to be used for uploading/unloading.
+			 * @param rmgr Resource manager for this resource.
+			 * @param name Name of this resource.
+			 */
 			RenderResource(Renderer *renderer,
 			               res::ResourceManager *rmgr,
 			               const std::string &name);
+			/**
+			 * Destructor.
+			 */
 			~RenderResource();
 
+			/**
+			 * Waits until the resource has been uploaded to the render thread.
+			 * If you are modifying an existing resource, you might need to call
+			 * this as the resource might not have been completely uploaded in
+			 * the other thread. If you do not, your modifications might already
+			 * be uploaded one frame too early. However, this is only necessary
+			 * if modifications happened in two subsequent frames.
+			 */
 			void waitForUpload();
 
+			/**
+			 * Creates the GPU part of the resource. Called from
+			 * Renderer::uploadNewObjects(). Do not call this manually.
+			 */
 			virtual bool create();
+			/**
+			 * Destroys the GPU part of the resource. Called from
+			 * Renderer::deleteObjects(). Do not call this manually.
+			 */
 			virtual bool destroy();
+			/**
+			 * Uploads the resource to the GPU. Called from
+			 * Renderer::uploadObjects(). Do not call this manually.
+			 */
 			virtual bool upload();
 
 			typedef core::SharedPointer<RenderResource> Ptr;

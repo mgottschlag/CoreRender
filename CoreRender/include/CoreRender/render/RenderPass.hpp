@@ -33,20 +33,58 @@ namespace render
 
 	struct RenderBatch;
 
+	/**
+	 * A render pass draws geometry with one single material context. A pipeline
+	 * then can contain many of these to draw different contexts.
+	 *
+	 * If you submit geometry to a pipeline, the pipeline first checks whether
+	 * ShaderText::hasContext() is true before it proceeds with passing the
+	 * batch to the render pass via RenderPass::insert().
+	 */
 	class RenderPass : public core::ReferenceCounted
 	{
 		public:
+			/**
+			 * Constructor.
+			 * @param context Name of the context to be rendered in this pass.
+			 */
 			RenderPass(const std::string &context);
+			/**
+			 * Destructor.
+			 */
 			virtual ~RenderPass();
 
+			/**
+			 * Sets the render target for this pass.
+			 * @param target New render target.
+			 */
 			void setRenderTarget(RenderTarget::Ptr target);
+			/**
+			 * Returns the render target used for this pass.
+			 * @return Render target or 0 if rendering to the screen.
+			 */
 			RenderTarget::Ptr getRenderTarget();
 
+			/**
+			 * Called by Pipeline::beginFrame(), do not call this manually.
+			 */
 			void beginFrame();
+			/**
+			 * Inserts a render patch into the queue for this render pass.
+			 * Called by Pipeline::submit(), do not call this manually.
+			 * @param batch Batch to be drawn.
+			 */
 			void insert(RenderBatch *batch);
+			/**
+			 * Prepares and then returns the batch list for this pass.
+			 * @param info Target for the batch list.
+			 */
 			void prepare(RenderPassInfo *info);
-			void render(VideoDriver *driver);
 
+			/**
+			 * Returns the context name for shaders drawn in this pass.
+			 * @return Context name.
+			 */
 			const std::string &getContext()
 			{
 				return context;

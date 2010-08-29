@@ -30,37 +30,94 @@ namespace cr
 {
 namespace render
 {
+	/**
+	 * Material definition which contains a shader text, flags, uniform values
+	 * and textures.
+	 */
 	class Material : public res::Resource
 	{
 		public:
+			/**
+			 * Constructor.
+			 * @param driver Video driver to be used.
+			 * @param renderer Renderer to be used with this material.
+			 * @param rmgr Resource manager for this resource.
+			 * @param name Name of this resource.
+			 */
 			Material(render::VideoDriver *driver,
 			         render::Renderer *renderer,
 			         res::ResourceManager *rmgr,
 			         const std::string &name);
+			/**
+			 * Destructor.
+			 */
 			virtual ~Material();
 
+			/**
+			 * Sets the shader text of the material.
+			 * @param shader New shader text resource.
+			 */
 			void setShader(ShaderText::Ptr shader);
+			/**
+			 * Returns the shader text used for this material.
+			 * @return Shader text resource.
+			 */
 			ShaderText::Ptr getShader();
 
+			/**
+			 * Sets a shader flag string. For the format, see
+			 * ShaderText::getFlags().
+			 * @param flags Shader flag string.
+			 */
 			void setShaderFlags(const std::string &flags)
 			{
 				shaderflags = flags;
 			}
+			/**
+			 * Returns a shader flag string.
+			 */
 			std::string getShaderFlags()
 			{
 				return shaderflags;
 			}
 
+			/**
+			 * Material texture info.
+			 */
 			struct TextureInfo
 			{
+				/**
+				 * Texture to be used for the sampler.
+				 */
 				Texture::Ptr texture;
+				/**
+				 * Sampler name.
+				 */
 				std::string name;
 			};
 
+			/**
+			 * Adds a texture entry.
+			 * @param name Sampler name.
+			 * @param texture Texture resource to be bound to the sampler.
+			 */
 			void addTexture(const std::string name, Texture::Ptr texture);
+			/**
+			 * Returns the texture bound to a certain sampler.
+			 * @param name Sampler name.
+			 * @return Texture bound to the sampler.
+			 */
 			Texture::Ptr getTexture(const std::string &name);
+			/**
+			 * Returns all textures used for this material.
+			 */
 			const std::vector<TextureInfo> &getTextures();
 
+			/**
+			 * Returns the uniform data used for this material. The uniform
+			 * values are applied after the default shader text values, but
+			 * before those specified by the user in RenderJob.
+			 */
 			UniformData &getUniformData()
 			{
 				return uniforms;
