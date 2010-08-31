@@ -24,7 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "ReferenceCounted.hpp"
 #include "FileSystem.hpp"
-#include "../math/StdInt.hpp"
+#include "Time.hpp"
 
 #include <tbb/mutex.h>
 #include <cstdarg>
@@ -155,7 +155,7 @@ namespace core
 			LogLevel::List consolelevel;
 			LogLevel::List filelevel;
 
-			uint64_t starttime;
+			Time starttime;
 
 			File::Ptr file;
 

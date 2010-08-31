@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2009, Mathias Gottschlag
+Copyright (C) 2010, Mathias Gottschlag
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -19,21 +19,22 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_CORE_PLATFORM_HPP_INCLUDED_
-#define _CORERENDER_CORE_PLATFORM_HPP_INCLUDED_
+#ifndef _CORERENDERUTILS_HPP_INCLUDED_
+#define _CORERENDERUTILS_HPP_INCLUDED_
 
-#if defined(_MSC_VER) || defined(_WINDOWS_) || defined(_WIN32)
-	#define CORERENDER_WINDOWS
-#elif defined(unix) || defined(__unix__) || defined(__unix)
-	#define CORERENDER_UNIX
-#else
-	#error Unsupported platform!
-#endif
+#include "CoreRender/util/FrameLimiter.hpp"
 
-#if defined(_MSC_VER)
-	#define CORERENDER_MSVC
-#else
-	#define CORERENDER_GCC
-#endif
+namespace cr
+{
+/**
+ * Namespace holding various utility classes which do not belong in the core
+ * render engine but still are useful to many programs using it. For the classes
+ * in this namespace, link to the CoreRenderUtil library and include
+ * CoreRenderUtil.hpp.
+ */
+namespace util
+{
+}
+}
 
 #endif

@@ -42,7 +42,7 @@ namespace core
 			return;
 		}
 		// Get log start time
-		starttime = Time::getSystemTime();
+		starttime = Time::Now();
 		// Write file header
 		file->write("<html>\n<header>\n<title>CoreRender Log</title>\n");
 		file->write("<style type=\"text/css\">\ntable {\n");
@@ -63,7 +63,7 @@ namespace core
 		file->write("<h1>CoreRender</h1>");
 		file->write("<table border=\"1\" width=\"100%\">\n");
 		file->write("<tr><td>Time</td><td>Message</td></tr>\n");
-		info("Log started on DD.MM.YYYY HH:MM:SS.");
+		info("Log started on %s.", AbsoluteTime::Now().toString().c_str());
 	}
 	Log::~Log()
 	{
@@ -136,8 +136,8 @@ namespace core
 		char msg[1024];
 		vsnprintf(msg, 1024, format, args);
 		// Get time
-		uint64_t currenttime = Time::getSystemTime();
-		float seconds = (float)((currenttime - starttime) / 1000) * 0.001f;
+		Time currenttime = Time::Now();
+		float seconds = 0.001f * (currenttime - starttime).getMilliseconds();
 		// Write to console/file
 		tbb::mutex::scoped_lock lock(mutex);
 		if (level >= consolelevel)

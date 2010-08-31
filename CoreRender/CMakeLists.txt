@@ -9,12 +9,10 @@ option(CORERENDER_USE_GLCML "Use GLCML multi-threaded OpenGL contexts." OFF)
 
 set(SRC
 	include/CoreRender.hpp
-	include/CoreRender/core/Buffer.hpp
 	include/CoreRender/core/Color.hpp
 	include/CoreRender/core/File.hpp
 	include/CoreRender/core/FileList.hpp
 	include/CoreRender/core/FileSystem.hpp
-	include/CoreRender/core/FrameLimiter.hpp
 	include/CoreRender/core/Functor.hpp
 	include/CoreRender/core/Hardware.hpp
 	include/CoreRender/core/Log.hpp
@@ -71,8 +69,6 @@ set(SRC
 	include/CoreRender/render/UniformData.hpp
 	include/CoreRender/render/VertexBuffer.hpp
 	include/CoreRender/render/VertexLayout.hpp
-	src/core/Buffer.cpp
-	src/core/FrameLimiter.cpp
 	src/core/Log.cpp
 	src/core/Semaphore.cpp
 	src/core/StandardFile.cpp

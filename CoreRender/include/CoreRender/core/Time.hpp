@@ -24,47 +24,278 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "../math/StdInt.hpp"
 
+#include <string>
+
 namespace cr
 {
 namespace core
 {
+	class Duration
+	{
+		public:
+			Duration()
+			{
+			}
+			~Duration()
+			{
+			}
+
+			static Duration Hours(int64_t hours)
+			{
+				Duration d;
+				d.duration = hours * 3600000000000LL;
+				return d;
+			}
+			static Duration Minutes(int64_t minutes)
+			{
+				Duration d;
+				d.duration = minutes * 60000000000LL;
+				return d;
+			}
+			static Duration Seconds(int64_t seconds)
+			{
+				Duration d;
+				d.duration = seconds * 1000000000LL;
+				return d;
+			}
+			static Duration Microseconds(int64_t microseconds)
+			{
+				Duration d;
+				d.duration = microseconds * 1000;
+				return d;
+			}
+			static Duration Nanoseconds(int64_t nanoseconds)
+			{
+				Duration d;
+				d.duration = nanoseconds;
+				return d;
+			}
+
+			int64_t getNanoseconds()
+			{
+				return duration;
+			}
+			int64_t getMicroseconds()
+			{
+				return duration / 1000;
+			}
+			int64_t getMilliseconds()
+			{
+				return duration / 1000000;
+			}
+			int64_t getSeconds()
+			{
+				return duration / 1000000000LL;
+			}
+			int64_t getMinutes()
+			{
+				return duration / 60000000000LL;
+			}
+			int64_t getHours()
+			{
+				return duration / 3600000000000LL;
+			}
+
+			std::string toString(bool asseconds = true) const;
+
+			Duration operator+(const Duration &other) const;
+			Duration operator-(const Duration &other) const;
+			Duration &operator+=(const Duration &other);
+			Duration &operator-=(const Duration &other);
+
+			bool operator>(const Duration &d)
+			{
+				return duration > d.duration;
+			}
+			bool operator>=(const Duration &d)
+			{
+				return duration >= d.duration;
+			}
+			bool operator<(const Duration &d)
+			{
+				return duration < d.duration;
+			}
+			bool operator<=(const Duration &d)
+			{
+				return duration <= d.duration;
+			}
+			bool operator==(const Duration &d)
+			{
+				return duration == d.duration;
+			}
+			bool operator!=(const Duration &d)
+			{
+				return duration != d.duration;
+			}
+		private:
+			friend class Time;
+			friend class AbsoluteTime;
+
+			int64_t duration;
+	};
+
 	/**
-	 * Operating system independent class to measure time or to wait for some
-	 * time.
-	 * @note All functions in this class are completely thread-safe.
+	 * Absolute time with nanosecond accuracy starting at un undefined time in
+	 * the past. This class has better precision than AbsoluteTime usually and
+	 * is a bit faster. Also the time returned by Now() usually is monotonic and
+	 * not changed if the operating system time is changed.
 	 */
 	class Time
 	{
 		public:
-			/**
-			 * Returns the global time object.
-			 */
-			static Time &get();
-			/**
-			 * Destructor.
-			 */
-			~Time();
+			Time()
+			{
+			}
+			Time(const Time &other)
+			{
+				time = other.time;
+			}
+			static Time Now();
+			static Duration Precision();
 
-			/**
-			 * Returns the time in microseconds passed after the constructor
-			 * has been called.
-			 */
-			unsigned int getTime();
-			/**
-			 * Returns the system time in microseconds.
-			 */
-			static uint64_t getSystemTime();
+			static void sleep(const Duration &duration);
+			static void sleep(uint64_t nanoseconds);
 
-			/**
-			 * Sleeps for at least a certain amount of microseconds.
-			 * @note This actually can sleep much longer, depending on the
-			 * operating system.
-			 */
-			static void sleep(unsigned int usecs);
+			Duration operator-(Time &other) const
+			{
+				Duration d;
+				d.duration = time - other.time;
+				return d;
+			}
+			Time operator-(Duration &duration) const
+			{
+				Time t;
+				t.time = time - duration.duration;
+				return t;
+			}
+			Time operator+(Duration &duration) const
+			{
+				Time t;
+				t.time = time + duration.duration;
+				return t;
+			}
+			Time &operator+=(Duration &duration)
+			{
+				time += duration.duration;
+				return *this;
+			}
+			Time &operator-=(Duration &duration)
+			{
+				time -= duration.duration;
+				return *this;
+			}
+
+			bool operator>(const Time &t)
+			{
+				return time > t.time;
+			}
+			bool operator>=(const Time &t)
+			{
+				return time >= t.time;
+			}
+			bool operator<(const Time &t)
+			{
+				return time < t.time;
+			}
+			bool operator<=(const Time &t)
+			{
+				return time <= t.time;
+			}
+			bool operator==(const Time &t)
+			{
+				return time == t.time;
+			}
+			bool operator!=(const Time &t)
+			{
+				return time != t.time;
+			}
 		private:
-			Time();
+			int64_t time;
+	};
 
-			uint64_t starttime;
+	/**
+	 * Absolute time with nanosecond accuracy (if supported by the hardware),
+	 * starting at january 1st 1970. This has less precision and speed than Time
+	 * usually.
+	 */
+	class AbsoluteTime
+	{
+		public:
+			AbsoluteTime()
+			{
+			}
+			AbsoluteTime(const AbsoluteTime &other)
+			{
+				time = other.time;
+			}
+			static AbsoluteTime Epoch()
+			{
+				AbsoluteTime t;
+				t.time = 0;
+				return t;
+			}
+			static AbsoluteTime Now();
+			static Duration Precision();
+
+			std::string toString(bool date = true,
+			                     bool time = true,
+			                     bool subsecond = true) const;
+
+			inline Duration operator-(AbsoluteTime &other) const
+			{
+				Duration d;
+				d.duration = time - other.time;
+				return d;
+			}
+			inline AbsoluteTime operator-(Duration &duration) const
+			{
+				AbsoluteTime t;
+				t.time = time - duration.duration;
+				return t;
+			}
+			inline AbsoluteTime operator+(Duration &duration) const
+			{
+				AbsoluteTime t;
+				t.time = time + duration.duration;
+				return t;
+			}
+			inline AbsoluteTime &operator+=(Duration &duration)
+			{
+				time += duration.duration;
+				return *this;
+			}
+			inline AbsoluteTime &operator-=(Duration &duration)
+			{
+				time -= duration.duration;
+				return *this;
+			}
+
+			bool operator>(const AbsoluteTime &t)
+			{
+				return time > t.time;
+			}
+			bool operator>=(const AbsoluteTime &t)
+			{
+				return time >= t.time;
+			}
+			bool operator<(const AbsoluteTime &t)
+			{
+				return time < t.time;
+			}
+			bool operator<=(const AbsoluteTime &t)
+			{
+				return time <= t.time;
+			}
+			bool operator==(const AbsoluteTime &t)
+			{
+				return time == t.time;
+			}
+			bool operator!=(const AbsoluteTime &t)
+			{
+				return time != t.time;
+			}
+		private:
+			int64_t time;
 	};
 }
 }

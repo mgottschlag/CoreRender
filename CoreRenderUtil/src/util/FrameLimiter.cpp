@@ -19,28 +19,20 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "CoreRender/core/FrameLimiter.hpp"
+#include "CoreRender/util/FrameLimiter.hpp"
 #include "CoreRender/core/Time.hpp"
 
 namespace cr
 {
-namespace core
+namespace util
 {
-	FrameLimiter::FrameLimiter(unsigned int interval)
-		: interval(interval), lasttime(0)
+	FrameLimiter::FrameLimiter(core::Duration interval)
+		: interval(interval)
 	{
+		lasttime = core::Time::Now();
 	}
 	FrameLimiter::~FrameLimiter()
 	{
-	}
-
-	void FrameLimiter::setInterval(unsigned int usecs)
-	{
-		interval = usecs;
-	}
-	unsigned int FrameLimiter::getInterval()
-	{
-		return interval;
 	}
 
 	void FrameLimiter::wait()
@@ -48,17 +40,17 @@ namespace core
 		// Compute target time
 		lasttime = lasttime + interval;
 		// Get current time
-		uint64_t currenttime = Time::getSystemTime();
+		core::Time currenttime = core::Time::Now();
 		if (currenttime < lasttime)
 		{
 			// TODO: Statistics
-			Time::sleep((unsigned int)(lasttime - currenttime));
+			core::Time::sleep(lasttime - currenttime);
 		}
 		else
 		{
 			// TODO: Warning/statistics
 			if (currenttime > lasttime + interval)
-				lasttime = Time::getSystemTime();
+				lasttime = core::Time::Now();
 		}
 	}
 }

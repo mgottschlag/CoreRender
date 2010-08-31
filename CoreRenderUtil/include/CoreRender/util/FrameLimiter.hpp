@@ -19,14 +19,15 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_CORE_FRAMELIMITER_HPP_INCLUDED_
-#define _CORERENDER_CORE_FRAMELIMITER_HPP_INCLUDED_
+#ifndef _CORERENDER_UTIL_FRAMELIMITER_HPP_INCLUDED_
+#define _CORERENDER_UTIL_FRAMELIMITER_HPP_INCLUDED_
 
-#include "../math/StdInt.hpp"
+#include "CoreRender/math/StdInt.hpp"
+#include "CoreRender/core/Time.hpp"
 
 namespace cr
 {
-namespace core
+namespace util
 {
 	/**
 	 * Class which ensures that a loop (for example render loop) is only run a
@@ -45,22 +46,28 @@ namespace core
 		public:
 			/**
 			 * Constructor.
-			 * @param interval Interval of the timer in microseconds.
+			 * @param interval Interval of the timer.
 			 */
-			FrameLimiter(unsigned int interval = 20000);
+			FrameLimiter(core::Duration interval = core::Duration::Seconds(0));
 			/**
 			 * Destructor.
 			 */
 			~FrameLimiter();
 
 			/**
-			 * Sets the interval (in microseconds).
+			 * Sets the interval.
 			 */
-			void setInterval(unsigned int usecs);
+			void setInterval(core::Duration interval)
+			{
+				this->interval = interval;
+			}
 			/**
 			 * Returns the interval.
 			 */
-			unsigned int getInterval();
+			core::Duration getInterval()
+			{
+				return interval;
+			}
 
 			/**
 			 * If between the last call of this function and this call is no
@@ -71,8 +78,8 @@ namespace core
 			 */
 			void wait();
 		private:
-			unsigned int interval;
-			uint64_t lasttime;
+			core::Duration interval;
+			core::Time lasttime;
 	};
 }
 }

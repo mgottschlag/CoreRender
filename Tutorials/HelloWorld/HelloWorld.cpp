@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 int main(int argc, char **argv)
 {
+	std::cout << "Header: " << sizeof(cr::render::GeometryFile::GeometryInfo) << std::endl;
 	cr::render::GraphicsEngine graphics;
 	// Initialize file system
 	{
@@ -74,7 +75,7 @@ int main(int argc, char **argv)
 	graphics.getLog()->info("Starting rendering.");
 	// Render loop
 	bool stopping = false;
-	uint64_t fpstime = cr::core::Time::getSystemTime();
+	cr::core::Time fpstime = cr::core::Time::Now();
 	int fps = 0;
 	float rotation = 0.0f;
 	float animtime = 0.0f;
@@ -107,8 +108,8 @@ int main(int argc, char **argv)
 		// Finish and render frame
 		graphics.endFrame();
 		fps++;
-		uint64_t currenttime = cr::core::Time::getSystemTime();
-		if (currenttime - fpstime >= 1000000)
+		cr::core::Time currenttime = cr::core::Time::Now();
+		if (currenttime - fpstime >= cr::core::Duration::Seconds(1))
 		{
 			std::cout << "FPS: " << fps << std::endl;
 			const cr::render::RenderStats &stats = graphics.getRenderStats();

@@ -23,6 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_RENDER_RENDERSTATS_HPP_INCLUDED_
 
 #include "../math/StdInt.hpp"
+#include "../core/Time.hpp"
 
 namespace cr
 {
@@ -38,9 +39,7 @@ namespace render
 			 * Constructor.
 			 */
 			RenderStats()
-				: polygons(0), batches(0), fps(0.0f), frametime(0),
-				rendertime(0), waittime(0), framebegin(0), renderbegin(0),
-				frameend(0)
+				: polygons(0), batches(0), fps(0.0f)
 			{
 			}
 			/**
@@ -94,21 +93,21 @@ namespace render
 			 * time needed for rendering (getRenderTime()) and the time lost for
 			 * syncronization with the main thread (getWaitTime()).
 			 */
-			unsigned int getFrameTime() const
+			core::Duration getFrameTime() const
 			{
 				return frametime;
 			}
 			/**
 			 * Returns the time needed for only rendering.
 			 */
-			unsigned int getRenderTime() const
+			core::Duration getRenderTime() const
 			{
 				return rendertime;
 			}
 			/**
 			 * Returns the time lost for waiting for the main thread.
 			 */
-			unsigned int getWaitTime() const
+			core::Duration getWaitTime() const
 			{
 				return waittime;
 			}
@@ -121,18 +120,12 @@ namespace render
 				polygons = 0;
 				batches = 0;
 				fps = 0.0f;
-				frametime = 0;
-				rendertime = 0;
-				waittime = 0;
-				framebegin = 0;
-				renderbegin = 0;
-				frameend = 0;
 			}
 			/**
 			 * Signals the class that the frame has started. This is called
 			 * before waiting for the main thread.
 			 */
-			void setFrameBegin(uint64_t time)
+			void setFrameBegin(core::Time time)
 			{
 				framebegin = time;
 			}
@@ -140,7 +133,7 @@ namespace render
 			 * Signals the class that rendering has started. This is called
 			 * after waiting for the main thread.
 			 */
-			void setRenderBegin(uint64_t time)
+			void setRenderBegin(core::Time time)
 			{
 				renderbegin = time;
 				waittime = renderbegin - framebegin;
@@ -149,13 +142,13 @@ namespace render
 			 * Signals the class that rendering has finished. This also computes
 			 * the different statistics like times or fps.
 			 */
-			void setFrameEnd(uint64_t time)
+			void setFrameEnd(core::Time time)
 			{
 				frameend = time;
 				rendertime = frameend - renderbegin;
 				frametime = frameend - framebegin;
 				// Compute frame per second
-				fps = 1000000.0f / frametime;
+				fps = 1000000000.0f / frametime.getNanoseconds();
 			}
 			/**
 			 * Signals the class that a certain number of batches has been
@@ -191,13 +184,13 @@ namespace render
 			unsigned int polygons;
 			unsigned int batches;
 			float fps;
-			unsigned int frametime;
-			unsigned int rendertime;
-			unsigned int waittime;
+			core::Duration frametime;
+			core::Duration rendertime;
+			core::Duration waittime;
 
-			uint64_t framebegin;
-			uint64_t renderbegin;
-			uint64_t frameend;
+			core::Time framebegin;
+			core::Time renderbegin;
+			core::Time frameend;
 	};
 }
 }

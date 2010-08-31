@@ -69,7 +69,7 @@ namespace render
 		// We do not want the first access to waitForFrame() to deadlock
 		frameend.post();
 		// Render loop
-		uint64_t time = core::Time::getSystemTime();
+		core::Time time = core::Time::Now();
 		while (true)
 		{
 			// Wait for next frame to begin
@@ -80,10 +80,10 @@ namespace render
 			// improves computation of fps numbers.
 			renderer->getDriver()->getStats().setFrameBegin(time);
 			// Render
-			time = core::Time::getSystemTime();
+			time = core::Time::Now();
 			renderer->getDriver()->getStats().setRenderBegin(time);
 			renderer->render();
-			time = core::Time::getSystemTime();
+			time = core::Time::Now();
 			renderer->getDriver()->getStats().setFrameEnd(time);
 			// Notify other thread that the frame has ended
 			frameend.post();
