@@ -22,6 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/res/Resource.hpp"
 #include "CoreRender/core/Semaphore.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
+#include "../3rdparty/tinyxml.h"
 
 namespace cr
 {
@@ -102,6 +103,37 @@ namespace res
 			waiting[i]->post();
 		}
 		waiting.clear();
+	}
+
+	bool Resource::loadResourceFile(TiXmlDocument &xml)
+	{
+		std::string path = getPath();
+		std::string directory = core::FileSystem::getDirectory(path);
+		// Open file
+		core::FileSystem::Ptr fs = getManager()->getFileSystem();
+		core::File::Ptr file = fs->open(path,
+		                                core::FileAccess::Read | core::FileAccess::Text);
+		if (!file)
+		{
+			getManager()->getLog()->error("Could not open file \"%s\".",
+			                               path.c_str());
+			return false;
+		}
+		// Load file content
+		unsigned int filesize = file->getSize();
+		char *buffer = new char[filesize + 1];
+		buffer[filesize] = 0;
+		if (file->read(filesize, buffer) != (int)filesize)
+		{
+			getManager()->getLog()->error("%s: Could not read file content.",
+			                              getName().c_str());
+			delete[] buffer;
+			return false;
+		}
+		// Parse XML file
+		xml.Parse(buffer, 0);
+		delete[] buffer;
+		return true;
 	}
 }
 }

@@ -28,6 +28,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <tbb/spin_mutex.h>
 #include <vector>
 
+class TiXmlDocument;
+
 namespace cr
 {
 namespace core
@@ -146,6 +148,8 @@ namespace res
 			typedef core::SharedPointer<Resource> Ptr;
 		protected:
 			void finishLoading(bool loaded);
+
+			bool loadResourceFile(TiXmlDocument &xml);
 
 			const std::string &getPath()
 			{

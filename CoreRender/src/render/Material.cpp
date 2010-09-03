@@ -76,33 +76,13 @@ namespace render
 	{
 		std::string path = getPath();
 		std::string directory = core::FileSystem::getDirectory(path);
-		// Open file
-		core::FileSystem::Ptr fs = getManager()->getFileSystem();
-		core::File::Ptr file = fs->open(path,
-		                                core::FileAccess::Read | core::FileAccess::Text);
-		if (!file)
-		{
-			getManager()->getLog()->error("Could not open file \"%s\".",
-			                               path.c_str());
-			finishLoading(false);
-			return false;
-		}
-		// Open XML file
-		unsigned int filesize = file->getSize();
-		char *buffer = new char[filesize + 1];
-		buffer[filesize] = 0;
-		if (file->read(filesize, buffer) != (int)filesize)
-		{
-			getManager()->getLog()->error("%s: Could not read file content.",
-			                              getName().c_str());
-			delete[] buffer;
-			finishLoading(false);
-			return false;
-		}
 		// Parse XML file
 		TiXmlDocument xml(path.c_str());
-		xml.Parse(buffer, 0);
-		delete[] buffer;
+		if (!loadResourceFile(xml))
+		{
+			finishLoading(false);
+			return false;
+		}
 		// Load XML file
 		TiXmlNode *root = xml.FirstChild("Material");
 		if (!root)
@@ -177,6 +157,7 @@ namespace render
 			// Load texture
 			// TODO: Texture types
 			Texture::Ptr texture;
+			core::FileSystem::Ptr fs = getManager()->getFileSystem();
 			texture = getManager()->getOrLoad<Texture2D>("Texture2D",
 			                                             fs->getPath(file, directory));
 			// Add texture
