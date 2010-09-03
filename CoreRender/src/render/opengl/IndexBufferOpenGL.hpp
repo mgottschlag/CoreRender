@@ -34,8 +34,8 @@ namespace opengl
 	{
 		public:
 			IndexBufferOpenGL(Renderer *renderer,
-			                   res::ResourceManager *rmgr,
-			                   const std::string &name);
+			                  res::ResourceManager *rmgr,
+			                  const std::string &name);
 			virtual ~IndexBufferOpenGL();
 
 			virtual bool create();

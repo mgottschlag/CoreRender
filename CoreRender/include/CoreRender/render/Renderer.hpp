@@ -26,7 +26,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "RenderContext.hpp"
 #include "../core/Log.hpp"
 #include "Shader.hpp"
-#include "PipelineInfo.hpp"
 
 #include <queue>
 
@@ -40,6 +39,8 @@ namespace render
 {
 	class VideoDriver;
 	class GraphicsEngine;
+	struct PipelineInfo;
+	struct RenderPassInfo;
 
 	class Renderer
 	{

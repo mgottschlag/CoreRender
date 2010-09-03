@@ -19,14 +19,63 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERPASSINFO_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERPASSINFO_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_FRAMEDATA_HPP_INCLUDED_
+#define _CORERENDER_RENDER_FRAMEDATA_HPP_INCLUDED_
+
+#include "CoreRender/render/VertexLayout.hpp"
+#include "CoreRender/render/ShaderVariableType.hpp"
 
 namespace cr
 {
 namespace render
 {
-	struct RenderBatch;
+	struct TextureEntry
+	{
+		int texhandle;
+		int type;
+		int shaderhandle;
+		int textureindex;
+	};
+	struct UniformMapping
+	{
+		int shaderhandle;
+		ShaderVariableType::List type;
+		float *data;
+	};
+	struct AttribMapping
+	{
+		int shaderhandle;
+		unsigned int address;
+		unsigned int stride;
+		unsigned int components;
+		VertexElementType::List type;
+	};
+	/**
+	 * Raw optimized batch data to be passed to the render thread.
+	 */
+	struct RenderBatch
+	{
+		TextureEntry *textures;
+		UniformMapping *uniforms;
+		AttribMapping *attribs;
+
+		unsigned int texcount;
+		unsigned int uniformcount;
+		unsigned int attribcount;
+
+		int shader;
+		int vertices;
+		int indices;
+
+		float sortkey;
+		unsigned int startindex;
+		unsigned int endindex;
+		unsigned int basevertex;
+		unsigned int vertexoffset;
+		unsigned int indextype;
+
+		unsigned int renderflags;
+	};
 
 	struct RenderTargetInfo
 	{
@@ -42,7 +91,6 @@ namespace render
 		unsigned int color;
 		float depth;
 	};
-
 	struct RenderPassInfo
 	{
 		RenderTargetInfo target;
@@ -50,6 +98,13 @@ namespace render
 		unsigned int colorbuffers;
 		RenderBatch **batches;
 		unsigned int batchcount;
+	};
+
+	struct PipelineInfo
+	{
+		int target;
+		RenderPassInfo *passes;
+		unsigned int passcount;
 	};
 }
 }

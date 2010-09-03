@@ -24,7 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "IndexBufferOpenGL.hpp"
 #include "VertexBufferOpenGL.hpp"
 #include "ShaderOpenGL.hpp"
-#include "CoreRender/render/RenderBatch.hpp"
+#include "../FrameData.hpp"
 
 #include <GL/glew.h>
 

@@ -27,6 +27,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/RenderThread.hpp"
 #include "CoreRender/render/RenderResourceFactory.hpp"
 #include "CoreRender/render/Animation.hpp"
+#include "FrameData.hpp"
 
 #if defined(CORERENDER_USE_SDL)
 	#include "opengl/RenderContextSDL.hpp"

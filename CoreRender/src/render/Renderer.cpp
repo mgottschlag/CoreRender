@@ -23,6 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/core/MemoryPool.hpp"
 #include "CoreRender/render/VideoDriver.hpp"
 #include "CoreRender/core/Time.hpp"
+#include "FrameData.hpp"
 
 namespace cr
 {

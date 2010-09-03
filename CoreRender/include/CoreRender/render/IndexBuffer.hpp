@@ -48,8 +48,8 @@ namespace render
 			 * @param name Name of this resource.
 			 */
 			IndexBuffer(Renderer *renderer,
-			             res::ResourceManager *rmgr,
-			             const std::string &name);
+			            res::ResourceManager *rmgr,
+			            const std::string &name);
 			/**
 			 * Destructor.
 			 */

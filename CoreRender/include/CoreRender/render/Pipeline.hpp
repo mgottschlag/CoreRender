@@ -24,7 +24,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "RenderPass.hpp"
 #include "RenderJob.hpp"
-#include "PipelineInfo.hpp"
 
 namespace cr
 {
@@ -32,6 +31,7 @@ namespace render
 {
 	class RenderJob;
 	class Renderable;
+	struct PipelineInfo;
 
 	/**
 	 * Class containing the definition about how to render geometry. The

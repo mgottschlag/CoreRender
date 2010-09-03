@@ -20,8 +20,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/render/Pipeline.hpp"
-#include "CoreRender/render/RenderBatch.hpp"
 #include "CoreRender/render/Renderable.hpp"
+#include "FrameData.hpp"
 
 #include <cstring>
 

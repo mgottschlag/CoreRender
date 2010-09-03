@@ -23,7 +23,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_RENDER_RENDERPASS_HPP_INCLUDED_
 
 #include "RenderTarget.hpp"
-#include "RenderPassInfo.hpp"
 #include "CoreRender/core/Color.hpp"
 
 namespace cr
@@ -33,6 +32,7 @@ namespace render
 	class VideoDriver;
 
 	struct RenderBatch;
+	struct RenderPassInfo;
 
 	/**
 	 * A render pass draws geometry with one single material context. A pipeline
