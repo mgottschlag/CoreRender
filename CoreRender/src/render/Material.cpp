@@ -21,7 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "CoreRender/render/Material.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
-#include "CoreRender/render/VideoDriver.hpp"
+#include "CoreRender/render/Texture2D.hpp"
 #include "../3rdparty/tinyxml.h"
 
 #include <sstream>
@@ -30,11 +30,10 @@ namespace cr
 {
 namespace render
 {
-	Material::Material(render::VideoDriver *driver,
-			           render::Renderer *renderer,
+	Material::Material(render::Renderer *renderer,
 	                   res::ResourceManager *rmgr,
 	                   const std::string &name)
-		: Resource(rmgr, name), driver(driver), renderer(renderer)
+		: Resource(rmgr, name), renderer(renderer)
 	{
 	}
 	Material::~Material()

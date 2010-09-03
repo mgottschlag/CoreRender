@@ -39,13 +39,11 @@ namespace render
 		public:
 			/**
 			 * Constructor.
-			 * @param driver Video driver to be used.
 			 * @param renderer Renderer to be used with this material.
 			 * @param rmgr Resource manager for this resource.
 			 * @param name Name of this resource.
 			 */
-			Material(render::VideoDriver *driver,
-			         render::Renderer *renderer,
+			Material(render::Renderer *renderer,
 			         res::ResourceManager *rmgr,
 			         const std::string &name);
 			/**
@@ -135,7 +133,6 @@ namespace render
 
 			typedef core::SharedPointer<Material> Ptr;
 		private:
-			render::VideoDriver *driver;
 			render::Renderer *renderer;
 
 			ShaderText::Ptr shader;

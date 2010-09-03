@@ -33,7 +33,6 @@ namespace cr
 {
 namespace render
 {
-	class VideoDriver;
 	class Renderer;
 
 	/**
@@ -49,13 +48,11 @@ namespace render
 		public:
 			/**
 			 * Constructor.
-			 * @param driver Video driver to be used for creating shaders.
 			 * @param renderer Renderer to be used with this shader text.
 			 * @param rmgr Resource manager for this resource.
 			 * @param name Name of this resource.
 			 */
-			ShaderText(render::VideoDriver *driver,
-			           render::Renderer *renderer,
+			ShaderText(render::Renderer *renderer,
 			           res::ResourceManager *rmgr,
 			           const std::string &name);
 			/**
@@ -190,7 +187,6 @@ namespace render
 			                     std::string &output,
 			                     const std::string &directory);
 
-			render::VideoDriver *driver;
 			render::Renderer *renderer;
 
 			struct Context

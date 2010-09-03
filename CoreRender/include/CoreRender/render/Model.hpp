@@ -47,13 +47,11 @@ namespace render
 		public:
 			/**
 			 * Constructor.
-			 * @param driver Video driver to be used for the model.
 			 * @param renderer Renderer to be used with this model.
 			 * @param rmgr Resource manager for this resource.
 			 * @param name Name of this resource.
 			 */
-			Model(render::VideoDriver *driver,
-			      render::Renderer *renderer,
+			Model(render::Renderer *renderer,
 			      res::ResourceManager *rmgr,
 			      const std::string &name);
 			/**
@@ -396,7 +394,6 @@ namespace render
 
 			bool parseNode(TiXmlElement *xml, Node *parent);
 
-			render::VideoDriver *driver;
 			render::Renderer *renderer;
 
 			IndexBuffer::Ptr indexbuffer;

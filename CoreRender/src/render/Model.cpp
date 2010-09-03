@@ -31,11 +31,10 @@ namespace cr
 {
 namespace render
 {
-	Model::Model(render::VideoDriver *driver,
-	             render::Renderer *renderer,
+	Model::Model(render::Renderer *renderer,
 	             res::ResourceManager *rmgr,
 	             const std::string &name)
-		: Resource(rmgr, name), driver(driver), renderer(renderer), rootnode(0)
+		: Resource(rmgr, name), renderer(renderer), rootnode(0)
 	{
 	}
 	Model::~Model()

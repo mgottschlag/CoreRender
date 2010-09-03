@@ -106,6 +106,27 @@ namespace render
 			render::VideoDriver *driver;
 			render::Renderer *renderer;
 	};
+	class ShaderFactory : public res::ResourceFactory
+	{
+		public:
+			ShaderFactory(render::VideoDriver *driver,
+			              render::Renderer *renderer,
+			              res::ResourceManager *rmgr)
+				: res::ResourceFactory(rmgr), driver(driver), renderer(renderer)
+			{
+			}
+			virtual ~ShaderFactory()
+			{
+			}
+
+			virtual res::Resource::Ptr create(const std::string &name)
+			{
+				return driver->createShader(renderer, getManager(), name);
+			}
+		private:
+			render::VideoDriver *driver;
+			render::Renderer *renderer;
+	};
 	class AnimationFactory : public res::ResourceFactory
 	{
 		public:
@@ -222,12 +243,14 @@ namespace render
 		}
 		// Register resource types
 		res::ResourceFactory::Ptr factory;
-		factory = new RenderResourceFactory<Material>(driver, renderer, rmgr);
+		factory = new RenderResourceFactory<Material>(renderer, rmgr);
 		rmgr->addFactory("Material", factory);
-		factory = new RenderResourceFactory<Model>(driver, renderer, rmgr);
+		factory = new RenderResourceFactory<Model>(renderer, rmgr);
 		rmgr->addFactory("Model", factory);
-		factory = new RenderResourceFactory<ShaderText>(driver, renderer, rmgr);
+		factory = new RenderResourceFactory<ShaderText>(renderer, rmgr);
 		rmgr->addFactory("ShaderText", factory);
+		factory = new ShaderFactory(driver, renderer, rmgr);
+		rmgr->addFactory("Shader", factory);
 		factory = new Texture2DFactory(driver, renderer, rmgr);
 		rmgr->addFactory("Texture2D", factory);
 		factory = new IndexBufferFactory(driver, renderer, rmgr);

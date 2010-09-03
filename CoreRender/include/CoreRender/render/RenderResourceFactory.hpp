@@ -28,16 +28,14 @@ namespace cr
 {
 namespace render
 {
-	class VideoDriver;
 	class Renderer;
 
 	template<class T> class RenderResourceFactory : public res::ResourceFactory
 	{
 		public:
-			RenderResourceFactory(render::VideoDriver *driver,
-			                      render::Renderer *renderer,
+			RenderResourceFactory(render::Renderer *renderer,
 			                      res::ResourceManager *rmgr)
-				: res::ResourceFactory(rmgr), driver(driver), renderer(renderer)
+				: res::ResourceFactory(rmgr), renderer(renderer)
 			{
 			}
 			virtual ~RenderResourceFactory()
@@ -46,10 +44,9 @@ namespace render
 
 			virtual res::Resource::Ptr create(const std::string &name)
 			{
-				return new T(driver, renderer, getManager(), name);
+				return new T(renderer, getManager(), name);
 			}
 		private:
-			render::VideoDriver *driver;
 			render::Renderer *renderer;
 	};
 }

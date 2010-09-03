@@ -31,11 +31,10 @@ namespace cr
 {
 namespace render
 {
-	ShaderText::ShaderText(render::VideoDriver *driver,
-	                       render::Renderer *renderer,
+	ShaderText::ShaderText(render::Renderer *renderer,
 	                       res::ResourceManager *rmgr,
 	                       const std::string &name)
-		: Resource(rmgr, name), driver(driver), renderer(renderer),
+		: Resource(rmgr, name), renderer(renderer),
 		flagdefaults(0)
 	{
 	}
@@ -180,10 +179,9 @@ namespace render
 			return 0;
 		Context &ctx = it->second;
 		// Create shader
-		// TODO: Check whether this name already is taken
-		Shader::Ptr shader = driver->createShader(renderer,
-		                                          getManager(),
-		                                          shadername.str());
+		// TODO: Do not reupload the shader if it already exists
+		Shader::Ptr shader = getManager()->getOrCreate<Shader>("Shader",
+		                                                       shadername.str());
 		// Set flags
 		std::string flagtext;
 		for (unsigned int i = 0; i < this->flags.size(); i++)
