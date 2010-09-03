@@ -127,22 +127,6 @@ namespace render
 			render::VideoDriver *driver;
 			render::Renderer *renderer;
 	};
-	class AnimationFactory : public res::ResourceFactory
-	{
-		public:
-			AnimationFactory(res::ResourceManager *rmgr)
-				: res::ResourceFactory(rmgr)
-			{
-			}
-			virtual ~AnimationFactory()
-			{
-			}
-
-			virtual res::Resource::Ptr create(const std::string &name)
-			{
-				return new Animation(getManager(), name);
-			}
-	};
 
 	GraphicsEngine::GraphicsEngine()
 		: rmgr(0), multithreaded(true), renderer(0), renderthread(0)
@@ -243,11 +227,11 @@ namespace render
 		}
 		// Register resource types
 		res::ResourceFactory::Ptr factory;
-		factory = new RenderResourceFactory<Material>(renderer, rmgr);
+		factory = new RenderResourceFactory<Material>(rmgr);
 		rmgr->addFactory("Material", factory);
-		factory = new RenderResourceFactory<Model>(renderer, rmgr);
+		factory = new RenderResourceFactory<Model>(rmgr);
 		rmgr->addFactory("Model", factory);
-		factory = new RenderResourceFactory<ShaderText>(renderer, rmgr);
+		factory = new RenderResourceFactory<ShaderText>(rmgr);
 		rmgr->addFactory("ShaderText", factory);
 		factory = new ShaderFactory(driver, renderer, rmgr);
 		rmgr->addFactory("Shader", factory);
@@ -257,7 +241,7 @@ namespace render
 		rmgr->addFactory("IndexBuffer", factory);
 		factory = new VertexBufferFactory(driver, renderer, rmgr);
 		rmgr->addFactory("VertexBuffer", factory);
-		factory = new AnimationFactory(rmgr);
+		factory = new RenderResourceFactory<Animation>(rmgr);
 		rmgr->addFactory("Animation", factory);
 		return true;
 	}

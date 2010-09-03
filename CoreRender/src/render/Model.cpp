@@ -21,7 +21,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "CoreRender/render/Model.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
-#include "CoreRender/render/VideoDriver.hpp"
 #include "../3rdparty/tinyxml.h"
 
 #include <sstream>
@@ -31,10 +30,9 @@ namespace cr
 {
 namespace render
 {
-	Model::Model(render::Renderer *renderer,
-	             res::ResourceManager *rmgr,
+	Model::Model(res::ResourceManager *rmgr,
 	             const std::string &name)
-		: Resource(rmgr, name), renderer(renderer), rootnode(0)
+		: Resource(rmgr, name), rootnode(0)
 	{
 	}
 	Model::~Model()

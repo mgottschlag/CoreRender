@@ -20,8 +20,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/render/ShaderText.hpp"
-#include "CoreRender/render/VideoDriver.hpp"
-#include "CoreRender/render/Renderer.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
 #include "../3rdparty/tinyxml.h"
 
@@ -31,11 +29,9 @@ namespace cr
 {
 namespace render
 {
-	ShaderText::ShaderText(render::Renderer *renderer,
-	                       res::ResourceManager *rmgr,
+	ShaderText::ShaderText(res::ResourceManager *rmgr,
 	                       const std::string &name)
-		: Resource(rmgr, name), renderer(renderer),
-		flagdefaults(0)
+		: Resource(rmgr, name), flagdefaults(0)
 	{
 	}
 	ShaderText::~ShaderText()
@@ -83,7 +79,7 @@ namespace render
 		unsigned int index = flags.size();
 		if (index == 32)
 		{
-			renderer->getLog()->warning("%s: Too many flags, flag omitted.",
+			getManager()->getLog()->warning("%s: Too many flags, flag omitted.",
 			                            getName().c_str());
 			return;
 		}
@@ -121,7 +117,7 @@ namespace render
 			size_t equalsign = flag.find("=");
 			if (equalsign == std::string::npos)
 			{
-				renderer->getLog()->warning("Invalid flag string \"%s\".",
+				getManager()->getLog()->warning("Invalid flag string \"%s\".",
 				                            flag.c_str());
 				continue;
 			}
@@ -138,7 +134,7 @@ namespace render
 			}
 			if (flagindex == -1)
 			{
-				renderer->getLog()->warning("Unknown flag: \"%s\".",
+				getManager()->getLog()->warning("Unknown flag: \"%s\".",
 				                            flagname.c_str());
 				continue;
 			}
@@ -195,22 +191,22 @@ namespace render
 		// Check whether texts exists
 		if (texts.find(ctx.vs) == texts.end())
 		{
-			renderer->getLog()->error("Text \"%s\" not found.", ctx.vs.c_str());
+			getManager()->getLog()->error("Text \"%s\" not found.", ctx.vs.c_str());
 			return false;
 		}
 		if (texts.find(ctx.fs) == texts.end())
 		{
-			renderer->getLog()->error("Text \"%s\" not found.", ctx.fs.c_str());
+			getManager()->getLog()->error("Text \"%s\" not found.", ctx.fs.c_str());
 			return false;
 		}
 		if (ctx.gs != "" && texts.find(ctx.gs) == texts.end())
 		{
-			renderer->getLog()->error("Text \"%s\" not found.", ctx.gs.c_str());
+			getManager()->getLog()->error("Text \"%s\" not found.", ctx.gs.c_str());
 			return false;
 		}
 		if (ctx.ts != "" && texts.find(ctx.ts) == texts.end())
 		{
-			renderer->getLog()->error("Text \"%s\" not found.", ctx.ts.c_str());
+			getManager()->getLog()->error("Text \"%s\" not found.", ctx.ts.c_str());
 			return false;
 		}
 		// Set shader data
@@ -518,7 +514,7 @@ namespace render
 				 || line.find_first_not_of(" \t", includebegin + 8) < filebegin)
 				{
 					// Non-whitespace chars between #include and the file
-					renderer->getLog()->error("%s: Invalid #include.",
+					getManager()->getLog()->error("%s: Invalid #include.",
 					                          getName().c_str());
 					return false;
 				}
@@ -526,7 +522,7 @@ namespace render
 				if (fileend == std::string::npos)
 				{
 					// Missing end of file name
-					renderer->getLog()->error("%s: Unterminated #include.",
+					getManager()->getLog()->error("%s: Unterminated #include.",
 					                          getName().c_str());
 					return false;
 				}
@@ -537,7 +533,7 @@ namespace render
 				 && line.find("/*", fileend + 1) != otherdatabegin)
 				{
 					// Non-whitespace chars between #include and the file
-					renderer->getLog()->error("%s: Garbage after #include.",
+					getManager()->getLog()->error("%s: Garbage after #include.",
 					                          getName().c_str());
 					return false;
 				}

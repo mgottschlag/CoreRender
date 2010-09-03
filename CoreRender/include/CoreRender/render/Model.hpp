@@ -47,12 +47,10 @@ namespace render
 		public:
 			/**
 			 * Constructor.
-			 * @param renderer Renderer to be used with this model.
 			 * @param rmgr Resource manager for this resource.
 			 * @param name Name of this resource.
 			 */
-			Model(render::Renderer *renderer,
-			      res::ResourceManager *rmgr,
+			Model(res::ResourceManager *rmgr,
 			      const std::string &name);
 			/**
 			 * Destructor.
@@ -393,8 +391,6 @@ namespace render
 			VertexLayout::Ptr createVertexLayout(const GeometryFile::AttribInfo &attribs);
 
 			bool parseNode(TiXmlElement *xml, Node *parent);
-
-			render::Renderer *renderer;
 
 			IndexBuffer::Ptr indexbuffer;
 			VertexBuffer::Ptr vertexbuffer;

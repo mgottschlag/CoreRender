@@ -30,10 +30,9 @@ namespace cr
 {
 namespace render
 {
-	Material::Material(render::Renderer *renderer,
-	                   res::ResourceManager *rmgr,
+	Material::Material(res::ResourceManager *rmgr,
 	                   const std::string &name)
-		: Resource(rmgr, name), renderer(renderer)
+		: Resource(rmgr, name)
 	{
 	}
 	Material::~Material()

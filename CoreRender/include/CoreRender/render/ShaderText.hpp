@@ -48,12 +48,10 @@ namespace render
 		public:
 			/**
 			 * Constructor.
-			 * @param renderer Renderer to be used with this shader text.
 			 * @param rmgr Resource manager for this resource.
 			 * @param name Name of this resource.
 			 */
-			ShaderText(render::Renderer *renderer,
-			           res::ResourceManager *rmgr,
+			ShaderText(res::ResourceManager *rmgr,
 			           const std::string &name);
 			/**
 			 * Destructor.
@@ -186,8 +184,6 @@ namespace render
 			bool resolveIncludes(const std::string &text,
 			                     std::string &output,
 			                     const std::string &directory);
-
-			render::Renderer *renderer;
 
 			struct Context
 			{

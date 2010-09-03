@@ -39,12 +39,10 @@ namespace render
 		public:
 			/**
 			 * Constructor.
-			 * @param renderer Renderer to be used with this material.
 			 * @param rmgr Resource manager for this resource.
 			 * @param name Name of this resource.
 			 */
-			Material(render::Renderer *renderer,
-			         res::ResourceManager *rmgr,
+			Material(res::ResourceManager *rmgr,
 			         const std::string &name);
 			/**
 			 * Destructor.
@@ -133,8 +131,6 @@ namespace render
 
 			typedef core::SharedPointer<Material> Ptr;
 		private:
-			render::Renderer *renderer;
-
 			ShaderText::Ptr shader;
 			std::string shaderflags;
 

@@ -33,9 +33,8 @@ namespace render
 	template<class T> class RenderResourceFactory : public res::ResourceFactory
 	{
 		public:
-			RenderResourceFactory(render::Renderer *renderer,
-			                      res::ResourceManager *rmgr)
-				: res::ResourceFactory(rmgr), renderer(renderer)
+			RenderResourceFactory(res::ResourceManager *rmgr)
+				: res::ResourceFactory(rmgr)
 			{
 			}
 			virtual ~RenderResourceFactory()
@@ -44,10 +43,8 @@ namespace render
 
 			virtual res::Resource::Ptr create(const std::string &name)
 			{
-				return new T(renderer, getManager(), name);
+				return new T(getManager(), name);
 			}
-		private:
-			render::Renderer *renderer;
 	};
 }
 }
