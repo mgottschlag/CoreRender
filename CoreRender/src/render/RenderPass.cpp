@@ -29,7 +29,7 @@ namespace cr
 namespace render
 {
 	RenderPass::RenderPass(const std::string &context)
-		: context(context)
+		: clearcolor(true), cleardepth(true), color(0), depth(1.0f), context(context)
 	{
 	}
 	RenderPass::~RenderPass()
@@ -45,6 +45,17 @@ namespace render
 		return target;
 	}
 
+	void RenderPass::setClear(bool clearcolor,
+	                          bool cleardepth,
+	                          const core::Color &color,
+	                          float depth)
+	{
+		this->clearcolor = clearcolor;
+		this->cleardepth = cleardepth;
+		this->depth = depth;
+		this->color = color;
+	}
+
 	void RenderPass::beginFrame()
 	{
 	}
@@ -56,9 +67,14 @@ namespace render
 	{
 		// Optimize batches
 		// TODO
-		// Copy batches for the rendering thread
+		// Set clear info
+		info->clear.clearcolor = clearcolor;
+		info->clear.cleardepth = cleardepth;
+		info->clear.depth = depth;
+		info->clear.color = color.get();
+		// Set render target info
 		RenderTarget::Ptr target = getRenderTarget();
-		if (target)
+		if (!target || !target->getFrameBuffer())
 		{
 			info->target.framebuffer = 0;
 		}
@@ -66,11 +82,6 @@ namespace render
 		{
 			// Fill in framebuffer info
 			FrameBuffer::Ptr framebuffer = target->getFrameBuffer();
-			if (!framebuffer)
-			{
-				// TODO: Log entry
-				return;
-			}
 			info->target.framebuffer = framebuffer->getHandle();
 			// Fill in depth buffer info
 			if (target->getDepthBuffer())
@@ -86,6 +97,7 @@ namespace render
 				info->target.colorbuffers[i] = target->getColorBuffer(i)->getHandle();
 			}
 		}
+		// Copy batches for the rendering thread
 		info->batches = new RenderBatch*[batches.size()];
 		memcpy(info->batches, &batches[0], sizeof(RenderBatch*) * batches.size());
 		info->batchcount = batches.size();

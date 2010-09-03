@@ -206,7 +206,10 @@ namespace render
 		// Set target
 		// TODO
 		// Clear target
-		driver->clear(true, true, core::Color(128, 0, 0, 255));
+		driver->clear(info->clear.clearcolor,
+		              info->clear.cleardepth,
+		              core::Color(info->clear.color),
+		              info->clear.depth);
 		// Draw batches
 		for (unsigned int i = 0; i < info->batchcount; i++)
 		{

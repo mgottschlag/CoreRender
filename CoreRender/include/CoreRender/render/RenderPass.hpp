@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "RenderTarget.hpp"
 #include "RenderPassInfo.hpp"
+#include "CoreRender/core/Color.hpp"
 
 namespace cr
 {
@@ -66,6 +67,22 @@ namespace render
 			RenderTarget::Ptr getRenderTarget();
 
 			/**
+			 * Sets whether and how the render target should be cleared before
+			 * rendering the pass. The default here is that both color and
+			 * depth buffers are cleared, with color set to black and depth set
+			 * to 1.
+			 * @param clearcolor If true, the color buffers are cleared.
+			 * @param cleardepth If true, the depth buffer is cleared.
+			 * @param color The color with which all color buffers are
+			 * cleared.
+			 * @param depth The depth with which the depth buffer is filled.
+			 */
+			void setClear(bool clearcolor = true,
+			              bool cleardepth = true,
+			              const core::Color &color = core::Color(0, 0, 0, 0),
+			              float depth = 1.0f);
+
+			/**
 			 * Called by Pipeline::beginFrame(), do not call this manually.
 			 */
 			void beginFrame();
@@ -98,6 +115,11 @@ namespace render
 			// TODO: We need info about the target etc here
 			RenderBatch **prepared;
 			unsigned int preparedcount;
+
+			bool clearcolor;
+			bool cleardepth;
+			core::Color color;
+			float depth;
 
 			RenderTarget::Ptr target;
 

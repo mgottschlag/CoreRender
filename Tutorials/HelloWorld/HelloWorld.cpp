@@ -56,6 +56,7 @@ int main(int argc, char **argv)
 	// Setup pipeline
 	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();
 	cr::render::RenderPass::Ptr pass = new cr::render::RenderPass("AMBIENT");
+	pass->setClear(true, true, cr::core::Color(60, 60, 60, 255));
 	pipeline->addPass(pass);
 	graphics.addPipeline(pipeline);
 	// Setup camera matrix

@@ -35,10 +35,18 @@ namespace render
 		unsigned int colorbuffercount;
 		unsigned int *colorbuffers;
 	};
+	struct ClearInfo
+	{
+		bool clearcolor;
+		bool cleardepth;
+		unsigned int color;
+		float depth;
+	};
 
 	struct RenderPassInfo
 	{
 		RenderTargetInfo target;
+		ClearInfo clear;
 		unsigned int colorbuffers;
 		RenderBatch **batches;
 		unsigned int batchcount;
