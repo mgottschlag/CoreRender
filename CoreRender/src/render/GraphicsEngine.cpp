@@ -329,7 +329,8 @@ namespace render
 			renderer->render();
 		// Update input in secondary context
 		// SDL needs this.
-		secondcontext->update(this);
+		if (secondcontext)
+			secondcontext->update(this);
 		return true;
 	}
 
@@ -449,7 +450,7 @@ namespace render
 			}
 			return driver;
 		}
-		else if (type == VideoDriverType::OpenGL)
+		else if (type == VideoDriverType::Null)
 		{
 			return new null::VideoDriverNull();
 		}
