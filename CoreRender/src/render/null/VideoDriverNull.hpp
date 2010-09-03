@@ -76,7 +76,7 @@ namespace null
 			}
 
 
-			virtual void setRenderTarget(int handle)
+			virtual void setRenderTarget(const RenderTargetInfo &target)
 			{
 			}
 			virtual void clear(bool colorbuffer,

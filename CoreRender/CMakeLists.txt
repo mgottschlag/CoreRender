@@ -36,6 +36,7 @@ set(SRC
 	include/CoreRender/res/ResourceManager.hpp
 	include/CoreRender/render/Animation.hpp
 	include/CoreRender/render/AnimationFile.hpp
+	include/CoreRender/render/FrameBuffer.hpp
 	include/CoreRender/render/GeometryFile.hpp
 	include/CoreRender/render/IndexBuffer.hpp
 	include/CoreRender/render/Model.hpp
@@ -76,12 +77,15 @@ set(SRC
 	src/core/Thread.cpp
 	src/core/Time.cpp
 	src/render/Animation.cpp
+	src/render/FrameBuffer.cpp
 	src/render/GraphicsEngine.cpp
 	src/render/IndexBuffer.cpp
 	src/render/Material.cpp
 	src/render/Model.cpp
 	src/render/ModelRenderable.cpp
 	src/render/null/VideoDriverNull.hpp
+	src/render/opengl/FrameBufferOpenGL.cpp
+	src/render/opengl/FrameBufferOpenGL.hpp
 	src/render/opengl/IndexBufferOpenGL.cpp
 	src/render/opengl/IndexBufferOpenGL.hpp
 	src/render/opengl/RenderCapsOpenGL.cpp
@@ -99,6 +103,7 @@ set(SRC
 	src/render/Renderer.cpp
 	src/render/RenderPass.cpp
 	src/render/RenderResource.cpp
+	src/render/RenderTarget.cpp
 	src/render/RenderThread.cpp
 	src/render/Shader.cpp
 	src/render/ShaderText.cpp

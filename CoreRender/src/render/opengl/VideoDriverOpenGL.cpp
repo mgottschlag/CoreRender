@@ -55,6 +55,11 @@ namespace opengl
 			log->error("OpenGL 2.0 not available.");
 			return false;
 		}
+		if (!GLEW_EXT_framebuffer_object)
+		{
+			log->error("GLEW_EXT_framebuffer_object not available.");
+			return false;
+		}
 		if (!caps.init())
 		{
 			log->error("Could not initialize capabilities.");
@@ -97,8 +102,9 @@ namespace opengl
 		return new ShaderOpenGL(renderer, rmgr, name);
 	}
 
-	void VideoDriverOpenGL::setRenderTarget(int handle)
+	void VideoDriverOpenGL::setRenderTarget(const RenderTargetInfo &target)
 	{
+		// TODO
 	}
 	void VideoDriverOpenGL::clear(bool colorbuffer,
 	                              bool zbuffer,

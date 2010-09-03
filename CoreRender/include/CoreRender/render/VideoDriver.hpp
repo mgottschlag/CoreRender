@@ -40,6 +40,7 @@ namespace res
 namespace render
 {
 	struct RenderBatch;
+	struct RenderTargetInfo;
 	class Renderer;
 
 	/**
@@ -104,7 +105,7 @@ namespace render
 			 * @param handle Handle of the render target. If this is -1, the
 			 * driver renders to the screen.
 			 */
-			virtual void setRenderTarget(int handle) = 0;
+			virtual void setRenderTarget(const RenderTargetInfo &target) = 0;
 			/**
 			 * Clears the current render target.
 			 * @param colorbuffer If true, clears the color buffer.

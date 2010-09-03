@@ -54,7 +54,7 @@ namespace opengl
 			                                 res::ResourceManager *rmgr,
 			                                 const std::string &name);
 
-			virtual void setRenderTarget(int handle);
+			virtual void setRenderTarget(const RenderTargetInfo &target);
 			virtual void clear(bool colorbuffer,
 			                   bool zbuffer,
 			                   core::Color color = core::Color(0, 0, 0, 0),

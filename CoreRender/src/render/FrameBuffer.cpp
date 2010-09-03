@@ -19,43 +19,46 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERTARGET_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERTARGET_HPP_INCLUDED_
-
-#include "RenderResource.hpp"
-#include "Texture2D.hpp"
-#include "FrameBuffer.hpp"
+#include "CoreRender/render/FrameBuffer.hpp"
 
 namespace cr
 {
 namespace render
 {
-	class RenderTarget : public RenderResource
+	FrameBuffer::FrameBuffer(Renderer *renderer,
+	                         res::ResourceManager *rmgr,
+	                         const std::string &name)
+		: RenderResource(renderer, rmgr, name), handle(0), width(0), height(0),
+		depthbuffer(false)
 	{
-		public:
-			RenderTarget(Renderer *renderer,
-			            res::ResourceManager *rmgr,
-			            const std::string &name);
-			virtual ~RenderTarget();
+	}
+	FrameBuffer::~FrameBuffer()
+	{
+	}
 
-			void setFrameBuffer(FrameBuffer::Ptr framebuffer);
-			FrameBuffer::Ptr getFrameBuffer();
-
-			void setDepthBuffer(Texture2D::Ptr texture);
-			Texture::Ptr getDepthBuffer();
-
-			void addColorBuffer(Texture2D::Ptr texture);
-			Texture2D::Ptr getColorBuffer(unsigned int index);
-			void removeColorBuffer(unsigned int index);
-			unsigned int getColorBufferCount();
-
-			typedef core::SharedPointer<RenderTarget> Ptr;
-		private:
-			FrameBuffer::Ptr framebuffer;
-			std::vector<Texture2D::Ptr> colorbuffers;
-			Texture::Ptr depthbuffer;
-	};
+	void FrameBuffer::setSize(unsigned int width,
+	                          unsigned int height,
+	                          bool depthbuffer)
+	{
+		{
+			tbb::spin_mutex::scoped_lock lock(mutex);
+			this->width = width;
+			this->height = height;
+			this->depthbuffer = depthbuffer;
+		}
+		registerUpload();
+	}
+	unsigned int FrameBuffer::getWidth()
+	{
+		return width;
+	}
+	unsigned int FrameBuffer::getHeight()
+	{
+		return height;
+	}
+	bool FrameBuffer::hasDepthBuffer()
+	{
+		return depthbuffer;
+	}
 }
 }
-
-#endif

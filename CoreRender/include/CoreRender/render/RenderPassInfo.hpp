@@ -28,9 +28,18 @@ namespace render
 {
 	struct RenderBatch;
 
+	struct RenderTargetInfo
+	{
+		unsigned int framebuffer;
+		unsigned int depthbuffer;
+		unsigned int colorbuffercount;
+		unsigned int *colorbuffers;
+	};
+
 	struct RenderPassInfo
 	{
-		int target;
+		RenderTargetInfo target;
+		unsigned int colorbuffers;
 		RenderBatch **batches;
 		unsigned int batchcount;
 	};

@@ -19,42 +19,32 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERTARGET_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERTARGET_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_OPENGL_FRAMEBUFFEROPENGL_HPP_INCLUDED_
+#define _CORERENDER_RENDER_OPENGL_FRAMEBUFFEROPENGL_HPP_INCLUDED_
 
-#include "RenderResource.hpp"
-#include "Texture2D.hpp"
-#include "FrameBuffer.hpp"
+#include "CoreRender/render/FrameBuffer.hpp"
 
 namespace cr
 {
 namespace render
 {
-	class RenderTarget : public RenderResource
+namespace opengl
+{
+	class FrameBufferOpenGL : public FrameBuffer
 	{
 		public:
-			RenderTarget(Renderer *renderer,
-			            res::ResourceManager *rmgr,
-			            const std::string &name);
-			virtual ~RenderTarget();
+			FrameBufferOpenGL(Renderer *renderer,
+			                  res::ResourceManager *rmgr,
+			                  const std::string &name);
+			virtual ~FrameBufferOpenGL();
 
-			void setFrameBuffer(FrameBuffer::Ptr framebuffer);
-			FrameBuffer::Ptr getFrameBuffer();
-
-			void setDepthBuffer(Texture2D::Ptr texture);
-			Texture::Ptr getDepthBuffer();
-
-			void addColorBuffer(Texture2D::Ptr texture);
-			Texture2D::Ptr getColorBuffer(unsigned int index);
-			void removeColorBuffer(unsigned int index);
-			unsigned int getColorBufferCount();
-
-			typedef core::SharedPointer<RenderTarget> Ptr;
+			virtual bool create();
+			virtual bool destroy();
+			virtual bool upload();
 		private:
-			FrameBuffer::Ptr framebuffer;
-			std::vector<Texture2D::Ptr> colorbuffers;
-			Texture::Ptr depthbuffer;
+			unsigned int depthhandle;
 	};
+}
 }
 }
 

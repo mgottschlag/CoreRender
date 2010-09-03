@@ -57,9 +57,35 @@ namespace render
 		// Optimize batches
 		// TODO
 		// Copy batches for the rendering thread
-		info->target = 0;
-		//if (target)
-		//	info->target = target->getHandle();
+		RenderTarget::Ptr target = getRenderTarget();
+		if (target)
+		{
+			info->target.framebuffer = 0;
+		}
+		else
+		{
+			// Fill in framebuffer info
+			FrameBuffer::Ptr framebuffer = target->getFrameBuffer();
+			if (!framebuffer)
+			{
+				// TODO: Log entry
+				return;
+			}
+			info->target.framebuffer = framebuffer->getHandle();
+			// Fill in depth buffer info
+			if (target->getDepthBuffer())
+				info->target.depthbuffer = target->getDepthBuffer()->getHandle();
+			else
+				info->target.depthbuffer = 0;
+			// Fill in color buffer info
+			unsigned int colorbuffercount = target->getColorBufferCount();
+			info->target.colorbuffercount = colorbuffercount;
+			info->target.colorbuffers = new unsigned int[colorbuffercount];
+			for (unsigned int i = 0; i < colorbuffercount; i++)
+			{
+				info->target.colorbuffers[i] = target->getColorBuffer(i)->getHandle();
+			}
+		}
 		info->batches = new RenderBatch*[batches.size()];
 		memcpy(info->batches, &batches[0], sizeof(RenderBatch*) * batches.size());
 		info->batchcount = batches.size();

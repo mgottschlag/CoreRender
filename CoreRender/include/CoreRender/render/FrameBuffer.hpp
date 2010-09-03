@@ -19,41 +19,52 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERTARGET_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERTARGET_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_FRAMEBUFFER_HPP_INCLUDED_
+#define _CORERENDER_RENDER_FRAMEBUFFER_HPP_INCLUDED_
 
 #include "RenderResource.hpp"
-#include "Texture2D.hpp"
-#include "FrameBuffer.hpp"
 
 namespace cr
 {
 namespace render
 {
-	class RenderTarget : public RenderResource
+	/**
+	 * Resource describing the output format of a render-to-texture operation.
+	 * This can be used by multiple render targets to reduce state switches in
+	 * the video driver. A render target can have one depth buffer (either
+	 * rendering the depth data to a texture or to an unnamed render buffer)
+	 * and many color buffers. One color buffer shall always have the same type
+	 * in all render targets using the frame buffer. All textures attached to
+	 * the frame buffer shall have the same size as the frame buffer.
+	 */
+	class FrameBuffer : public RenderResource
 	{
 		public:
-			RenderTarget(Renderer *renderer,
+			FrameBuffer(Renderer *renderer,
 			            res::ResourceManager *rmgr,
 			            const std::string &name);
-			virtual ~RenderTarget();
+			virtual ~FrameBuffer();
 
-			void setFrameBuffer(FrameBuffer::Ptr framebuffer);
-			FrameBuffer::Ptr getFrameBuffer();
+			void setSize(unsigned int width,
+			             unsigned int height,
+			             bool hasdepthbuffer);
+			unsigned int getWidth();
+			unsigned int getHeight();
+			bool hasDepthBuffer();
 
-			void setDepthBuffer(Texture2D::Ptr texture);
-			Texture::Ptr getDepthBuffer();
+			int getHandle()
+			{
+				return handle;
+			}
 
-			void addColorBuffer(Texture2D::Ptr texture);
-			Texture2D::Ptr getColorBuffer(unsigned int index);
-			void removeColorBuffer(unsigned int index);
-			unsigned int getColorBufferCount();
-
-			typedef core::SharedPointer<RenderTarget> Ptr;
+			typedef core::SharedPointer<FrameBuffer> Ptr;
+		protected:
+			unsigned int handle;
 		private:
-			FrameBuffer::Ptr framebuffer;
-			std::vector<Texture2D::Ptr> colorbuffers;
-			Texture::Ptr depthbuffer;
+			unsigned int width;
+			unsigned int height;
+			bool depthbuffer;
+			tbb::spin_mutex mutex;
 	};
 }
 }
