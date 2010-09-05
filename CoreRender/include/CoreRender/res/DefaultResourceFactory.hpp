@@ -19,25 +19,23 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERRESOURCEFACTORY_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERRESOURCEFACTORY_HPP_INCLUDED_
+#ifndef _CORERENDER_RES_DEFAULTRESOURCEFACTORY_HPP_INCLUDED_
+#define _CORERENDER_RES_DEFAULTRESOURCEFACTORY_HPP_INCLUDED_
 
 #include "../res/ResourceFactory.hpp"
 
 namespace cr
 {
-namespace render
+namespace res
 {
-	class Renderer;
-
-	template<class T> class RenderResourceFactory : public res::ResourceFactory
+	template<class T> class DefaultResourceFactory : public res::ResourceFactory
 	{
 		public:
-			RenderResourceFactory(res::ResourceManager *rmgr)
+			DefaultResourceFactory(res::ResourceManager *rmgr)
 				: res::ResourceFactory(rmgr)
 			{
 			}
-			virtual ~RenderResourceFactory()
+			virtual ~DefaultResourceFactory()
 			{
 			}
 

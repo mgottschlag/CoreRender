@@ -25,7 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/RenderContextNull.hpp"
 #include "CoreRender/render/Renderer.hpp"
 #include "CoreRender/render/RenderThread.hpp"
-#include "CoreRender/render/RenderResourceFactory.hpp"
+#include "CoreRender/res/DefaultResourceFactory.hpp"
 #include "CoreRender/render/Animation.hpp"
 #include "FrameData.hpp"
 
@@ -227,11 +227,11 @@ namespace render
 		}
 		// Register resource types
 		res::ResourceFactory::Ptr factory;
-		factory = new RenderResourceFactory<Material>(rmgr);
+		factory = new res::DefaultResourceFactory<Material>(rmgr);
 		rmgr->addFactory("Material", factory);
-		factory = new RenderResourceFactory<Model>(rmgr);
+		factory = new res::DefaultResourceFactory<Model>(rmgr);
 		rmgr->addFactory("Model", factory);
-		factory = new RenderResourceFactory<ShaderText>(rmgr);
+		factory = new res::DefaultResourceFactory<ShaderText>(rmgr);
 		rmgr->addFactory("ShaderText", factory);
 		factory = new ShaderFactory(driver, renderer, rmgr);
 		rmgr->addFactory("Shader", factory);
@@ -241,7 +241,7 @@ namespace render
 		rmgr->addFactory("IndexBuffer", factory);
 		factory = new VertexBufferFactory(driver, renderer, rmgr);
 		rmgr->addFactory("VertexBuffer", factory);
-		factory = new RenderResourceFactory<Animation>(rmgr);
+		factory = new res::DefaultResourceFactory<Animation>(rmgr);
 		rmgr->addFactory("Animation", factory);
 		return true;
 	}

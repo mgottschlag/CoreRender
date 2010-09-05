@@ -31,6 +31,7 @@ set(SRC
 	include/CoreRender/math/Vector2.hpp
 	include/CoreRender/math/ScreenPosition.hpp
 	include/CoreRender/math/StdInt.hpp
+	include/CoreRender/res/DefaultResourceFactory.hpp
 	include/CoreRender/res/LoadingThread.hpp
 	include/CoreRender/res/Resource.hpp
 	include/CoreRender/res/ResourceManager.hpp
@@ -43,7 +44,6 @@ set(SRC
 	include/CoreRender/render/ModelRenderable.hpp
 	include/CoreRender/render/Pipeline.hpp
 	include/CoreRender/render/Renderable.hpp
-	include/CoreRender/render/RenderBatch.hpp
 	include/CoreRender/render/RenderPass.hpp
 	include/CoreRender/render/RenderResource.hpp
 	include/CoreRender/render/RenderThread.hpp
