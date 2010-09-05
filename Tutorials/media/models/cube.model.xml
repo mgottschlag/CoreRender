@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<Model geometry="cube.geo">
+    <Node name="cube.obj">
+        <Node name="Cube">
+            <Mesh index="0" material="cube.material.xml" />
+        </Node>
+    </Node>
+</Model>

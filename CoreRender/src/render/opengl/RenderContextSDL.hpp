@@ -59,6 +59,7 @@ namespace opengl
 			RenderWindowSDL::Ptr window;
 			bool initialized;
 			bool primary;
+			bool cloned;
 #if defined(CORERENDER_UNIX)
 			Display *display;
 			Window x11window;

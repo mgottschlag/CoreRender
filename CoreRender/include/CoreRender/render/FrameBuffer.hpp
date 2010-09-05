@@ -57,6 +57,11 @@ namespace render
 				return handle;
 			}
 
+			virtual const char *getType()
+			{
+				return "FrameBuffer";
+			}
+
 			typedef core::SharedPointer<FrameBuffer> Ptr;
 		protected:
 			unsigned int handle;

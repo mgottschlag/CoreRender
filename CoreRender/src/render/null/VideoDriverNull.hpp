@@ -74,6 +74,12 @@ namespace null
 			{
 				return new Shader(renderer, rmgr, name);
 			}
+			virtual FrameBuffer::Ptr createFrameBuffer(Renderer *renderer,
+			                                           res::ResourceManager *rmgr,
+			                                           const std::string &name)
+			{
+				return new FrameBuffer(renderer, rmgr, name);
+			}
 
 
 			virtual void setRenderTarget(const RenderTargetInfo &target)

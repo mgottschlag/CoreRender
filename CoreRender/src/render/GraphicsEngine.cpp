@@ -127,6 +127,27 @@ namespace render
 			render::VideoDriver *driver;
 			render::Renderer *renderer;
 	};
+	class FrameBufferFactory : public res::ResourceFactory
+	{
+		public:
+			FrameBufferFactory(render::VideoDriver *driver,
+			                   render::Renderer *renderer,
+			                   res::ResourceManager *rmgr)
+				: res::ResourceFactory(rmgr), driver(driver), renderer(renderer)
+			{
+			}
+			virtual ~FrameBufferFactory()
+			{
+			}
+
+			virtual res::Resource::Ptr create(const std::string &name)
+			{
+				return driver->createFrameBuffer(renderer, getManager(), name);
+			}
+		private:
+			render::VideoDriver *driver;
+			render::Renderer *renderer;
+	};
 
 	GraphicsEngine::GraphicsEngine()
 		: rmgr(0), multithreaded(true), renderer(0), renderthread(0)
@@ -241,8 +262,12 @@ namespace render
 		rmgr->addFactory("IndexBuffer", factory);
 		factory = new VertexBufferFactory(driver, renderer, rmgr);
 		rmgr->addFactory("VertexBuffer", factory);
+		factory = new FrameBufferFactory(driver, renderer, rmgr);
+		rmgr->addFactory("FrameBuffer", factory);
 		factory = new res::DefaultResourceFactory<Animation>(rmgr);
 		rmgr->addFactory("Animation", factory);
+		factory = new res::DefaultResourceFactory<RenderTarget>(rmgr);
+		rmgr->addFactory("RenderTarget", factory);
 		return true;
 	}
 	bool GraphicsEngine::resize(unsigned int width,
@@ -263,6 +288,8 @@ namespace render
 		}
 		// Clean up render resources
 		// TODO
+		// Delete pipelines
+		pipelines.clear();
 		// Destroy renderer
 		delete renderer;
 		renderer = 0;

@@ -33,7 +33,7 @@ namespace opengl
 	FrameBufferOpenGL::FrameBufferOpenGL(Renderer *renderer,
 	                                     res::ResourceManager *rmgr,
 	                                     const std::string &name)
-		: FrameBuffer(renderer, rmgr, name)
+		: FrameBuffer(renderer, rmgr, name), depthhandle(0)
 	{
 	}
 	FrameBufferOpenGL::~FrameBufferOpenGL()

@@ -79,6 +79,8 @@ namespace render
 
 	struct RenderTargetInfo
 	{
+		unsigned int width;
+		unsigned int height;
 		unsigned int framebuffer;
 		unsigned int depthbuffer;
 		unsigned int colorbuffercount;

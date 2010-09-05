@@ -534,8 +534,6 @@ namespace render
 			                              getName().c_str());
 			return false;
 		}
-		getManager()->getLog()->info("%s: Node name: %s",
-		                              getName().c_str(), name);
 		// Add node
 		Node *currentnode = addNode(name, parent);
 		// Read transformation

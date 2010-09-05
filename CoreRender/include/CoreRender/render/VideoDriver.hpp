@@ -30,6 +30,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "VertexBuffer.hpp"
 #include "Shader.hpp"
 #include "RenderStats.hpp"
+#include "FrameBuffer.hpp"
 
 namespace cr
 {
@@ -98,6 +99,13 @@ namespace render
 			virtual Shader::Ptr createShader(Renderer *renderer,
 			                                 res::ResourceManager *rmgr,
 			                                 const std::string &name) = 0;
+			/**
+			 * Creates a frame buffer resource. This is usually called by the
+			 * FrameBuffer resource factory.
+			 */
+			virtual FrameBuffer::Ptr createFrameBuffer(Renderer *renderer,
+			                                           res::ResourceManager *rmgr,
+			                                           const std::string &name) = 0;
 
 			/**
 			 * Sets a render target for following calls to draw() or clear() to

@@ -48,7 +48,7 @@ namespace render
 			SpatialRenderable()
 				: transmat(math::Matrix4::Identity()),
 				projmat(math::Matrix4::Identity()),
-				dirty(false)
+				dirty(true)
 			{
 			}
 			/**

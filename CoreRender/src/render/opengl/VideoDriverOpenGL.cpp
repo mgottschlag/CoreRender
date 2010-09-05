@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "IndexBufferOpenGL.hpp"
 #include "VertexBufferOpenGL.hpp"
 #include "ShaderOpenGL.hpp"
+#include "FrameBufferOpenGL.hpp"
 #include "../FrameData.hpp"
 
 #include <GL/glew.h>
@@ -35,7 +36,7 @@ namespace render
 namespace opengl
 {
 	VideoDriverOpenGL::VideoDriverOpenGL(core::Log::Ptr log)
-		: log(log)
+		: log(log), currenttarget(0)
 	{
 	}
 	VideoDriverOpenGL::~VideoDriverOpenGL()
@@ -101,10 +102,93 @@ namespace opengl
 	{
 		return new ShaderOpenGL(renderer, rmgr, name);
 	}
+	FrameBuffer::Ptr VideoDriverOpenGL::createFrameBuffer(Renderer *renderer,
+	                                                      res::ResourceManager *rmgr,
+	                                                      const std::string &name)
+	{
+		return new FrameBufferOpenGL(renderer, rmgr, name);
+	}
 
 	void VideoDriverOpenGL::setRenderTarget(const RenderTargetInfo &target)
 	{
-		// TODO
+		// Set viewport
+		glViewport(0, 0, target.width, target.height);
+		// Bind frame buffer object
+		if (target.framebuffer == 0)
+		{
+			if (currenttarget)
+			{
+				// Generate mipmaps
+				generateMipmaps(currenttarget);
+				// Unbind framebuffer
+				glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+				currenttarget = 0;
+			}
+			return;
+		}
+		if (!currenttarget || target.framebuffer != currenttarget->framebuffer)
+		{
+			// Generate mipmaps
+			if (currenttarget)
+				generateMipmaps(currenttarget);
+			// Change framebuffer
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, target.framebuffer);
+		}
+		// Bind color buffers
+		for (unsigned int i = 0; i < target.colorbuffercount; i++)
+		{
+			if (currenttarget
+				&& target.colorbuffers[i] == currenttarget->colorbuffers[i])
+				continue;
+			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
+			                          GL_COLOR_ATTACHMENT0_EXT + i,
+			                          GL_TEXTURE_2D,
+			                          target.colorbuffers[i],
+			                          0);
+		}
+		unsigned int buffers[1] = {GL_COLOR_ATTACHMENT0_EXT};
+		glDrawBuffers(1, buffers);
+		// Unbind unused color buffers
+		// TODO: We are currently possibly doing it on the wrong fbo!
+		if (currenttarget)
+		{
+			for (unsigned int i = target.colorbuffercount;
+				i < currenttarget->colorbuffercount; i++)
+			{
+				glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
+				                          GL_COLOR_ATTACHMENT0_EXT + i,
+				                          GL_TEXTURE_2D,
+				                          0,
+				                          0);
+			}
+		}
+		// Bind depth buffer
+		// TODO: We maybe need information about the previous depth buffer here
+		if (target.depthbuffer)
+		{
+			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
+			                          GL_DEPTH_ATTACHMENT_EXT,
+			                          GL_TEXTURE_2D,
+			                          target.depthbuffer,
+			                          0);
+		}
+		else if (currenttarget && currenttarget->depthbuffer)
+		{
+			// TODO: We are currently possibly doing it on the wrong fbo!
+			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
+			                          GL_DEPTH_ATTACHMENT_EXT,
+			                          GL_TEXTURE_2D,
+			                          0,
+			                          0);
+		}
+		// Check fbo state
+		GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+		if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
+		{
+			log->error("Invalid framebuffer (%d).", status);
+		}
+		// Store information about current buffer
+		currenttarget = &target;
 	}
 	void VideoDriverOpenGL::clear(bool colorbuffer,
 	                              bool zbuffer,
@@ -305,10 +389,27 @@ namespace opengl
 
 	void VideoDriverOpenGL::endFrame()
 	{
+		// Unbind render target
+		if (currenttarget)
+		{
+			generateMipmaps(currenttarget);
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+			currenttarget = 0;
+		}
 		// TODO: Unbind buffers, textures, program
 		glUseProgram(0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
+
+	void VideoDriverOpenGL::generateMipmaps(const RenderTargetInfo *target)
+	{
+		for (unsigned int i = 0; i < target->colorbuffercount; i++)
+		{
+			glBindTexture(GL_TEXTURE_2D, target->colorbuffers[i]);
+			glGenerateMipmapEXT(GL_TEXTURE_2D);
+		}
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 }
 }

@@ -25,10 +25,9 @@ namespace cr
 {
 namespace render
 {
-	RenderTarget::RenderTarget(Renderer *renderer,
-	                           res::ResourceManager *rmgr,
+	RenderTarget::RenderTarget(res::ResourceManager *rmgr,
 	                           const std::string &name)
-		: RenderResource(renderer, rmgr, name)
+		: res::Resource(rmgr, name)
 	{
 	}
 	RenderTarget::~RenderTarget()

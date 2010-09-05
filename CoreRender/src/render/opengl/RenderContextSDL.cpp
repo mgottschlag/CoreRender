@@ -32,7 +32,8 @@ namespace render
 {
 namespace opengl
 {
-	RenderContextSDL::RenderContextSDL() : initialized(false), primary(false)
+	RenderContextSDL::RenderContextSDL()
+		: initialized(false), primary(false), cloned(false)
 	{
 	}
 	RenderContextSDL::~RenderContextSDL()
@@ -72,6 +73,8 @@ namespace opengl
 		context = window->primary;
 #endif
 		primary = true;
+		this->width = width;
+		this->height = height;
 		return true;
 	}
 
@@ -80,7 +83,13 @@ namespace opengl
 	                              bool fullscreen)
 	{
 		tbb::spin_mutex::scoped_lock lock(sdlmutex);
-		return window->resize(width, height, fullscreen);
+		if(window->resize(width, height, fullscreen))
+		{
+			this->width = width;
+			this->height = height;
+			return true;
+		}
+		return false;
 	}
 
 	void RenderContextSDL::makeCurrent(bool current)
@@ -120,6 +129,7 @@ namespace opengl
 	RenderContext::Ptr RenderContextSDL::clone()
 	{
 		tbb::spin_mutex::scoped_lock lock(sdlmutex);
+		cloned = true;
 #if defined(CORERENDER_UNIX)
 		// Get visual info
 		XWindowAttributes attrib;
@@ -155,6 +165,8 @@ namespace opengl
 		newctx->context = newglxctx;
 		newctx->lockDisplay = lockDisplay;
 		newctx->unlockDisplay = unlockDisplay;
+		newctx->width = width;
+		newctx->height = height;
 		return newctx;
 #elif defined(CORERENDER_WINDOWS)
 		HGLRC newhglrc = wglCreateContext(hdc);
@@ -164,6 +176,8 @@ namespace opengl
 		newctx->hdc = hdc;
 		newctx->context = newhglrc;
 		wglShareLists(newctx->context, context);
+		newctx->width = width;
+		newctx->height = height;
 		return newctx;
 #else
 		return 0;
@@ -172,7 +186,7 @@ namespace opengl
 
 	void RenderContextSDL::update(GraphicsEngine *inputreceiver)
 	{
-		if (!primary)
+		if (!primary || !cloned)
 		{
 			tbb::spin_mutex::scoped_lock lock(sdlmutex);
 #if defined(CORERENDER_UNIX)

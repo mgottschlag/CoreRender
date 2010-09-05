@@ -22,20 +22,19 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_RENDERTARGET_HPP_INCLUDED_
 #define _CORERENDER_RENDER_RENDERTARGET_HPP_INCLUDED_
 
-#include "RenderResource.hpp"
 #include "Texture2D.hpp"
 #include "FrameBuffer.hpp"
+#include "../res/Resource.hpp"
 
 namespace cr
 {
 namespace render
 {
-	class RenderTarget : public RenderResource
+	class RenderTarget : public res::Resource
 	{
 		public:
-			RenderTarget(Renderer *renderer,
-			            res::ResourceManager *rmgr,
-			            const std::string &name);
+			RenderTarget(res::ResourceManager *rmgr,
+			             const std::string &name);
 			virtual ~RenderTarget();
 
 			void setFrameBuffer(FrameBuffer::Ptr framebuffer);
@@ -48,6 +47,11 @@ namespace render
 			Texture2D::Ptr getColorBuffer(unsigned int index);
 			void removeColorBuffer(unsigned int index);
 			unsigned int getColorBufferCount();
+
+			virtual const char *getType()
+			{
+				return "RenderTarget";
+			}
 
 			typedef core::SharedPointer<RenderTarget> Ptr;
 		private:

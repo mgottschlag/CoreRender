@@ -34,6 +34,10 @@ namespace render
 	class RenderContext : public core::ReferenceCounted
 	{
 		public:
+			RenderContext()
+				: width(0), height(0)
+			{
+			}
 			virtual ~RenderContext()
 			{
 			}
@@ -43,6 +47,15 @@ namespace render
 			                    bool fullscreen)
 			{
 				return false;
+			}
+
+			unsigned int getWidth()
+			{
+				return width;
+			}
+			unsigned int getHeight()
+			{
+				return height;
 			}
 
 			typedef core::SharedPointer<RenderContext> Ptr;
@@ -59,6 +72,9 @@ namespace render
 			{
 			}
 			virtual VideoDriverType::List getDriverType() = 0;
+		protected:
+			unsigned int width;
+			unsigned int height;
 	};
 }
 }

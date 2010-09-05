@@ -78,12 +78,16 @@ namespace render
 		if (!target || !target->getFrameBuffer())
 		{
 			info->target.framebuffer = 0;
+			info->target.width = 0;
+			info->target.height = 0;
 		}
 		else
 		{
 			// Fill in framebuffer info
 			FrameBuffer::Ptr framebuffer = target->getFrameBuffer();
 			info->target.framebuffer = framebuffer->getHandle();
+			info->target.width = framebuffer->getWidth();
+			info->target.height = framebuffer->getHeight();
 			// Fill in depth buffer info
 			if (target->getDepthBuffer())
 				info->target.depthbuffer = target->getDepthBuffer()->getHandle();

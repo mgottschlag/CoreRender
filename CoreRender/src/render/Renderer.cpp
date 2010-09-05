@@ -178,6 +178,8 @@ namespace render
 		}
 		// Reset memory pool
 		// TODO
+		// Signal end of frame
+		driver->endFrame();
 		// Delete render data
 		for (unsigned int i = 0; i < pipelinecount; i++)
 		{
@@ -205,7 +207,12 @@ namespace render
 	void Renderer::renderPass(RenderPassInfo *info)
 	{
 		// Set target
-		// TODO
+		if (info->target.width == 0)
+		{
+			info->target.width = primary->getWidth();
+			info->target.height = primary->getHeight();
+		}
+		driver->setRenderTarget(info->target);
 		// Clear target
 		driver->clear(info->clear.clearcolor,
 		              info->clear.cleardepth,
