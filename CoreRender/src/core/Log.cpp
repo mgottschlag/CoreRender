@@ -35,7 +35,7 @@ namespace core
 		: consolelevel(LogLevel::Warning), filelevel(LogLevel::Information)
 	{
 		// Open file
-		file = fs->open(filename, FileAccess::Write, true);
+		file = fs->open(filename, FileAccess::Write | FileAccess::Text, true);
 		if (!file)
 		{
 			std::cout << "Could not open log file." << std::endl;
