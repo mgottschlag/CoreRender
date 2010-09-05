@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2010, Mathias Gottschlag
+Copyright (C) 2009, Mathias Gottschlag
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -19,50 +19,19 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_ANIMATIONFILE_HPP_INCLUDED_
-#define _CORERENDER_RENDER_ANIMATIONFILE_HPP_INCLUDED_
+#ifndef _CORERENDER_CORE_STRUCTPACKING_HPP_INCLUDED_
+#define _CORERENDER_CORE_STRUCTPACKING_HPP_INCLUDED_
 
-#include "../core/StructPacking.hpp"
+#include "Platform.hpp"
 
-namespace cr
-{
-namespace render
-{
-	struct AnimationFile
-	{
-		static const unsigned int version = 0;
-		static const unsigned int tag = (int)'C' + 256 * 'R' + 65536 * 'A';
-		static const unsigned int maxnamesize = 64;
-
-		CORERENDER_PACK_BEGIN()
-		struct Header
-		{
-			unsigned int tag;
-			unsigned int version;
-			unsigned int channelcount;
-			unsigned int framecount;
-			float framespersecond;
-		}
-		CORERENDER_PACK_END();
-
-		CORERENDER_PACK_BEGIN()
-		struct Frame
-		{
-			float rotation[4];
-			float position[3];
-			float scale[3];
-		}
-		CORERENDER_PACK_END();
-
-		CORERENDER_PACK_BEGIN()
-		struct Channel
-		{
-			char name[maxnamesize];
-			int constant;
-		}
-		CORERENDER_PACK_END();
-	};
-}
-}
+#ifdef CORERENDER_MSVC
+	#define CORERENDER_PACK_BEGIN() ;\
+	__pragma(push, 1)\
+	;
+	#define CORERENDER_PACK_END() __pragma(pop)
+#else
+	#define CORERENDER_PACK_BEGIN()
+	#define CORERENDER_PACK_END() __attribute__((packed))
+#endif
 
 #endif

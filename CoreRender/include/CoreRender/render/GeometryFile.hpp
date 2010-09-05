@@ -22,6 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_GEOMETRYFILE_HPP_INCLUDED_
 #define _CORERENDER_RENDER_GEOMETRYFILE_HPP_INCLUDED_
 
+#include "../core/StructPacking.hpp"
+
 #include <vector>
 
 namespace cr
@@ -35,6 +37,7 @@ namespace render
 		static const unsigned int maxtexcoords = 8;
 		static const unsigned int maxcolors = 4;
 
+		CORERENDER_PACK_BEGIN()
 		struct Header
 		{
 			unsigned int tag;
@@ -42,7 +45,8 @@ namespace render
 			unsigned int vertexdatasize;
 			unsigned int indexdatasize;
 			unsigned int batchcount;
-		};
+		}
+		CORERENDER_PACK_END();
 
 		struct AttribFlags
 		{
@@ -57,6 +61,7 @@ namespace render
 				HasColors = 0x40
 			};
 		};
+		CORERENDER_PACK_BEGIN()
 		struct AttribInfo
 		{
 			unsigned int flags;
@@ -72,7 +77,10 @@ namespace render
 			unsigned char texcoordsize[maxtexcoords];
 			unsigned char coloroffset[maxcolors];
 			unsigned char colorcount;
-		};
+			unsigned char padding[3];
+		}
+		CORERENDER_PACK_END();
+		CORERENDER_PACK_BEGIN()
 		struct GeometryInfo
 		{
 			unsigned int vertexoffset;
@@ -84,7 +92,8 @@ namespace render
 			unsigned int basevertex;
 
 			unsigned int jointcount;
-		};
+		}
+		CORERENDER_PACK_END();
 
 		struct Batch
 		{

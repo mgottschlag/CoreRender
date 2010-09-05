@@ -25,7 +25,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 int main(int argc, char **argv)
 {
-	std::cout << "Header: " << sizeof(cr::render::GeometryFile::GeometryInfo) << std::endl;
 	cr::render::GraphicsEngine graphics;
 	// Initialize file system
 	{
