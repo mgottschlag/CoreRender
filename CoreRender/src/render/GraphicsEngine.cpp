@@ -337,7 +337,12 @@ namespace render
 		if (multithreaded)
 			renderthread->startFrame();
 		else
+		{
+			driver->getStats().setFrameBegin(core::Time::Now());
+			driver->getStats().setRenderBegin(core::Time::Now());
 			renderer->render();
+			driver->getStats().setFrameEnd(core::Time::Now());
+		}
 		// Update input in secondary context
 		// SDL needs this.
 		if (secondcontext)

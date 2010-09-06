@@ -183,6 +183,12 @@ namespace core
 			Duration &operator+=(const Duration &other);
 			Duration &operator-=(const Duration &other);
 
+			Duration &operator=(const Duration &other)
+			{
+				duration = other.duration;
+				return *this;
+			}
+
 			bool operator>(const Duration &d)
 			{
 				return duration > d.duration;
