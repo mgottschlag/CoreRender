@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "CoreRender/render/VertexLayout.hpp"
 #include "CoreRender/render/ShaderVariableType.hpp"
+#include "CoreRender/render/FrameBuffer.hpp"
 
 namespace cr
 {
@@ -81,7 +82,7 @@ namespace render
 	{
 		unsigned int width;
 		unsigned int height;
-		unsigned int framebuffer;
+		FrameBuffer::Configuration *framebuffer;
 		unsigned int depthbuffer;
 		unsigned int colorbuffercount;
 		unsigned int *colorbuffers;

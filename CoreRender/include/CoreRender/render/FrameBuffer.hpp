@@ -40,31 +40,76 @@ namespace render
 	class FrameBuffer : public RenderResource
 	{
 		public:
+			/**
+			 * Constructor.
+			 * @param renderer Renderer to be used with this framebuffer.
+			 * @param rmgr Resource manager for this resource.
+			 * @param name Name of this resource.
+			 */
 			FrameBuffer(Renderer *renderer,
 			            res::ResourceManager *rmgr,
 			            const std::string &name);
+			/**
+			 * Destructor.
+			 */
 			virtual ~FrameBuffer();
 
+			/**
+			 * Sets the size of the framebuffer and whether a depth buffer shall
+			 * be created. The depth buffer can be overridden by a depth texture
+			 * via RenderTarget::setDepthBuffer(). All attached textures
+			 * must have the same size as the frame buffer.
+			 * @param width Width of the frame buffer.
+			 * @param height Height of the frame buffer.
+			 * @param hasdepthbuffer If true, a depth buffer is created and used
+			 * if no depth texture was attached.
+			 */
 			void setSize(unsigned int width,
 			             unsigned int height,
 			             bool hasdepthbuffer);
+			/**
+			 * Returns the width of the frame buffer.
+			 * @return Width.
+			 */
 			unsigned int getWidth();
+			/**
+			 * Returns the height of the frame buffer.
+			 * @return Height.
+			 */
 			unsigned int getHeight();
+			/**
+			 * Returns whether this render target has a default depth buffer.
+			 * @return Default depth buffer
+			 */
 			bool hasDepthBuffer();
-
-			int getHandle()
-			{
-				return handle;
-			}
 
 			virtual const char *getType()
 			{
 				return "FrameBuffer";
 			}
 
+			struct Configuration
+			{
+				unsigned int handle;
+				unsigned int depthbuffer;
+				unsigned int defaultdepthbuffer;
+				std::vector<unsigned int> colorbuffers;
+			};
+
+			/**
+			 * Returns the configuration of the framebuffer. This is used to
+			 * track the textures attached to the frame buffer. This must only
+			 * be called by VideoDriver, do not call this directly.
+			 * @return Framebuffer configuration.
+			 */
+			Configuration &getConfiguration()
+			{
+				return config;
+			}
+
 			typedef core::SharedPointer<FrameBuffer> Ptr;
 		protected:
-			unsigned int handle;
+			Configuration config;
 		private:
 			unsigned int width;
 			unsigned int height;

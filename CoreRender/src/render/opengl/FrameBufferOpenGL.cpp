@@ -33,7 +33,7 @@ namespace opengl
 	FrameBufferOpenGL::FrameBufferOpenGL(Renderer *renderer,
 	                                     res::ResourceManager *rmgr,
 	                                     const std::string &name)
-		: FrameBuffer(renderer, rmgr, name), depthhandle(0)
+		: FrameBuffer(renderer, rmgr, name)
 	{
 	}
 	FrameBufferOpenGL::~FrameBufferOpenGL()
@@ -42,7 +42,7 @@ namespace opengl
 
 	bool FrameBufferOpenGL::create()
 	{
-		glGenFramebuffersEXT(1, &handle);
+		glGenFramebuffersEXT(1, &config.handle);
 		unsigned int error = glGetError();
 		if (error != GL_NO_ERROR)
 		{
@@ -53,14 +53,14 @@ namespace opengl
 	}
 	bool FrameBufferOpenGL::destroy()
 	{
-		if (depthhandle)
+		if (config.defaultdepthbuffer)
 		{
 			// Destroy depth buffer
-			glDeleteRenderbuffersEXT(1, &depthhandle);
-			depthhandle = 0;
+			glDeleteRenderbuffersEXT(1, &config.defaultdepthbuffer);
+			config.defaultdepthbuffer = 0;
 		}
-		glDeleteFramebuffersEXT(1, &handle);
-		handle = 0;
+		glDeleteFramebuffersEXT(1, &config.handle);
+		config.handle = 0;
 		return true;
 	}
 	bool FrameBufferOpenGL::upload()
@@ -68,29 +68,30 @@ namespace opengl
 		if (hasDepthBuffer())
 		{
 			// Generate depth buffer if necessary
-			if (!depthhandle)
+			if (!config.defaultdepthbuffer)
 			{
-				glGenRenderbuffersEXT(1, &depthhandle);
+				glGenRenderbuffersEXT(1, &config.defaultdepthbuffer);
 			}
 			// Change depth buffer size
-			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthhandle);
+			glBindRenderbufferEXT(GL_RENDERBUFFER_EXT,
+			                      config.defaultdepthbuffer);
 			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
 			                         GL_DEPTH_COMPONENT,
 			                         getWidth(),
 			                         getHeight());
 			// Add depth buffer to frame buffer
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, handle);
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, config.handle);
 			glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
 			                             GL_DEPTH_ATTACHMENT_EXT,
 			                             GL_RENDERBUFFER_EXT,
-			                             depthhandle);
+			                             config.defaultdepthbuffer);
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 		}
-		else if (depthhandle)
+		else if (config.defaultdepthbuffer)
 		{
 			// Destroy depth buffer
-			glDeleteRenderbuffersEXT(1, &depthhandle);
-			depthhandle = 0;
+			glDeleteRenderbuffersEXT(1, &config.defaultdepthbuffer);
+			config.defaultdepthbuffer = 0;
 		}
 		return true;
 	}

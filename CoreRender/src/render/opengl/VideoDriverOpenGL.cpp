@@ -36,7 +36,8 @@ namespace render
 namespace opengl
 {
 	VideoDriverOpenGL::VideoDriverOpenGL(core::Log::Ptr log)
-		: log(log), currenttarget(0)
+		: log(log), currentfb(0), currentshader(0), currentvertices(0),
+		currentindices(0)
 	{
 	}
 	VideoDriverOpenGL::~VideoDriverOpenGL()
@@ -114,81 +115,92 @@ namespace opengl
 		// Set viewport
 		glViewport(0, 0, target.width, target.height);
 		// Bind frame buffer object
-		if (target.framebuffer == 0)
-		{
-			if (currenttarget)
-			{
-				// Generate mipmaps
-				generateMipmaps(currenttarget);
-				// Unbind framebuffer
-				glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-				currenttarget = 0;
-			}
-			return;
-		}
-		if (!currenttarget || target.framebuffer != currenttarget->framebuffer)
+		FrameBuffer::Configuration *newfb = target.framebuffer;
+		if (newfb != currentfb)
 		{
 			// Generate mipmaps
-			if (currenttarget)
-				generateMipmaps(currenttarget);
-			// Change framebuffer
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, target.framebuffer);
+			if (currentfb)
+			{
+				generateMipmaps(currentfb);
+			}
+			// Bind new framebuffer object
+			if (newfb)
+			{
+				glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, newfb->handle);
+			}
+			else
+			{
+				glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+				// TODO: Set draw buffers here?
+			}
+			currentfb = newfb;
+		}
+		if (!newfb)
+			return;
+		// Unbind unused color buffers
+		for (unsigned int i = target.colorbuffercount;
+			i < currentfb->colorbuffers.size(); i++)
+		{
+			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
+			                          GL_COLOR_ATTACHMENT0_EXT + i,
+			                          GL_TEXTURE_2D,
+			                          0,
+			                          0);
+		}
+		// Enlarge color buffer array if necessary
+		for (unsigned int i = currentfb->colorbuffers.size();
+			i < target.colorbuffercount; i++)
+		{
+			currentfb->colorbuffers.push_back(0);
 		}
 		// Bind color buffers
 		for (unsigned int i = 0; i < target.colorbuffercount; i++)
 		{
-			if (currenttarget
-				&& target.colorbuffers[i] == currenttarget->colorbuffers[i])
+			if (target.colorbuffers[i] == currentfb->colorbuffers[i])
 				continue;
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
 			                          GL_COLOR_ATTACHMENT0_EXT + i,
 			                          GL_TEXTURE_2D,
 			                          target.colorbuffers[i],
 			                          0);
-		}
-		unsigned int buffers[1] = {GL_COLOR_ATTACHMENT0_EXT};
-		glDrawBuffers(1, buffers);
-		// Unbind unused color buffers
-		// TODO: We are currently possibly doing it on the wrong fbo!
-		if (currenttarget)
-		{
-			for (unsigned int i = target.colorbuffercount;
-				i < currenttarget->colorbuffercount; i++)
-			{
-				glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
-				                          GL_COLOR_ATTACHMENT0_EXT + i,
-				                          GL_TEXTURE_2D,
-				                          0,
-				                          0);
-			}
+			currentfb->colorbuffers[i] = target.colorbuffers[i];
+			log->info("Bound color buffer.");
 		}
 		// Bind depth buffer
-		// TODO: We maybe need information about the previous depth buffer here
-		if (target.depthbuffer)
+		if (target.depthbuffer != currentfb->depthbuffer)
 		{
-			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
-			                          GL_DEPTH_ATTACHMENT_EXT,
-			                          GL_TEXTURE_2D,
-			                          target.depthbuffer,
-			                          0);
+			if (!target.depthbuffer)
+			{
+				glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
+				                             GL_DEPTH_ATTACHMENT_EXT,
+				                             GL_RENDERBUFFER_EXT,
+				                             currentfb->defaultdepthbuffer);
+			}
+			else
+			{
+				glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
+				                          GL_DEPTH_ATTACHMENT_EXT,
+				                          GL_TEXTURE_2D,
+				                          target.depthbuffer,
+				                          0);
+			}
+			log->info("Bound depth buffer.");
+			currentfb->depthbuffer = target.depthbuffer;
 		}
-		else if (currenttarget && currenttarget->depthbuffer)
+		// Change draw buffers
+		// TODO: This should not be done unconditionally
+		std::vector<unsigned int> drawbuffers(target.colorbuffercount, 0);
+		for (unsigned int i = 0; i < drawbuffers.size(); i++)
 		{
-			// TODO: We are currently possibly doing it on the wrong fbo!
-			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
-			                          GL_DEPTH_ATTACHMENT_EXT,
-			                          GL_TEXTURE_2D,
-			                          0,
-			                          0);
+			drawbuffers[i] = GL_COLOR_ATTACHMENT0_EXT + i;
 		}
+		glDrawBuffers(drawbuffers.size(), &drawbuffers[0]);
 		// Check fbo state
 		GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 		if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
 		{
 			log->error("Invalid framebuffer (%d).", status);
 		}
-		// Store information about current buffer
-		currenttarget = &target;
 	}
 	void VideoDriverOpenGL::clear(bool colorbuffer,
 	                              bool zbuffer,
@@ -215,10 +227,22 @@ namespace opengl
 		// TODO: Keep track of state changes, do not change too much
 		// Bind buffers/shader
 		// TODO: Error checking
-		glUseProgram(batch->shader);
+		if (currentshader != batch->shader)
+		{
+			glUseProgram(batch->shader);
+			currentshader = batch->shader;
+		}
 
-		glBindBuffer(GL_ARRAY_BUFFER, batch->vertices);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch->indices);
+		if (batch->vertices != currentvertices)
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, batch->vertices);
+			currentvertices = batch->vertices;
+		}
+		if (batch->indices != currentindices)
+		{
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch->indices);
+			currentindices = batch->indices;
+		}
 		// Apply attribs
 		for (unsigned int i = 0; i < batch->attribcount; i++)
 		{
@@ -390,11 +414,11 @@ namespace opengl
 	void VideoDriverOpenGL::endFrame()
 	{
 		// Unbind render target
-		if (currenttarget)
+		if (currentfb)
 		{
-			generateMipmaps(currenttarget);
+			generateMipmaps(currentfb);
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-			currenttarget = 0;
+			currentfb = 0;
 		}
 		// TODO: Unbind buffers, textures, program
 		glUseProgram(0);
@@ -402,11 +426,11 @@ namespace opengl
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
-	void VideoDriverOpenGL::generateMipmaps(const RenderTargetInfo *target)
+	void VideoDriverOpenGL::generateMipmaps(FrameBuffer::Configuration *fb)
 	{
-		for (unsigned int i = 0; i < target->colorbuffercount; i++)
+		for (unsigned int i = 0; i < fb->colorbuffers.size(); i++)
 		{
-			glBindTexture(GL_TEXTURE_2D, target->colorbuffers[i]);
+			glBindTexture(GL_TEXTURE_2D, fb->colorbuffers[i]);
 			glGenerateMipmapEXT(GL_TEXTURE_2D);
 		}
 		glBindTexture(GL_TEXTURE_2D, 0);

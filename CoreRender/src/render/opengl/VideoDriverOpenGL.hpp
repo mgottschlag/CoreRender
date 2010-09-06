@@ -76,13 +76,16 @@ namespace opengl
 				return caps;
 			}
 		private:
-			void generateMipmaps(const RenderTargetInfo *target);
+			void generateMipmaps(FrameBuffer::Configuration *fb);
 
 			RenderCapsOpenGL caps;
 
 			core::Log::Ptr log;
 
-			const RenderTargetInfo *currenttarget;
+			FrameBuffer::Configuration *currentfb;
+			unsigned int currentshader;
+			unsigned int currentvertices;
+			unsigned int currentindices;
 	};
 
 }

@@ -85,7 +85,7 @@ namespace render
 		{
 			// Fill in framebuffer info
 			FrameBuffer::Ptr framebuffer = target->getFrameBuffer();
-			info->target.framebuffer = framebuffer->getHandle();
+			info->target.framebuffer = &framebuffer->getConfiguration();
 			info->target.width = framebuffer->getWidth();
 			info->target.height = framebuffer->getHeight();
 			// Fill in depth buffer info

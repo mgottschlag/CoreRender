@@ -28,9 +28,12 @@ namespace render
 	FrameBuffer::FrameBuffer(Renderer *renderer,
 	                         res::ResourceManager *rmgr,
 	                         const std::string &name)
-		: RenderResource(renderer, rmgr, name), handle(0), width(0), height(0),
+		: RenderResource(renderer, rmgr, name), width(0), height(0),
 		depthbuffer(false)
 	{
+		config.handle = 0;
+		config.depthbuffer = 0;
+		config.defaultdepthbuffer = 0;
 	}
 	FrameBuffer::~FrameBuffer()
 	{

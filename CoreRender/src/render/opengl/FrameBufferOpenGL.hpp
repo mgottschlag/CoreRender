@@ -41,8 +41,6 @@ namespace opengl
 			virtual bool create();
 			virtual bool destroy();
 			virtual bool upload();
-		private:
-			unsigned int depthhandle;
 	};
 }
 }
