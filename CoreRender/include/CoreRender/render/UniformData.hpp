@@ -105,7 +105,16 @@ namespace render
 			 * buffer depends on the type.
 			 * @return Pointer to the value of the uniform.
 			 */
-			float *getData() const
+			const float *getData() const
+			{
+				return data;
+			}
+			/**
+			 * Returns the value of the uniform. The length of the returned
+			 * buffer depends on the type.
+			 * @return Pointer to the value of the uniform.
+			 */
+			float *getData()
 			{
 				return data;
 			}
@@ -129,7 +138,7 @@ namespace render
 		private:
 			std::string name;
 			ShaderVariableType::List type;
-			float *data;
+			float data[16];
 			int shaderhandle;
 	};
 	/**
