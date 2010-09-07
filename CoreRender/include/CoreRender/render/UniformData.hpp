@@ -27,9 +27,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "../math/Vector2.hpp"
 #include "../math/Matrix4.hpp"
 #include "../render/ShaderVariableType.hpp"
+#include "../core/HashMap.hpp"
 
 #include <string>
-#include <map>
 
 namespace cr
 {
@@ -188,7 +188,7 @@ namespace render
 			 */
 			const Uniform &operator[](const std::string &name) const;
 
-			typedef std::map<std::string, Uniform> UniformMap;
+			typedef core::HashMap<std::string, Uniform>::Type UniformMap;
 			/**
 			 * Returns all uniforms in a map.
 			 * @return Uniform map.

@@ -109,12 +109,12 @@ namespace render
 	}
 	Model::Node *Model::getNode(const std::string &name)
 	{
-		std::map<std::string, Node*>::iterator it = nodes.find(name);
+		NodeMap::iterator it = nodes.find(name);
 		if (it == nodes.end())
 			return 0;
 		return it->second;
 	}
-	void Model::getNodeList(std::map<std::string, Model::AnimationNode*> &nodelist)
+	void Model::getNodeList(Model::AnimationNodeMap &nodelist)
 	{
 		std::queue<Node*> currentnodes;
 		currentnodes.push(rootnode);
@@ -125,7 +125,7 @@ namespace render
 			AnimationNode *newnode = new AnimationNode;
 			newnode->name = node->getName();
 			if (node->getParent())
-				newnode->parent = nodelist.find(node->getParent()->getName())->second;
+				newnode->parent = nodelist[node->getParent()->getName()];
 			else
 				newnode->parent = 0;
 			newnode->transformation = node->getTransformation();

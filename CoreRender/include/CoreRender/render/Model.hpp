@@ -27,6 +27,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "VertexBuffer.hpp"
 #include "VertexLayout.hpp"
 #include "GeometryFile.hpp"
+#include "../core/HashMap.hpp"
 
 class TiXmlElement;
 
@@ -86,7 +87,7 @@ namespace render
 						}
 						if (parent)
 							parent->removeChild(this);
-						std::map<std::string, Node*>::iterator it;
+						NodeMap::iterator it;
 						it = model->nodes.find(name);
 						if (it != model->nodes.end() && it->second == this)
 							model->nodes.erase(it);
@@ -243,6 +244,7 @@ namespace render
 				 */
 				math::Matrix4 abstransinverse;
 			};
+			typedef core::HashMap<std::string, AnimationNode*>::Type AnimationNodeMap;
 
 			/**
 			 * Joint information.
@@ -397,7 +399,7 @@ namespace render
 			 * Returns a map with all nodes usable for animation.
 			 * @param nodelist List which is filled with all mode nodes.
 			 */
-			void getNodeList(std::map<std::string, AnimationNode*> &nodelist);
+			void getNodeList(AnimationNodeMap &nodelist);
 
 			/**
 			 * Sets the index buffer used for all batches in the model.
@@ -443,7 +445,9 @@ namespace render
 			std::vector<Batch> batches;
 			std::vector<Mesh> meshes;
 			Node *rootnode;
-			std::map<std::string, Node*> nodes;
+
+			typedef core::HashMap<std::string, Node*>::Type NodeMap;
+			NodeMap nodes;
 
 			friend class Node;
 	};

@@ -83,10 +83,10 @@ namespace render
 			return 0;
 		// Get list with model nodes (needed for joints)
 		// TODO: Cache these
-		std::map<std::string, Model::AnimationNode*> nodes;
+		Model::AnimationNodeMap nodes;
 		model->getNodeList(nodes);
 		// Prepare skeletal animation
-		for (std::map<std::string, Model::AnimationNode*>::iterator it = nodes.begin();
+		for (Model::AnimationNodeMap::iterator it = nodes.begin();
 		     it != nodes.end(); it++)
 		{
 			for (unsigned int i = 0; i < animstages.size(); i++)
@@ -105,7 +105,7 @@ namespace render
 			}
 		}
 		// Update absolute transformation
-		for (std::map<std::string, Model::AnimationNode*>::iterator it = nodes.begin();
+		for (Model::AnimationNodeMap::iterator it = nodes.begin();
 		     it != nodes.end(); it++)
 		{
 			it->second->computeAbsTrans();
@@ -132,7 +132,7 @@ namespace render
 			job.basevertex = 0;
 			job.uniforms = uniforms;
 			// Apply animations
-			std::map<std::string, Model::AnimationNode*>::iterator it;
+			Model::AnimationNodeMap::iterator it;
 			for (unsigned int i = 0; i < batch->joints.size(); i++)
 			{
 				// Get uniform name
@@ -161,7 +161,7 @@ namespace render
 			uniforms["worldNormalMat"] = getWorldNormalMat();
 		}
 		// Clear node list again
-		for (std::map<std::string, Model::AnimationNode*>::iterator it = nodes.begin();
+		for (Model::AnimationNodeMap::iterator it = nodes.begin();
 		     it != nodes.end(); it++)
 		{
 			delete it->second;
