@@ -334,7 +334,7 @@ namespace render
 		                  false);
 		indexbuffer->set(header.indexdatasize, indexdata, false);
 		// Read batch info
-		std::vector<GeometryFile::Batch> batchdata(header.batchcount);
+		std::vector<GeometryFile::Batch> batchdata(header.batchcount, GeometryFile::Batch());
 		for (unsigned int i = 0; i < header.batchcount; i++)
 		{
 			GeometryFile::AttribInfo &attribs = batchdata[i].attribs;
