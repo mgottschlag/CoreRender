@@ -23,7 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_RENDER_SHADER_HPP_INCLUDED_
 
 #include "RenderResource.hpp"
-#include <map>
+#include "../core/HashMap.hpp"
 
 namespace cr
 {
@@ -166,9 +166,10 @@ namespace render
 			std::string gs;
 			std::string ts;
 
-			std::map<std::string, int> attribs;
-			std::map<std::string, int> uniforms;
-			std::map<std::string, int> textures;
+			typedef core::HashMap<std::string, int>::Type HandleMap;
+			HandleMap attribs;
+			HandleMap uniforms;
+			HandleMap textures;
 	};
 }
 }

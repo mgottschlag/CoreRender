@@ -63,7 +63,7 @@ namespace render
 	}
 	int Shader::getAttrib(const std::string &name)
 	{
-		std::map<std::string, int>::iterator it = attribs.find(name);
+		HandleMap::iterator it = attribs.find(name);
 		if (it == attribs.end())
 			return -1;
 		return it->second;
@@ -74,7 +74,7 @@ namespace render
 	}
 	int Shader::getUniform(const std::string &name)
 	{
-		std::map<std::string, int>::iterator it = uniforms.find(name);
+		HandleMap::iterator it = uniforms.find(name);
 		if (it == uniforms.end())
 			return -1;
 		return it->second;
@@ -85,7 +85,7 @@ namespace render
 	}
 	int Shader::getTexture(const std::string &name)
 	{
-		std::map<std::string, int>::iterator it = textures.find(name);
+		HandleMap::iterator it = textures.find(name);
 		if (it == textures.end())
 			return -1;
 		return it->second;

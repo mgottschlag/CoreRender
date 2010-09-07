@@ -37,6 +37,8 @@ namespace render
 	}
 	Model::~Model()
 	{
+		if (rootnode)
+			delete rootnode;
 	}
 
 	void Model::addBatch(const Model::Batch &batch)
@@ -102,6 +104,8 @@ namespace render
 	void Model::removeNode(Model::Node *node)
 	{
 		delete node;
+		if (node == rootnode)
+			rootnode = 0;
 	}
 	Model::Node *Model::getRootNode()
 	{

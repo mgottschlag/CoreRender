@@ -99,6 +99,9 @@ namespace null
 
 			virtual void draw(RenderBatch *batch)
 			{
+				// Increase polygon/batch counters
+				getStats().increaseBatchCount(1);
+				getStats().increasePolygonCount((batch->endindex - batch->startindex) / 3);
 			}
 
 			virtual void endFrame()
