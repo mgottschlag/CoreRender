@@ -102,6 +102,17 @@ namespace null
 				// Increase polygon/batch counters
 				getStats().increaseBatchCount(1);
 				getStats().increasePolygonCount((batch->endindex - batch->startindex) / 3);
+				// Clean up memory
+				for (unsigned int i = 0; i < batch->uniformcount; i++)
+				{
+					delete[] batch->uniforms[i].data;
+				}
+				delete[] batch->attribs;
+				delete[] batch->uniforms;
+				delete[] batch->textures;
+				delete batch;
+				// TODO
+				// TODO: Should be done by the memory pool class?
 			}
 
 			virtual void endFrame()
