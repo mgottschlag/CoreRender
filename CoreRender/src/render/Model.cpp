@@ -129,6 +129,8 @@ namespace render
 			else
 				newnode->parent = 0;
 			newnode->transformation = node->getTransformation();
+			newnode->transinverse = node->getInvTrans();
+			newnode->dirty = true;
 			nodelist.insert(std::make_pair(newnode->name, newnode));
 			// Child nodes
 			const std::vector<Node*> &children = node->getChildren();

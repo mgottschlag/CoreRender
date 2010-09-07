@@ -22,7 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/ModelRenderable.hpp"
 #include "CoreRender/render/RenderJob.hpp"
 
-#include <sstream>
+#include <cstdio>
 
 namespace cr
 {
@@ -101,17 +101,27 @@ namespace render
 					* frame.rotation.toMatrix()
 					* math::Matrix4::ScaleMat(frame.scale);
 				it->second->transformation = animmatrix;
+				it->second->transinverse = animmatrix.inverse();
 			}
+		}
+		// Update absolute transformation
+		for (std::map<std::string, Model::AnimationNode*>::iterator it = nodes.begin();
+		     it != nodes.end(); it++)
+		{
+			it->second->computeAbsTrans();
 		}
 		// Prepare batches
 		jobs.resize(model->getMeshCount());
 		for (unsigned int i = 0; i < model->getMeshCount(); i++)
 		{
+			Model::Mesh *mesh = model->getMesh(i);
+			Model::Batch *batch = model->getBatch(mesh->batch);
+			// Get node this mesh is attached to
+			Model::AnimationNode *node = nodes.find(mesh->node->getName())->second;
+			// Create job
 			RenderJob &job = jobs[i];
 			job.vertices = model->getVertexBuffer();
 			job.indices = model->getIndexBuffer();
-			Model::Mesh *mesh = model->getMesh(i);
-			Model::Batch *batch = model->getBatch(mesh->batch);
 			job.material = mesh->material;
 			job.layout = batch->layout;
 			job.vertexcount = batch->vertexcount;
@@ -126,8 +136,8 @@ namespace render
 			for (unsigned int i = 0; i < batch->joints.size(); i++)
 			{
 				// Get uniform name
-				std::ostringstream namestream;
-				namestream << "skinMat[" << i << "]";
+				char uniformname[20];
+				snprintf(uniformname, 20, "skinMat[%u]", i);
 				// Find joint node
 				Model::Joint &joint = batch->joints[i];
 				std::string jointname = joint.name;
@@ -135,19 +145,19 @@ namespace render
 				if (it == nodes.end())
 				{
 					// TODO: Log warning
-					job.uniforms.add(namestream.str()) = math::Matrix4::Identity();
+					job.uniforms.add(uniformname) = math::Matrix4::Identity();
 					continue;
 				}
 				Model::AnimationNode *jointnode = it->second;
 				// Compute and set joint matrix
 				math::Matrix4 matrix = joint.jointmat;
 				// TODO: Slow.
-				job.uniforms.add(namestream.str()) = mesh->node->getAbsTrans().inverse() * jointnode->getAbsTrans() * joint.jointmat;
+				job.uniforms.add(uniformname) = node->abstransinverse * jointnode->abstrans * joint.jointmat;
 			}
 			// Set standard uniforms
 			// TODO: We only have to do this if we do not use skinning
 			math::Matrix4 oldtransmat = getTransMat();
-			uniforms["worldMat"] = getWorldMat() * mesh->node->getAbsTrans();
+			uniforms["worldMat"] = getWorldMat() * node->abstrans;
 			uniforms["worldNormalMat"] = getWorldNormalMat();
 		}
 		// Clear node list again

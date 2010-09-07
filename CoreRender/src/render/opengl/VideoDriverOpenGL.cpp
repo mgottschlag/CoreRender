@@ -164,7 +164,6 @@ namespace opengl
 			                          target.colorbuffers[i],
 			                          0);
 			currentfb->colorbuffers[i] = target.colorbuffers[i];
-			log->info("Bound color buffer.");
 		}
 		// Bind depth buffer
 		if (target.depthbuffer != currentfb->depthbuffer)
@@ -422,8 +421,11 @@ namespace opengl
 		}
 		// TODO: Unbind buffers, textures, program
 		glUseProgram(0);
+		currentshader = 0;
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		currentvertices = 0;
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		currentindices = 0;
 	}
 
 	void VideoDriverOpenGL::generateMipmaps(FrameBuffer::Configuration *fb)

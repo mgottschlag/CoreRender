@@ -100,6 +100,7 @@ namespace render
 					void setTransformation(const math::Matrix4 &transformation)
 					{
 						this->transformation = transformation;
+						transinverse = transformation.inverse();
 					}
 					/**
 					 * Returns the transformation relative to the parent.
@@ -108,6 +109,14 @@ namespace render
 					const math::Matrix4 &getTransformation()
 					{
 						return transformation;
+					}
+					/**
+					 * Returns the transformation relative to the parent.
+					 * @return Relative transformation.
+					 */
+					const math::Matrix4 &getInvTrans()
+					{
+						return transinverse;
 					}
 					/**
 					 * Returns the absolute transformation of the model node.
@@ -165,6 +174,7 @@ namespace render
 					Node *parent;
 					std::vector<Node*> children;
 					math::Matrix4 transformation;
+					math::Matrix4 transinverse;
 			};
 			/**
 			 * Stripped-down version of Node to be used within ModelRenderable
@@ -178,11 +188,30 @@ namespace render
 				 */
 				math::Matrix4 getAbsTrans()
 				{
-					// TODO: Optimize this
+					return abstrans;
+				}
+
+				/**
+				 * Computes the absolute transformation of the node if dirty is
+				 * set to true.
+				 */
+				void computeAbsTrans()
+				{
+					if (!dirty)
+						return;
 					if (parent)
-						return parent->getAbsTrans() * transformation;
+					{
+						if (parent->dirty)
+							parent->computeAbsTrans();
+						abstrans = parent->getAbsTrans() * transformation;
+						abstransinverse = transinverse * parent->abstransinverse;
+					}
 					else
-						return transformation;
+					{
+						abstrans = transformation;
+						abstransinverse = transinverse;
+					}
+					dirty = false;
 				}
 
 				/**
@@ -197,6 +226,22 @@ namespace render
 				 * Transformation of this node relative to the parent.
 				 */
 				math::Matrix4 transformation;
+				/**
+				 * Inverse of transformation.
+				 */
+				math::Matrix4 transinverse;
+				/**
+				 * Sets whether the absolute transformation needs to be updated.
+				 */
+				bool dirty;
+				/**
+				 * Absolute transformation.
+				 */
+				math::Matrix4 abstrans;
+				/**
+				 * Absolute transformation (inverse).
+				 */
+				math::Matrix4 abstransinverse;
 			};
 
 			/**
