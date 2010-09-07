@@ -24,6 +24,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "CoreRender/render/VideoDriver.hpp"
 #include "RenderCapsNull.hpp"
+#include "IndexBufferNull.hpp"
+#include "VertexBufferNull.hpp"
+#include "ShaderNull.hpp"
+#include "FrameBufferNull.hpp"
+#include "Texture2DNull.hpp"
 
 namespace cr
 {
@@ -54,31 +59,31 @@ namespace null
 			                                       res::ResourceManager *rmgr,
 			                                       const std::string &name)
 			{
-				return new Texture2D(renderer, rmgr, name);
+				return new Texture2DNull(renderer, rmgr, name);
 			}
 			virtual IndexBuffer::Ptr createIndexBuffer(Renderer *renderer,
 			                                           res::ResourceManager *rmgr,
 			                                           const std::string &name)
 			{
-				return new IndexBuffer(renderer, rmgr, name);
+				return new IndexBufferNull(renderer, rmgr, name);
 			}
 			virtual VertexBuffer::Ptr createVertexBuffer(Renderer *renderer,
 			                                             res::ResourceManager *rmgr,
 			                                             const std::string &name)
 			{
-				return new VertexBuffer(renderer, rmgr, name);
+				return new VertexBufferNull(renderer, rmgr, name);
 			}
 			virtual Shader::Ptr createShader(Renderer *renderer,
 			                                 res::ResourceManager *rmgr,
 			                                 const std::string &name)
 			{
-				return new Shader(renderer, rmgr, name);
+				return new ShaderNull(renderer, rmgr, name);
 			}
 			virtual FrameBuffer::Ptr createFrameBuffer(Renderer *renderer,
 			                                           res::ResourceManager *rmgr,
 			                                           const std::string &name)
 			{
-				return new FrameBuffer(renderer, rmgr, name);
+				return new FrameBufferNull(renderer, rmgr, name);
 			}
 
 
