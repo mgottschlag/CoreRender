@@ -22,6 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/Pipeline.hpp"
 #include "CoreRender/render/Renderable.hpp"
 #include "FrameData.hpp"
+#include "CoreRender/render/Renderer.hpp"
+#include "CoreRender/core/MemoryPool.hpp"
 
 #include <cstring>
 
@@ -30,6 +32,7 @@ namespace cr
 namespace render
 {
 	Pipeline::Pipeline()
+		: renderer(0)
 	{
 	}
 	Pipeline::~Pipeline()
@@ -92,10 +95,9 @@ namespace render
 			Shader::Ptr shader = text->getShader(context, flags);
 			if (!shader)
 				continue;
-			// TODO: Memory leak, use the memory pool here
-			RenderBatch *batch = new RenderBatch;
-			// TODO: This memset should not be necessary
-			memset(batch, 0, sizeof(RenderBatch));
+			// Allocate render batch
+			core::MemoryPool *memory = renderer->getNextFrameMemory();
+			RenderBatch *batch = (RenderBatch*)memory->allocate(sizeof(RenderBatch));
 			batch->startindex = job->startindex;
 			batch->endindex = job->endindex;
 			batch->basevertex = job->basevertex;
@@ -104,14 +106,16 @@ namespace render
 			batch->vertices = job->vertices->getHandle();
 			batch->indices = job->indices->getHandle();
 			batch->shader = shader->getHandle();
+			batch->sortkey = 0.0f; // TODO
 			batch->renderflags = 0;
 			// Attribs
 			if (job->layout->getElementCount() > 0)
 			{
 				batch->attribcount = job->layout->getElementCount();
-				batch->attribs = new AttribMapping[job->layout->getElementCount()];
+				unsigned int memsize = sizeof(AttribMapping) * batch->attribcount;
+				batch->attribs = (AttribMapping*)memory->allocate(memsize);
 				AttribMapping *attribs = batch->attribs;
-				for (unsigned int i = 0; i < job->layout->getElementCount(); i++)
+				for (unsigned int i = 0; i < batch->attribcount; i++)
 				{
 					VertexLayoutElement *attrib = job->layout->getElement(i);
 					attribs[i].shaderhandle = shader->getAttrib(attrib->name);
@@ -131,7 +135,8 @@ namespace render
 			// Uniforms
 			const UniformData::UniformMap &uniformdata = uniforms.getData();
 			batch->uniformcount = uniformdata.size();
-			batch->uniforms = new UniformMapping[batch->uniformcount];
+			unsigned int memsize = sizeof(UniformMapping) * batch->uniformcount;
+			batch->uniforms = (UniformMapping*)memory->allocate(memsize);
 			{
 				unsigned int i = 0;
 				for (UniformData::UniformMap::const_iterator it = uniformdata.begin();
@@ -140,7 +145,7 @@ namespace render
 					batch->uniforms[i].type = it->second.getType();
 					unsigned int size = ShaderVariableType::getSize(batch->uniforms[i].type);
 					batch->uniforms[i].shaderhandle = shader->getUniform(it->second.getName());
-					batch->uniforms[i].data = new float[size];
+					batch->uniforms[i].data = (float*)memory->allocate(size * sizeof(float));
 					memcpy(batch->uniforms[i].data,
 					       it->second.getData(),
 					       size * sizeof(float));
@@ -149,10 +154,12 @@ namespace render
 			// TODO
 			// Textures
 			const std::vector<Material::TextureInfo> &textureinfo = job->material->getTextures();
+			batch->texcount = textureinfo.size();
 			if (textureinfo.size() > 0)
 			{
 				// TODO: Unify this?
-				TextureEntry *textures = new TextureEntry[textureinfo.size()];
+				unsigned int memsize = sizeof(TextureEntry) * batch->texcount;
+				TextureEntry *textures = (TextureEntry*)memory->allocate(memsize);
 				for (unsigned int i = 0; i < textureinfo.size(); i++)
 				{
 					textures[i].shaderhandle = shader->getTexture(textureinfo[i].name);
@@ -161,12 +168,10 @@ namespace render
 					textures[i].type = textureinfo[i].texture->getTextureType();
 				}
 				batch->textures = textures;
-				batch->texcount = textureinfo.size();
 			}
 			else
 			{
 				batch->textures = 0;
-				batch->texcount = 0;
 			}
 			passes[i]->insert(batch);
 		}
@@ -182,7 +187,9 @@ namespace render
 	void Pipeline::prepare(PipelineInfo *info)
 	{
 		info->passcount = passes.size();
-		info->passes = new RenderPassInfo[passes.size()];
+		unsigned int memsize = sizeof(RenderPassInfo) * info->passcount;
+		core::MemoryPool *memory = renderer->getNextFrameMemory();
+		info->passes = (RenderPassInfo*)memory->allocate(memsize);
 		for (unsigned int i = 0; i < passes.size(); i++)
 		{
 			passes[i]->prepare(&info->passes[i]);

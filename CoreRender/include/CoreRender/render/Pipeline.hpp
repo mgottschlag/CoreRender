@@ -32,6 +32,7 @@ namespace render
 	class RenderJob;
 	class Renderable;
 	struct PipelineInfo;
+	class Renderer;
 
 	/**
 	 * Class containing the definition about how to render geometry. The
@@ -107,9 +108,16 @@ namespace render
 			 */
 			void prepare(PipelineInfo *info);
 
+			void setRenderer(Renderer *renderer)
+			{
+				this->renderer = renderer;
+			}
+
 			typedef core::SharedPointer<Pipeline> Ptr;
 		private:
 			std::vector<RenderPass::Ptr> passes;
+
+			Renderer *renderer;
 	};
 }
 }

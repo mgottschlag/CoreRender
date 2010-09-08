@@ -69,6 +69,7 @@ set(SRC
 	include/CoreRender/render/VertexBuffer.hpp
 	include/CoreRender/render/VertexLayout.hpp
 	src/core/Log.cpp
+	src/core/MemoryPool.cpp
 	src/core/Semaphore.cpp
 	src/core/StandardFile.cpp
 	src/core/StandardFileSystem.cpp

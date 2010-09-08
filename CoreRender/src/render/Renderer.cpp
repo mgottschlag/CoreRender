@@ -177,20 +177,9 @@ namespace render
 			renderPipeline(&renderdata[i]);
 		}
 		// Reset memory pool
-		// TODO
+		getCurrentFrameMemory()->reset();
 		// Signal end of frame
 		driver->endFrame();
-		// Delete render data
-		for (unsigned int i = 0; i < pipelinecount; i++)
-		{
-			for (unsigned int j = 0; j < renderdata[i].passcount; j++)
-			{
-				delete[] renderdata[i].passes[j].batches;
-			}
-			delete[] renderdata[i].passes;
-		}
-		delete[] renderdata;
-		// TODO
 		// Swap buffers
 		primary->swapBuffers();
 		// Delete unused objects

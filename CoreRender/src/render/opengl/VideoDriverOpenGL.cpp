@@ -397,17 +397,6 @@ namespace opengl
 				continue;
 			glDisableVertexAttribArray(batch->attribs[i].shaderhandle);
 		}
-		// Clean up memory
-		for (unsigned int i = 0; i < batch->uniformcount; i++)
-		{
-			delete[] batch->uniforms[i].data;
-		}
-		delete[] batch->attribs;
-		delete[] batch->uniforms;
-		delete[] batch->textures;
-		delete batch;
-		// TODO
-		// TODO: Should be done by the memory pool class?
 	}
 
 	void VideoDriverOpenGL::endFrame()

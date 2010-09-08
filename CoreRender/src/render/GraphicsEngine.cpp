@@ -28,6 +28,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/res/DefaultResourceFactory.hpp"
 #include "CoreRender/render/Animation.hpp"
 #include "FrameData.hpp"
+#include "CoreRender/core/MemoryPool.hpp"
 
 #if defined(CORERENDER_USE_SDL)
 	#include "opengl/RenderContextSDL.hpp"
@@ -321,7 +322,9 @@ namespace render
 	bool GraphicsEngine::endFrame()
 	{
 		// Collect frame data
-		PipelineInfo *renderdata = new PipelineInfo[pipelines.size()];
+		core::MemoryPool *memory = renderer->getNextFrameMemory();
+		unsigned int memsize = sizeof(PipelineInfo) * pipelines.size();
+		PipelineInfo *renderdata = (PipelineInfo*)memory->allocate(memsize);
 		for (unsigned int i = 0; i < pipelines.size(); i++)
 		{
 			pipelines[i]->prepare(&renderdata[i]);
@@ -352,6 +355,7 @@ namespace render
 
 	void GraphicsEngine::addPipeline(Pipeline::Ptr pipeline)
 	{
+		pipeline->setRenderer(renderer);
 		// TODO: In debug mode, check whether we are currently rendering?
 		tbb::spin_mutex::scoped_lock lock(pipelinemutex);
 		pipelines.push_back(pipeline);
