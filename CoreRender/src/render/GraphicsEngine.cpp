@@ -446,6 +446,8 @@ namespace render
 				return 0;
 			}
 			return newctx;
+#else
+			return 0;
 #endif
 		}
 		else if (type == VideoDriverType::Null)
