@@ -23,7 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/core/Functor.hpp"
 #include "CoreRender/render/Renderer.hpp"
 #include "CoreRender/core/Time.hpp"
-#include "CoreRender/render/VideoDriver.hpp"
+#include "VideoDriver.hpp"
 
 namespace cr
 {

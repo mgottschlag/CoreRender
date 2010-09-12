@@ -21,7 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "CoreRender/render/Renderer.hpp"
 #include "CoreRender/core/MemoryPool.hpp"
-#include "CoreRender/render/VideoDriver.hpp"
+#include "VideoDriver.hpp"
 #include "CoreRender/core/Time.hpp"
 #include "FrameData.hpp"
 

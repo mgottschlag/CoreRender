@@ -20,7 +20,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/render/RenderPass.hpp"
-#include "CoreRender/render/VideoDriver.hpp"
+#include "VideoDriver.hpp"
 #include "FrameData.hpp"
 
 #include <cstring>

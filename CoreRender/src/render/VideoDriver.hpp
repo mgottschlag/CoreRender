@@ -22,15 +22,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_VIDEODRIVER_HPP_INCLUDED_
 #define _CORERENDER_RENDER_VIDEODRIVER_HPP_INCLUDED_
 
-#include "VideoDriverType.hpp"
-#include "RenderCaps.hpp"
-#include "../core/Color.hpp"
-#include "Texture2D.hpp"
-#include "IndexBuffer.hpp"
-#include "VertexBuffer.hpp"
-#include "Shader.hpp"
-#include "RenderStats.hpp"
-#include "FrameBuffer.hpp"
+#include "CoreRender/render/VideoDriverType.hpp"
+#include "CoreRender/render/RenderCaps.hpp"
+#include "CoreRender/core/Color.hpp"
+#include "CoreRender/render/Texture2D.hpp"
+#include "CoreRender/render/IndexBuffer.hpp"
+#include "CoreRender/render/VertexBuffer.hpp"
+#include "CoreRender/render/Shader.hpp"
+#include "CoreRender/render/RenderStats.hpp"
+#include "CoreRender/render/FrameBuffer.hpp"
 
 namespace cr
 {

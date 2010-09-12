@@ -21,7 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Texture2DOpenGL.hpp"
 #include "CoreRender/render/Renderer.hpp"
-#include "CoreRender/render/VideoDriver.hpp"
+#include "../VideoDriver.hpp"
 
 #include <GL/glew.h>
 

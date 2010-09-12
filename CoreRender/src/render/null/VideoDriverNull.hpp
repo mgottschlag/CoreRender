@@ -22,7 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_NULL_VIDEODRIVER_HPP_INCLUDED_
 #define _CORERENDER_RENDER_NULL_VIDEODRIVER_HPP_INCLUDED_
 
-#include "CoreRender/render/VideoDriver.hpp"
+#include "../VideoDriver.hpp"
 #include "RenderCapsNull.hpp"
 #include "IndexBufferNull.hpp"
 #include "VertexBufferNull.hpp"
