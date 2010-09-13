@@ -54,7 +54,7 @@ namespace render
 	{
 		// Allocate image data
 		void *datacopy;
-		if (copy)
+		if (copy && data)
 		{
 			unsigned int datasize = TextureFormat::getSize(format,
 			                                               width * height);

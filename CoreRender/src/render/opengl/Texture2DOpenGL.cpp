@@ -218,16 +218,6 @@ namespace opengl
 					return false;
 				}
 			}
-			else
-			{
-				if (!translateFormat(format, currentformat, component))
-				{
-					core::Log::Ptr log = getRenderer()->getLog();
-					log->error("Error using target format as source format.");
-					uploadFinished();
-					return false;
-				}
-			}
 			// Upload texture data
 			glBindTexture(GL_TEXTURE_2D, handle);
 			if (data)
@@ -281,8 +271,8 @@ namespace opengl
 					             width,
 					             height,
 					             0,
-					             currentformat,
-					             component,
+					             GL_RGBA,
+					             GL_UNSIGNED_BYTE,
 					             0);
 				}
 			}
