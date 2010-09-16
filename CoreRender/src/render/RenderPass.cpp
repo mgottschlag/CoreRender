@@ -22,6 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/RenderPass.hpp"
 #include "VideoDriver.hpp"
 #include "FrameData.hpp"
+#include "CoreRender/core/MemoryPool.hpp"
 
 #include <cstring>
 
@@ -64,7 +65,7 @@ namespace render
 	{
 		batches.push_back(batch);
 	}
-	void RenderPass::prepare(RenderPassInfo *info)
+	void RenderPass::prepare(cr::core::MemoryPool *memory, RenderPassInfo *info)
 	{
 		// Optimize batches
 		// TODO
@@ -96,14 +97,16 @@ namespace render
 			// Fill in color buffer info
 			unsigned int colorbuffercount = target->getColorBufferCount();
 			info->target.colorbuffercount = colorbuffercount;
-			info->target.colorbuffers = new unsigned int[colorbuffercount];
+			unsigned int memsize = sizeof(unsigned int) * colorbuffercount;
+			info->target.colorbuffers = (unsigned int*)memory->allocate(memsize);
 			for (unsigned int i = 0; i < colorbuffercount; i++)
 			{
 				info->target.colorbuffers[i] = target->getColorBuffer(i)->getHandle();
 			}
 		}
 		// Copy batches for the rendering thread
-		info->batches = new RenderBatch*[batches.size()];
+		unsigned int memsize = sizeof(RenderBatch*) * batches.size();
+		info->batches = (RenderBatch**)memory->allocate(memsize);
 		memcpy(info->batches, &batches[0], sizeof(RenderBatch*) * batches.size());
 		info->batchcount = batches.size();
 		// Clean up

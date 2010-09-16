@@ -151,7 +151,6 @@ namespace render
 					       size * sizeof(float));
 				}
 			}
-			// TODO
 			// Textures
 			const std::vector<Material::TextureInfo> &textureinfo = job->material->getTextures();
 			batch->texcount = textureinfo.size();
@@ -192,7 +191,7 @@ namespace render
 		info->passes = (RenderPassInfo*)memory->allocate(memsize);
 		for (unsigned int i = 0; i < passes.size(); i++)
 		{
-			passes[i]->prepare(&info->passes[i]);
+			passes[i]->prepare(memory, &info->passes[i]);
 		}
 	}
 }

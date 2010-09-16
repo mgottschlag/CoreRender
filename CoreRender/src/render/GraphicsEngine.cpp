@@ -151,7 +151,7 @@ namespace render
 	};
 
 	GraphicsEngine::GraphicsEngine()
-		: rmgr(0), multithreaded(true), renderer(0), renderthread(0)
+		: rmgr(0), log(0), multithreaded(true), renderer(0), renderthread(0)
 	{
 	}
 	GraphicsEngine::~GraphicsEngine()

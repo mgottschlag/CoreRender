@@ -131,7 +131,7 @@ namespace opengl
 			else
 			{
 				glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-				// TODO: Set draw buffers here?
+				glDrawBuffer(GL_BACK);
 			}
 			currentfb = newfb;
 		}

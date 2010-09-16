@@ -27,6 +27,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace cr
 {
+namespace core
+{
+	class MemoryPool;
+}
 namespace render
 {
 	class VideoDriver;
@@ -96,7 +100,7 @@ namespace render
 			 * Prepares and then returns the batch list for this pass.
 			 * @param info Target for the batch list.
 			 */
-			void prepare(RenderPassInfo *info);
+			void prepare(cr::core::MemoryPool *memory, RenderPassInfo *info);
 
 			/**
 			 * Returns the context name for shaders drawn in this pass.
