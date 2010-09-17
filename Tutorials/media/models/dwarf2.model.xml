@@ -1,0 +1,186 @@
+<?xml version="1.0" ?>
+<Model geometry="dwarf.geo">
+    <Armature batch="0">
+        <Joint index="0" name="weapon" />
+    </Armature>
+    <Armature batch="1">
+        <Joint index="0" name="middle" />
+        <Joint index="1" name="lhip" />
+        <Joint index="2" name="lknee" />
+        <Joint index="3" name="lankle" />
+        <Joint index="4" name="ltoe" />
+        <Joint index="5" name="rhip" />
+        <Joint index="6" name="rknee" />
+        <Joint index="7" name="rankle" />
+        <Joint index="8" name="rtoe" />
+        <Joint index="9" name="spine2" />
+        <Joint index="10" name="Joint76" />
+        <Joint index="11" name="spine1" />
+        <Joint index="12" name="head" />
+        <Joint index="13" name="Joint36" />
+        <Joint index="14" name="Joint39" />
+        <Joint index="15" name="Joint40" />
+        <Joint index="16" name="Joint41" />
+        <Joint index="17" name="Joint37" />
+        <Joint index="18" name="Joint38" />
+        <Joint index="19" name="Joint42" />
+        <Joint index="20" name="Joint43" />
+        <Joint index="21" name="pad2" />
+        <Joint index="22" name="pad1" />
+        <Joint index="23" name="lsholda" />
+        <Joint index="24" name="lelbo" />
+        <Joint index="25" name="lwrist" />
+        <Joint index="26" name="Joint17" />
+        <Joint index="27" name="Joint18" />
+        <Joint index="28" name="Joint19" />
+        <Joint index="29" name="Joint20" />
+        <Joint index="30" name="Joint21" />
+        <Joint index="31" name="rsholda" />
+        <Joint index="32" name="relbo" />
+        <Joint index="33" name="rwrist" />
+        <Joint index="34" name="Joint25" />
+        <Joint index="35" name="Joint26" />
+        <Joint index="36" name="Joint27" />
+        <Joint index="37" name="Joint28" />
+        <Joint index="38" name="Joint29" />
+	</Armature>
+    <Node name="base">
+        <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 0.011608, -0.015192, -0, 1</Transformation>
+        <Node name="middle">
+            <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 0.173034, 30.2218, -0, 1</Transformation>
+            <Node name="lhip">
+                <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -5.19101, -3.46986, -0, 1</Transformation>
+                <Node name="lknee">
+                    <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -1.90337, -8.8175, -0, 1</Transformation>
+                    <Node name="lankle">
+                        <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -1.5573, -12.8733, -3.50754, 1</Transformation>
+                        <Node name="ltoe">
+                            <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -0.083542, -2.83791, 5.26819, 1</Transformation>
+                        </Node>
+                    </Node>
+                </Node>
+            </Node>
+            <Node name="rhip">
+                <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 5.88314, -2.95118, -0, 1</Transformation>
+                <Node name="rknee">
+                    <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 1.5573, -9.68196, -0, 1</Transformation>
+                    <Node name="rankle">
+                        <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 1.0382, -13.0462, -3.50754, 1</Transformation>
+                        <Node name="rtoe">
+                            <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 0.161076, -2.26839, 5.05536, 1</Transformation>
+                        </Node>
+                    </Node>
+                </Node>
+            </Node>
+            <Node name="spine2">
+                <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -0.008257, 4.07179, -0, 1</Transformation>
+                <Node name="Joint75">
+                    <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -0.00798, 5.84379, -0, 1</Transformation>
+                    <Node name="Joint76">
+                        <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -0.033215, 5.64258, -0, 1</Transformation>
+                        <Node name="spine1">
+                            <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -0.057544, 3.12982, -0, 1</Transformation>
+                            <Node name="head">
+                                <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 0, 4.1834, -0, 1</Transformation>
+                                <Node name="Joint36">
+                                    <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 2.35105, -2.96924, 5.12867, 1</Transformation>
+                                    <Node name="Joint39">
+                                        <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 2.52116, -4.10268, 2.77958, 1</Transformation>
+                                        <Node name="Joint40">
+                                            <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 1.54314, -3.72124, 0.884647, 1</Transformation>
+                                            <Node name="Joint41">
+                                                <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 0.857303, -3.15732, 0.940437, 1</Transformation>
+                                            </Node>
+                                        </Node>
+                                    </Node>
+                                </Node>
+                                <Node name="Joint37">
+                                    <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -2.84413, -3.13005, 5.12867, 1</Transformation>
+                                    <Node name="Joint38">
+                                        <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -2.31411, -4.19886, 2.77958, 1</Transformation>
+                                        <Node name="Joint42">
+                                            <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -1.20022, -3.2097, 0.885387, 1</Transformation>
+                                            <Node name="Joint43">
+                                                <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -1.28595, -3.69603, 0.939697, 1</Transformation>
+                                            </Node>
+                                        </Node>
+                                    </Node>
+                                </Node>
+                                <Node name="top">
+                                    <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -0.311274, 14.4385, 1.10761, 1</Transformation>
+                                </Node>
+                            </Node>
+                            <Node name="pad2">
+                                <Transformation>0.986286, 0.165048, -0, 0, -0.159424, 0.952679, -0.258819, 0, -0.042717, 0.25527, 0.965926, -0, -6.28023, 3.39901, -0, 1</Transformation>
+                            </Node>
+                            <Node name="pad1">
+                                <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 5.23353, 3.52975, -0, 1</Transformation>
+                            </Node>
+                            <Node name="lsholda">
+                                <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -10.7111, -1.73219, -3.52974, 1</Transformation>
+                                <Node name="lelbo">
+                                    <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -6.54191, -5.09852, -0.705949, 1</Transformation>
+                                    <Node name="lwrist">
+                                        <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -7.8503, -6.40583, -0, 1</Transformation>
+                                        <Node name="Joint17">
+                                            <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -3.66347, -3.66048, -0, 1</Transformation>
+                                            <Node name="Joint18">
+                                                <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -1.04671, -2.0917, -0, 1</Transformation>
+                                                <Node name="Joint19">
+                                                    <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -0.130838, -3.13755, -0, 1</Transformation>
+                                                </Node>
+                                            </Node>
+                                        </Node>
+                                        <Node name="Joint20">
+                                            <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -0.261676, -4.31413, 3.48193, 1</Transformation>
+                                            <Node name="Joint21">
+                                                <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -1.0467, -2.48389, -0, 1</Transformation>
+                                            </Node>
+                                        </Node>
+                                    </Node>
+                                </Node>
+                            </Node>
+                            <Node name="rsholda">
+                                <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 9.98647, -1.43804, -3.52974, 1</Transformation>
+                                <Node name="relbo">
+                                    <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 6.80359, -5.35998, -0.705949, 1</Transformation>
+                                    <Node name="rwrist">
+                                        <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 8.37365, -6.79803, -0, 1</Transformation>
+                                        <Node name="Joint25">
+                                            <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 3.66347, -3.13755, -0, 1</Transformation>
+                                            <Node name="Joint26">
+                                                <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 1.04671, -2.35316, -0, 1</Transformation>
+                                                <Node name="Joint27">
+                                                    <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -0.261676, -2.87609, -0, 1</Transformation>
+                                                </Node>
+                                            </Node>
+                                        </Node>
+                                        <Node name="Joint28">
+                                            <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, -0.78503, -4.1834, 2.03432, 1</Transformation>
+                                            <Node name="Joint29">
+                                                <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 0.261676, -2.48389, -0, 1</Transformation>
+                                            </Node>
+                                        </Node>
+                                        <Node name="weapon">
+                                            <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 1.7009, -4.83706, -0, 1</Transformation>
+                                            <Node name="end">
+                                                <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 0.179647, 0.498486, 36.4217, 1</Transformation>
+                                                <Node name="hit">
+                                                    <Transformation>1, 0, -0, 0, 0, 1, -0, 0, -0, -0, 1, -0, 9.75188, -17.3242, 0.896412, 1</Transformation>
+                                                </Node>
+                                            </Node>
+                                        </Node>
+                                    </Node>
+                                </Node>
+                            </Node>
+                        </Node>
+                    </Node>
+                </Node>
+            </Node>
+        </Node>
+        <Node name="Body">
+            <Mesh index="0" material="dwarfaxe.material.xml" />
+            <Mesh index="1" material="dwarf2.material.xml" />
+       </Node>
+    </Node>
+</Model>

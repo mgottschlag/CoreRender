@@ -1,0 +1,65 @@
+<Shader>
+	<Flag name="Skinning" default="false" />
+
+	<Text name="VS_GENERAL">
+	<![CDATA[
+		#include "utility/defaultUniforms.glsl"
+		attribute vec3 pos;
+		attribute vec3 normal;
+		attribute vec2 texcoord0;
+		#if Skinning
+		attribute vec4 jointindex;
+		attribute vec4 jointweight;
+		uniform mat4 skinMat[50];
+		#endif
+		varying vec2 texcoord;
+		void main()
+		{
+			// Transformation
+			texcoord = texcoord0;
+			#if Skinning
+			// Skinning
+			mat4 mat = mat4(0.0);
+			for (int i = 0; i < 4; i++)
+			{
+				mat += skinMat[int(jointindex[i])] * jointweight[i];
+			}
+			vec4 skinpos = mat * vec4(pos, 1.0);
+			gl_Position = worldMat * skinpos;
+			#else
+			gl_Position = worldMat * vec4(pos, 1.0);
+			#endif
+		}
+	]]>
+	</Text>
+	<Text name="FS_AMBIENT">
+	<![CDATA[
+		varying vec2 texcoord;
+		uniform sampler2D tex;
+		varying vec4 color;
+		void main()
+		{
+			vec4 final = texture2D(tex, texcoord);
+			gl_FragColor = final;
+		}
+	]]>
+	</Text>
+
+	<Attrib name="pos" />
+	<Attrib name="normal" />
+	<Attrib name="texcoord0" />
+	<Attrib name="jointindex" />
+	<Attrib name="jointweight" />
+
+	<Uniform name="worldMat" type="mat4" />
+	<Uniform name="lightDir" type="float3" >
+		1.0, 1.0, -1.0
+	</Uniform>
+	<Uniform name="skinMat" count="50" type="mat4" />
+
+	<Texture name="tex" />
+
+	<Context name="TRANSLUCENT" vs="VS_GENERAL" fs="FS_AMBIENT">
+		<Blend mode="Additive"/>
+	</Context>
+</Shader>

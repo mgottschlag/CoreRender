@@ -23,6 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_RENDER_SHADERTEXT_HPP_INCLUDED_
 
 #include "../res/Resource.hpp"
+#include "BlendMode.hpp"
 #include "Shader.hpp"
 #include "ShaderVariableType.hpp"
 #include "UniformData.hpp"
@@ -95,7 +96,8 @@ namespace render
 			                const std::string &vs,
 			                const std::string &fs,
 			                const std::string &gs = "",
-			                const std::string &ts = "");
+			                const std::string &ts = "",
+			                const BlendMode::List &blendmode = BlendMode::Solid);
 			/**
 			 * Returns whether this material has a certain context.
 			 * @param name Name of the context.
@@ -191,6 +193,7 @@ namespace render
 				std::string fs;
 				std::string gs;
 				std::string ts;
+				BlendMode::List blendMode;
 			};
 
 			std::map<std::string, std::string> texts;
