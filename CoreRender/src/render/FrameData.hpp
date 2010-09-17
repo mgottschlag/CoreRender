@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/VertexLayout.hpp"
 #include "CoreRender/render/ShaderVariableType.hpp"
 #include "CoreRender/render/FrameBuffer.hpp"
+#include "CoreRender/render/BlendMode.hpp"
 
 namespace cr
 {
@@ -75,6 +76,7 @@ namespace render
 		unsigned int vertexoffset;
 		unsigned int indextype;
 
+		unsigned int blendMode;
 		unsigned int renderflags;
 	};
 

@@ -54,6 +54,21 @@ namespace render
 			virtual ~Shader();
 
 			/**
+			 * Sets the blend mode for this shader
+			 */
+			void setBlendMode(unsigned int mode)
+			{
+				blendMode = mode;
+			}
+			/**
+			 * Get the blend mode for this shader
+			 */
+			unsigned int getBlendMode()
+			{
+				return blendMode;
+			}
+			
+			/**
 			 * Sets the vertex shader text for this shader.
 			 * @param vs Vertex shader content.
 			 */
@@ -165,6 +180,7 @@ namespace render
 			std::string fs;
 			std::string gs;
 			std::string ts;
+			unsigned int blendMode;
 
 			typedef core::HashMap<std::string, int>::Type HandleMap;
 			HandleMap attribs;

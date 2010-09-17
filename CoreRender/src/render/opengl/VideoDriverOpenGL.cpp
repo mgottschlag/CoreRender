@@ -37,7 +37,7 @@ namespace opengl
 {
 	VideoDriverOpenGL::VideoDriverOpenGL(core::Log::Ptr log)
 		: log(log), currentfb(0), currentshader(0), currentvertices(0),
-		currentindices(0)
+		currentindices(0), currentBlendMode(BlendMode::Solid)
 	{
 	}
 	VideoDriverOpenGL::~VideoDriverOpenGL()
@@ -230,6 +230,29 @@ namespace opengl
 		{
 			glUseProgram(batch->shader);
 			currentshader = batch->shader;
+		}
+		
+		if (batch->blendMode != currentBlendMode)// different mode
+		{
+			
+			// If move from a Solid mode to another Mode enableBlend
+			if (currentBlendMode == BlendMode::Solid)
+			{
+				glEnable(GL_BLEND);
+			}
+			
+			currentBlendMode = batch->blendMode;
+			
+			switch (currentBlendMode)
+			{
+				case BlendMode::Solid :
+					glDisable(GL_BLEND);
+					break;
+				case BlendMode::Additive :
+					glBlendFunc(GL_SRC_ALPHA,GL_DST_ALPHA);
+					break;
+			}
+			
 		}
 
 		if (batch->vertices != currentvertices)

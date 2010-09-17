@@ -106,6 +106,7 @@ namespace render
 			batch->vertices = job->vertices->getHandle();
 			batch->indices = job->indices->getHandle();
 			batch->shader = shader->getHandle();
+			batch->blendMode = shader->getBlendMode();
 			batch->sortkey = 0.0f; // TODO
 			batch->renderflags = 0;
 			// Attribs

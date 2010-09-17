@@ -86,6 +86,8 @@ namespace opengl
 			unsigned int currentshader;
 			unsigned int currentvertices;
 			unsigned int currentindices;
+			
+			unsigned int currentBlendMode;
 	};
 
 }

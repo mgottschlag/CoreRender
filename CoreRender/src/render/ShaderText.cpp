@@ -64,10 +64,11 @@ namespace render
 	                            const std::string &vs,
 	                            const std::string &fs,
 	                            const std::string &gs,
-	                            const std::string &ts)
-	{
+	                            const std::string &ts,
+	                            const BlendMode::List &blendmode)
+	{	
 		Context context = {
-			vs, fs, gs, ts
+			vs, fs, gs, ts, blendmode
 		};
 		// Store context info
 		contexts[name] = context;
@@ -210,6 +211,7 @@ namespace render
 			return false;
 		}
 		// Set shader data
+		shader->setBlendMode(ctx.blendMode);
 		shader->setVertexShader(flagtext + texts[ctx.vs]);
 		shader->setFragmentShader(flagtext + texts[ctx.fs]);
 		if (ctx.gs != "")
@@ -320,8 +322,22 @@ namespace render
 			std::string tsname = "";
 			if (tsnameattrib)
 				tsname = tsnameattrib;
+			
+			TiXmlElement *elmChild = element->FirstChildElement("Blend");
+			
+			std::string blendmodestr = "";
+			BlendMode::List blendMode = BlendMode::Solid;
+			
+			if ( elmChild )
+			{
+				blendmodestr = elmChild->Attribute("mode");
+				
+				if (blendmodestr.compare("Additive") == 0)
+					blendMode = BlendMode::Additive;
+			}
+			
 			// Add context
-			addContext(name, vsname, fsname, gsname, tsname);
+			addContext(name, vsname, fsname, gsname, tsname, blendMode);
 		}
 		// Add attribs
 		for (TiXmlNode *node = root->FirstChild("Attrib");
