@@ -58,6 +58,9 @@ namespace render
 			secondary->makeCurrent(false);
 		else
 			primary->makeCurrent(false);
+		// Delete memory pools
+		delete memory[0];
+		delete memory[1];
 	}
 
 	void Renderer::registerNew(RenderResource::Ptr res)
@@ -188,29 +191,72 @@ namespace render
 
 	void Renderer::renderPipeline(PipelineInfo *info)
 	{
-		for (unsigned int i = 0; i < info->passcount; i++)
-		{
-			renderPass(&info->passes[i]);
-		}
+		// TODO: Delete this function?
+		renderSequence(info->sequence);
 	}
-	void Renderer::renderPass(RenderPassInfo *info)
+	void Renderer::renderSequence(PipelineSequenceInfo *info)
 	{
-		// Set target
-		if (info->target.width == 0)
+		// TODO: Fix initial render target/viewport
+		for (unsigned int i = 0; i < info->commandcount; i++)
 		{
-			info->target.width = primary->getWidth();
-			info->target.height = primary->getHeight();
-		}
-		driver->setRenderTarget(info->target);
-		// Clear target
-		driver->clear(info->clear.clearcolor,
-		              info->clear.cleardepth,
-		              core::Color(info->clear.color),
-		              info->clear.depth);
-		// Draw batches
-		for (unsigned int i = 0; i < info->batchcount; i++)
-		{
-			driver->draw(info->batches[i]);
+			switch (info->commands[i].type)
+			{
+				case PipelineCommandType::Clear:
+					if (info->commands[i].clear->colorbuffercount > 0)
+					{
+						// TODO: Fix clear to only use floats
+						core::Color clearcolor;
+						clearcolor.setRed(info->commands[i].clear->colorbuffers[0].color[0] * 255.0f);
+						clearcolor.setGreen(info->commands[i].clear->colorbuffers[0].color[1] * 255.0f);
+						clearcolor.setBlue(info->commands[i].clear->colorbuffers[0].color[2] * 255.0f);
+						clearcolor.setAlpha(info->commands[i].clear->colorbuffers[0].color[3] * 255.0f);
+						// TODO: Fix this for multiple color buffers
+						driver->clear(true,
+						              info->commands[i].clear->depthbuffer,
+						              clearcolor,
+						              info->commands[i].clear->depth);
+					}
+					else
+					{
+						driver->clear(false,
+						              info->commands[i].clear->depthbuffer,
+						              core::Color(),
+						              info->commands[i].clear->depth);
+					}
+					break;
+				case PipelineCommandType::SetTarget:
+					if (info->commands[i].target)
+					{
+						driver->setRenderTarget(*info->commands[i].target);
+					}
+					else
+					{
+						// TODO
+					}
+					break;
+				case PipelineCommandType::BatchList:
+					for (unsigned int j = 0; j < info->commands[i].batchlist->batchcount; j++)
+					{
+						driver->draw(info->commands[i].batchlist->batches[j]);
+					}
+					break;
+				case PipelineCommandType::Batch:
+					driver->draw(info->commands[i].batch);
+					break;
+				case PipelineCommandType::BindTexture:
+					// TODO
+					break;
+				case PipelineCommandType::UnbindTextures:
+					// TODO
+					break;
+				case PipelineCommandType::Sequence:
+					renderSequence(info->commands[i].sequence);
+					// TODO: Reset target and textures?
+					break;
+				default:
+					log->warning("Invalid pipeline command type.");
+					break;
+			};
 		}
 	}
 }

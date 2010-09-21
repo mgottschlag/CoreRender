@@ -22,26 +22,17 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_PIPELINE_HPP_INCLUDED_
 #define _CORERENDER_RENDER_PIPELINE_HPP_INCLUDED_
 
-#include "RenderPass.hpp"
 #include "RenderJob.hpp"
+#include "PipelineCommand.hpp"
 
 namespace cr
 {
 namespace render
 {
-	class RenderJob;
-	class Renderable;
 	struct PipelineInfo;
 	class Renderer;
+	class PipelineSequence;
 
-	/**
-	 * Class containing the definition about how to render geometry. The
-	 * pipeline contains multiple render passes, for rendering one then calls
-	 * Pipeline::submit() with the data to render. The pipeline then prepares
-	 * render batches from the data passed to submit() and passes it to the
-	 * renderer when Pipeline::prepare() is called which then draws the render
-	 * passes in the order they were added to the pipeline.
-	 */
 	class Pipeline : public core::ReferenceCounted
 	{
 		public:
@@ -54,52 +45,30 @@ namespace render
 			 */
 			virtual ~Pipeline();
 
-			/**
-			 * Adds a new render pass to the pipeline. The render pass is added
-			 * after all existing passes.
-			 * @param pass New render pass.
-			 * @note Not thread-safe.
-			 */
-			void addPass(RenderPass::Ptr pass);
-			/**
-			 * Removes a render pass from the pipeline.
-			 * @param pass Render pass to be removed.
-			 */
-			void removePass(RenderPass::Ptr pass);
-			/**
-			 * Removes a render pass from the pipeline.
-			 * @param index Index of the pass to be removed.
-			 */
-			void removePass(unsigned int index);
-			/**
-			 * Returns the render pass with the given index.
-			 * @param index Index of the render pass.
-			 * @return Pass with the given index.
-			 */
-			RenderPass::Ptr getPass(unsigned int index);
-			/**
-			 * Returns the number of render passes attached to the pipeline.
-			 */
-			unsigned int getPassCount();
+			PipelineSequence *addSequence(const std::string &name);
+			int findSequence(const std::string &name);
+			PipelineSequence *getSequence(const std::string &name);
+			PipelineSequence *getSequence(unsigned int index);
+			void removeSequence(unsigned int index);
+			unsigned int getSequenceCount();
 
-			/**
-			 * Submits a renderable object to the pipeline and prepares batches
-			 * for rendering.
-			 * @param renderable Renderable object to be rendered.
-			 */
-			void submit(Renderable *renderable);
-			/**
-			 * Submits a single render job to be rendered and prepares batches
-			 * for rendering.
-			 * @param job Render job to be rendered.
-			 */
-			void submit(RenderJob *job);
+			void setDefaultSequence(PipelineSequence *sequence);
+			PipelineSequence *getDefaultSequence();
+
+			void addDeferredLightLoop(PipelineSequence *sequence);
+			unsigned int getDeferredLightLoopCount();
+			PipelineSequence *getDeferredLightLoop(unsigned int index);
+			
+			void addForwardLightLoop(PipelineSequence *sequence);
+			unsigned int getForwardLightLoopCount();
+			PipelineSequence *getForwardLightLoop(unsigned int index);
 
 			/**
 			 * Begins a new frame. Called by Renderer, do not call this
 			 * manually.
+			 * @param renderer Renderer which renders this frame.
 			 */
-			void beginFrame();
+			void beginFrame(Renderer *renderer);
 			/**
 			 * Prepares the pipeline data to be passed to the render thread and
 			 * places it in info.
@@ -108,16 +77,14 @@ namespace render
 			 */
 			void prepare(PipelineInfo *info);
 
-			void setRenderer(Renderer *renderer)
-			{
-				this->renderer = renderer;
-			}
-
 			typedef core::SharedPointer<Pipeline> Ptr;
 		private:
-			std::vector<RenderPass::Ptr> passes;
+			std::vector<PipelineSequence*> sequences;
 
-			Renderer *renderer;
+			PipelineSequence *defaultsequence;
+
+			std::vector<PipelineSequence*> forwardlightloops;
+			std::vector<PipelineSequence*> deferredlightloops;
 	};
 }
 }

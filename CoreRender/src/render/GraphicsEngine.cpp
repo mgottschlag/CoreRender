@@ -27,6 +27,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/RenderThread.hpp"
 #include "CoreRender/res/DefaultResourceFactory.hpp"
 #include "CoreRender/render/Animation.hpp"
+#include "CoreRender/render/RenderTarget.hpp"
 #include "FrameData.hpp"
 #include "CoreRender/core/MemoryPool.hpp"
 
@@ -315,7 +316,7 @@ namespace render
 		// Setup the rendering pipeline
 		for (unsigned int i = 0; i < pipelines.size(); i++)
 		{
-			pipelines[i]->beginFrame();
+			pipelines[i]->beginFrame(renderer);
 		}
 		return true;
 	}
@@ -355,7 +356,6 @@ namespace render
 
 	void GraphicsEngine::addPipeline(Pipeline::Ptr pipeline)
 	{
-		pipeline->setRenderer(renderer);
 		// TODO: In debug mode, check whether we are currently rendering?
 		tbb::spin_mutex::scoped_lock lock(pipelinemutex);
 		pipelines.push_back(pipeline);

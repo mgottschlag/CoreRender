@@ -54,9 +54,16 @@ int main(int argc, char **argv)
 	                                                                         "/models/dwarf.anim");
 	// Setup pipeline
 	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();
-	cr::render::RenderPass::Ptr pass = new cr::render::RenderPass("AMBIENT");
-	pass->setClear(true, true, cr::core::Color(60, 60, 60, 255));
-	pipeline->addPass(pass);
+	cr::render::PipelineSequence *sequence = pipeline->addSequence("main");
+	pipeline->setDefaultSequence(sequence);
+	cr::render::PipelineStage *stage = sequence->addStage("scene");
+	cr::render::ClearCommand *clear = new cr::render::ClearCommand();
+	clear->clearDepth(true, 1.0f);
+	clear->clearColor(0, true, cr::core::Color(60, 60, 60, 255));
+	stage->addCommand(clear);
+	cr::render::BatchListCommand *batchlist = new cr::render::BatchListCommand();
+	batchlist->setContext("AMBIENT");
+	stage->addCommand(batchlist);
 	graphics.addPipeline(pipeline);
 	// Setup camera matrix
 	cr::math::Matrix4 projmat = cr::math::Matrix4::PerspectiveFOV(60.0f, 4.0f/3.0f, 1.0f, 1000.0f);
@@ -104,7 +111,7 @@ int main(int argc, char **argv)
 		rotation += 0.1f;
 		cr::math::Quaternion quat(cr::math::Vector3F(0.0, rotation, 0.0));
 		renderable->setTransMat(quat.toMatrix());
-		pipeline->submit(renderable);
+		sequence->submit(renderable);
 		// Finish and render frame
 		graphics.endFrame();
 		fps++;
@@ -123,7 +130,6 @@ int main(int argc, char **argv)
 	// Delete resources
 	delete renderable;
 	pipeline = 0;
-	pass = 0;
 	model = 0;
 	anim = 0;
 

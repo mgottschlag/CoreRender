@@ -166,8 +166,16 @@ int main(int argc, char **argv)
 	job->uniforms["worldMat"] = matrix;
 	// Setup pipeline
 	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();
-	cr::render::RenderPass::Ptr pass = new cr::render::RenderPass("AMBIENT");
-	pipeline->addPass(pass);
+	cr::render::PipelineSequence *sequence = pipeline->addSequence("main");
+	pipeline->setDefaultSequence(sequence);
+	cr::render::PipelineStage *stage = sequence->addStage("scene");
+	cr::render::ClearCommand *clear = new cr::render::ClearCommand();
+	clear->clearDepth(true, 1.0f);
+	clear->clearColor(0, true, cr::core::Color(60, 60, 60, 255));
+	stage->addCommand(clear);
+	cr::render::BatchListCommand *batchlist = new cr::render::BatchListCommand();
+	batchlist->setContext("AMBIENT");
+	stage->addCommand(batchlist);
 	graphics.addPipeline(pipeline);
 	// Render loop
 	bool stopping = false;
@@ -202,7 +210,7 @@ int main(int argc, char **argv)
 		// Render objects
 		matrix = matrix * cr::math::Quaternion(cr::math::Vector3F(0.0, 0.1, 0.1)).toMatrix();
 		job->uniforms["worldMat"] = matrix;
-		pipeline->submit(job);
+		sequence->submit(job);
 		// Finish and render frame
 		graphics.endFrame();
 		
@@ -216,8 +224,6 @@ int main(int argc, char **argv)
 	shader = 0;
 	material = 0;
 	pipeline = 0;
-	pass = 0;
-	// TODO: Other resources
 
 	graphics.shutdown();
 	return 0;

@@ -56,13 +56,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/RenderContextOpenGL.hpp"
 #include "CoreRender/render/RenderContextReuseOpenGL.hpp"
 #include "CoreRender/render/GeometryManager.hpp"
-#include "CoreRender/render/RenderPass.hpp"
 #include "CoreRender/render/Texture.hpp"
 #include "CoreRender/render/RenderContext.hpp"
 #include "CoreRender/render/Material.hpp"
 #include "CoreRender/render/RenderTarget.hpp"
 #include "CoreRender/render/GraphicsEngine.hpp"
 #include "CoreRender/render/ModelRenderable.hpp"
+#include "CoreRender/render/PipelineSequence.hpp"
+#include "CoreRender/render/PipelineStage.hpp"
 
 /**
  * Main namespace containing the CoreRender classes.

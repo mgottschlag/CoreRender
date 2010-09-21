@@ -26,6 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/ShaderVariableType.hpp"
 #include "CoreRender/render/FrameBuffer.hpp"
 #include "CoreRender/render/BlendMode.hpp"
+#include "CoreRender/render/PipelineCommand.hpp"
 
 namespace cr
 {
@@ -80,6 +81,20 @@ namespace render
 		unsigned int renderflags;
 	};
 
+
+	struct ColorBufferClearInfo
+	{
+		unsigned int index;
+		float color[4];
+	};
+	struct ClearInfo
+	{
+		bool depthbuffer;
+		float depth;
+		unsigned int colorbuffercount;
+		ColorBufferClearInfo *colorbuffers;
+	};
+
 	struct RenderTargetInfo
 	{
 		unsigned int width;
@@ -89,27 +104,37 @@ namespace render
 		unsigned int colorbuffercount;
 		unsigned int *colorbuffers;
 	};
-	struct ClearInfo
+
+	struct BatchList
 	{
-		bool clearcolor;
-		bool cleardepth;
-		unsigned int color;
-		float depth;
-	};
-	struct RenderPassInfo
-	{
-		RenderTargetInfo target;
-		ClearInfo clear;
-		unsigned int colorbuffers;
-		RenderBatch **batches;
 		unsigned int batchcount;
+		RenderBatch **batches;
+	};
+
+	struct PipelineSequenceInfo;
+
+	struct PipelineCommandInfo
+	{
+		PipelineCommandType::List type;
+		union
+		{
+			RenderBatch *batch;
+			BatchList *batchlist;
+			ClearInfo *clear;
+			PipelineSequenceInfo *sequence;
+			RenderTargetInfo *target;
+		};
+	};
+
+	struct PipelineSequenceInfo
+	{
+		unsigned int commandcount;
+		PipelineCommandInfo *commands;
 	};
 
 	struct PipelineInfo
 	{
-		int target;
-		RenderPassInfo *passes;
-		unsigned int passcount;
+		PipelineSequenceInfo *sequence;
 	};
 }
 }

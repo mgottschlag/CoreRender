@@ -26,6 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "RenderContext.hpp"
 #include "../core/Log.hpp"
 #include "Shader.hpp"
+#include "StringTableProvider.hpp"
 
 #include <queue>
 
@@ -41,6 +42,7 @@ namespace render
 	class GraphicsEngine;
 	struct PipelineInfo;
 	struct RenderPassInfo;
+	struct PipelineSequenceInfo;
 
 	class Renderer
 	{
@@ -84,9 +86,13 @@ namespace render
 			{
 				return driver;
 			}
+			StringTableProvider *getStringTables()
+			{
+				return &stringtables;
+			}
 		private:
 			void renderPipeline(PipelineInfo *info);
-			void renderPass(RenderPassInfo *info);
+			void renderSequence(PipelineSequenceInfo *info);
 
 			RenderContext::Ptr primary;
 			RenderContext::Ptr secondary;
@@ -108,6 +114,8 @@ namespace render
 
 			// TODO: We should not have any pointer to the GraphicsEngine here
 			GraphicsEngine *input;
+
+			StringTableProvider stringtables;
 	};
 }
 }
