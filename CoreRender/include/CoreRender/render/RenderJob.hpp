@@ -43,7 +43,7 @@ namespace render
 			 */
 			RenderJob()
 				: startindex(0), endindex(0), basevertex(0), vertexoffset(0),
-				indextype(2)
+				indextype(2), sortkey(0.0f)
 			{
 			}
 
@@ -105,6 +105,12 @@ namespace render
 			 * uniforms.
 			 */
 			UniformData uniforms;
+			/**
+			 * Value which is used for sorting all batches in a batch list. This
+			 * can be used to sort models from front to back for example.
+			 * Jobs with a smaller sort key are rendered first.
+			 */
+			float sortkey;
 		private:
 	};
 }

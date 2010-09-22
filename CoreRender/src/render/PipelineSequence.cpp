@@ -116,7 +116,7 @@ namespace render
 			batch->indices = job->indices->getHandle();
 			batch->shader = shader->getHandle();
 			batch->blendMode = shader->getBlendMode();
-			batch->sortkey = 0.0f; // TODO
+			batch->sortkey = job->sortkey;
 			batch->renderflags = 0;
 			// Attribs
 			if (job->layout->getElementCount() > 0)

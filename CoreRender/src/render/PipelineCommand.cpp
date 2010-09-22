@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "FrameData.hpp"
 
 #include <cstring>
+#include <tbb/parallel_sort.h>
 
 namespace cr
 {
@@ -90,10 +91,20 @@ namespace render
 		batches.push_back(batch);
 	}
 
+	struct BatchListLess
+	{
+		bool operator()(RenderBatch *a, RenderBatch *b) const
+		{
+			return a->sortkey < b->sortkey;
+		}
+	};
 	void BatchListCommand::finish()
 	{
 		// Sort batches
-		// TODO
+		if (batches.size() > 0)
+			tbb::parallel_sort(batches.begin(),
+			                   batches.begin() + (batches.size() - 1),
+			                   BatchListLess());
 		// Allocate memory for the batches
 		core::MemoryPool *memory = renderer->getNextFrameMemory();
 		info->batchlist = (BatchList*)memory->allocate(sizeof(BatchList));
