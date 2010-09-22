@@ -196,7 +196,12 @@ namespace render
 	}
 	void Renderer::renderSequence(PipelineSequenceInfo *info)
 	{
-		// TODO: Fix initial render target/viewport
+		driver->setRenderTarget(0);
+		driver->setViewport(0,
+		                    0,
+		                    primary->getWidth(),
+		                    primary->getHeight());
+		// TODO: Fix initial viewport
 		for (unsigned int i = 0; i < info->commandcount; i++)
 		{
 			switch (info->commands[i].type)
@@ -225,14 +230,17 @@ namespace render
 					}
 					break;
 				case PipelineCommandType::SetTarget:
+					driver->setRenderTarget(info->commands[i].target);
 					if (info->commands[i].target)
-					{
-						driver->setRenderTarget(*info->commands[i].target);
-					}
+						driver->setViewport(0,
+						                    0,
+						                    info->commands[i].target->width,
+						                    info->commands[i].target->height);
 					else
-					{
-						// TODO
-					}
+						driver->setViewport(0,
+						                    0,
+						                    primary->getWidth(),
+						                    primary->getHeight());
 					break;
 				case PipelineCommandType::BatchList:
 					for (unsigned int j = 0; j < info->commands[i].batchlist->batchcount; j++)
@@ -254,7 +262,8 @@ namespace render
 					// TODO: Reset target and textures?
 					break;
 				default:
-					log->warning("Invalid pipeline command type.");
+					log->warning("Invalid pipeline command type: %d",
+					             info->commands[i].type);
 					break;
 			};
 		}

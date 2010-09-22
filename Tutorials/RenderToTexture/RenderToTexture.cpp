@@ -73,16 +73,32 @@ int main(int argc, char **argv)
 	}
 	// Setup first pipeline (renders the model to the texture)
 	cr::render::Pipeline::Ptr rttpipeline = new cr::render::Pipeline();
-	cr::render::RenderPass::Ptr rttpass = new cr::render::RenderPass("AMBIENT");
-	rttpass->setClear(true, true, cr::core::Color(255, 255, 255, 255));
-	rttpass->setRenderTarget(target);
-	rttpipeline->addPass(rttpass);
+	cr::render::PipelineSequence *rttsequence = rttpipeline->addSequence("main");
+	rttpipeline->setDefaultSequence(rttsequence);
+	cr::render::PipelineStage *stage = rttsequence->addStage("scene");
+	cr::render::SetTargetCommand *settarget = new cr::render::SetTargetCommand();
+	settarget->setTarget(target);
+	stage->addCommand(settarget);
+	cr::render::ClearCommand *clear = new cr::render::ClearCommand();
+	clear->clearDepth(true, 1.0f);
+	clear->clearColor(0, true, cr::core::Color(255, 255, 255, 255));
+	stage->addCommand(clear);
+	cr::render::BatchListCommand *batchlist = new cr::render::BatchListCommand();
+	batchlist->setContext("AMBIENT");
+	stage->addCommand(batchlist);
 	graphics.addPipeline(rttpipeline);
 	// Setup second pipeline (renders the cube onto the screen)
 	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();
-	cr::render::RenderPass::Ptr pass = new cr::render::RenderPass("AMBIENT");
-	pass->setClear(true, true, cr::core::Color(60, 60, 60, 255));
-	pipeline->addPass(pass);
+	cr::render::PipelineSequence *sequence = pipeline->addSequence("main");
+	pipeline->setDefaultSequence(sequence);
+	stage = sequence->addStage("scene");
+	clear = new cr::render::ClearCommand();
+	clear->clearDepth(true, 1.0f);
+	clear->clearColor(0, true, cr::core::Color(60, 60, 60, 255));
+	stage->addCommand(clear);
+	batchlist = new cr::render::BatchListCommand();
+	batchlist->setContext("AMBIENT");
+	stage->addCommand(batchlist);
 	graphics.addPipeline(pipeline);
 	// Setup camera matrix
 	cr::math::Matrix4 projmat = cr::math::Matrix4::PerspectiveFOV(60.0f, 4.0f/3.0f, 1.0f, 1000.0f);
@@ -140,12 +156,12 @@ int main(int argc, char **argv)
 		if (animtime >= anim->getFrameCount() / anim->getFramesPerSecond())
 			animtime -= anim->getFrameCount() / anim->getFramesPerSecond();
 		renderable->getAnimStage(0)->time = animtime;
-		rttpipeline->submit(renderable);
+		rttsequence->submit(renderable);
 		// Draw cube
 		rotation += 0.2f;
 		cr::math::Quaternion quat(cr::math::Vector3F(rotation, rotation * 0.3f, rotation * 0.5f));
 		cuberenderable->setTransMat(quat.toMatrix());
-		pipeline->submit(cuberenderable);
+		sequence->submit(cuberenderable);
 		// Finish and render frame
 		graphics.endFrame();
 		fps++;
@@ -166,9 +182,7 @@ int main(int argc, char **argv)
 	delete cuberenderable;
 	target = 0;
 	rttpipeline = 0;
-	rttpass = 0;
 	pipeline = 0;
-	pass = 0;
 	model = 0;
 	anim = 0;
 	cube = 0;

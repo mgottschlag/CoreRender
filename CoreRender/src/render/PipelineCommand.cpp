@@ -52,7 +52,38 @@ namespace render
 		command->type = getType();
 		command->clear = info;
 	}
-	
+
+	void SetTargetCommand::apply(Renderer *renderer, PipelineCommandInfo *command)
+	{
+		if (!target)
+		{
+			command->target = 0;
+			command->type = getType();
+			return;
+		}
+		core::MemoryPool *memory = renderer->getNextFrameMemory();
+		command->target = (RenderTargetInfo*)memory->allocate(sizeof(RenderTargetInfo));
+		FrameBuffer::Ptr framebuffer = target->getFrameBuffer();
+		command->target->framebuffer = &framebuffer->getConfiguration();
+		command->target->width = framebuffer->getWidth();
+		command->target->height = framebuffer->getHeight();
+		// Fill in depth buffer info
+		if (target->getDepthBuffer())
+			command->target->depthbuffer = target->getDepthBuffer()->getHandle();
+		else
+			command->target->depthbuffer = 0;
+		// Fill in color buffer info
+		unsigned int colorbuffercount = target->getColorBufferCount();
+		command->target->colorbuffercount = colorbuffercount;
+		unsigned int memsize = sizeof(unsigned int) * colorbuffercount;
+		command->target->colorbuffers = (unsigned int*)memory->allocate(memsize);
+		for (unsigned int i = 0; i < colorbuffercount; i++)
+		{
+			command->target->colorbuffers[i] = target->getColorBuffer(i)->getHandle();
+		}
+		// Fill in general command info
+		command->type = getType();
+	}
 
 	void BatchListCommand::submit(RenderBatch *batch)
 	{

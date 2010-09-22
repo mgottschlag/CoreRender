@@ -27,6 +27,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Material.hpp"
 
 #include <vector>
+#include "RenderTarget.hpp"
 
 namespace cr
 {
@@ -41,6 +42,7 @@ class RenderBatch;
 	{
 		enum List
 		{
+			Invalid,
 			Clear,
 			SetTarget,
 			Batch,
@@ -133,17 +135,17 @@ class RenderBatch;
 	{
 		public:
 			SetTargetCommand()
-				: PipelineCommand(PipelineCommandType::SetTarget), target(-1)
+				: PipelineCommand(PipelineCommandType::SetTarget)
 			{
 			}
 
-			void setTarget(int target)
+			void setTarget(RenderTarget::Ptr target)
 			{
 				this->target = target;
 			}
 			virtual void apply(Renderer *renderer, PipelineCommandInfo *command);
 		private:
-			int target;
+			RenderTarget::Ptr target;
 	};
 	class BindTextureCommand : public PipelineCommand
 	{

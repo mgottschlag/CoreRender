@@ -110,10 +110,22 @@ namespace render
 			/**
 			 * Sets a render target for following calls to draw() or clear() to
 			 * render into.
-			 * @param handle Handle of the render target. If this is -1, the
-			 * driver renders to the screen.
+			 * @param target Render target information. If this is 0, the driver
+			 * renders to the screen.
 			 */
-			virtual void setRenderTarget(const RenderTargetInfo &target) = 0;
+			virtual void setRenderTarget(const RenderTargetInfo *target) = 0;
+			/**
+			 * Sets the viewport within the current render target to which the
+			 * driver renders.
+			 * @param x X position of the viewport.
+			 * @param y Y position of the viewport.
+			 * @param width X size of the viewport.
+			 * @param height Y size of the viewport.
+			 */
+			virtual void setViewport(unsigned int x,
+			                         unsigned int y,
+			                         unsigned int width,
+			                         unsigned int height) = 0;
 			/**
 			 * Clears the current render target.
 			 * @param colorbuffer If true, clears the color buffer.

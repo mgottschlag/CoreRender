@@ -110,12 +110,12 @@ namespace opengl
 		return new FrameBufferOpenGL(renderer, rmgr, name);
 	}
 
-	void VideoDriverOpenGL::setRenderTarget(const RenderTargetInfo &target)
+	void VideoDriverOpenGL::setRenderTarget(const RenderTargetInfo *target)
 	{
-		// Set viewport
-		glViewport(0, 0, target.width, target.height);
 		// Bind frame buffer object
-		FrameBuffer::Configuration *newfb = target.framebuffer;
+		FrameBuffer::Configuration *newfb = 0;
+		if (target)
+			newfb = target->framebuffer;
 		if (newfb != currentfb)
 		{
 			// Generate mipmaps
@@ -135,10 +135,10 @@ namespace opengl
 			}
 			currentfb = newfb;
 		}
-		if (!newfb)
+		if (!target || !newfb)
 			return;
 		// Unbind unused color buffers
-		for (unsigned int i = target.colorbuffercount;
+		for (unsigned int i = target->colorbuffercount;
 			i < currentfb->colorbuffers.size(); i++)
 		{
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
@@ -149,26 +149,26 @@ namespace opengl
 		}
 		// Enlarge color buffer array if necessary
 		for (unsigned int i = currentfb->colorbuffers.size();
-			i < target.colorbuffercount; i++)
+			i < target->colorbuffercount; i++)
 		{
 			currentfb->colorbuffers.push_back(0);
 		}
 		// Bind color buffers
-		for (unsigned int i = 0; i < target.colorbuffercount; i++)
+		for (unsigned int i = 0; i < target->colorbuffercount; i++)
 		{
-			if (target.colorbuffers[i] == currentfb->colorbuffers[i])
+			if (target->colorbuffers[i] == currentfb->colorbuffers[i])
 				continue;
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
 			                          GL_COLOR_ATTACHMENT0_EXT + i,
 			                          GL_TEXTURE_2D,
-			                          target.colorbuffers[i],
+			                          target->colorbuffers[i],
 			                          0);
-			currentfb->colorbuffers[i] = target.colorbuffers[i];
+			currentfb->colorbuffers[i] = target->colorbuffers[i];
 		}
 		// Bind depth buffer
-		if (target.depthbuffer != currentfb->depthbuffer)
+		if (target->depthbuffer != currentfb->depthbuffer)
 		{
-			if (!target.depthbuffer)
+			if (!target->depthbuffer)
 			{
 				glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
 				                             GL_DEPTH_ATTACHMENT_EXT,
@@ -180,15 +180,14 @@ namespace opengl
 				glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
 				                          GL_DEPTH_ATTACHMENT_EXT,
 				                          GL_TEXTURE_2D,
-				                          target.depthbuffer,
+				                          target->depthbuffer,
 				                          0);
 			}
-			log->info("Bound depth buffer.");
-			currentfb->depthbuffer = target.depthbuffer;
+			currentfb->depthbuffer = target->depthbuffer;
 		}
 		// Change draw buffers
 		// TODO: This should not be done unconditionally
-		std::vector<unsigned int> drawbuffers(target.colorbuffercount, 0);
+		std::vector<unsigned int> drawbuffers(target->colorbuffercount, 0);
 		for (unsigned int i = 0; i < drawbuffers.size(); i++)
 		{
 			drawbuffers[i] = GL_COLOR_ATTACHMENT0_EXT + i;
@@ -200,6 +199,14 @@ namespace opengl
 		{
 			log->error("Invalid framebuffer (%d).", status);
 		}
+	}
+	void VideoDriverOpenGL::setViewport(unsigned int x,
+	                                    unsigned int y,
+	                                    unsigned int width,
+	                                    unsigned int height)
+	{
+		// Set viewport
+		glViewport(x, y, width, height);
 	}
 	void VideoDriverOpenGL::clear(bool colorbuffer,
 	                              bool zbuffer,

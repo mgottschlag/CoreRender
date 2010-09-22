@@ -119,37 +119,52 @@ int main(int argc, char **argv)
 	blurtarget2->addColorBuffer(targettex1);
 	// Setup first pipeline (renders the model to the texture)
 	cr::render::Pipeline::Ptr scenepipeline = new cr::render::Pipeline();
-	{
-		cr::render::RenderPass::Ptr scenepass = new cr::render::RenderPass("AMBIENT");
-		scenepass->setClear(true, true, cr::core::Color(60, 60, 60, 255));
-		scenepass->setRenderTarget(scenetarget);
-		scenepipeline->addPass(scenepass);
-	}
+	cr::render::PipelineSequence *scenesequence = scenepipeline->addSequence("main");
+	scenepipeline->setDefaultSequence(scenesequence);
+	cr::render::PipelineStage *stage = scenesequence->addStage("scene");
+	cr::render::SetTargetCommand *settarget = new cr::render::SetTargetCommand();
+	settarget->setTarget(scenetarget);
+	stage->addCommand(settarget);
+	cr::render::ClearCommand *clear = new cr::render::ClearCommand();
+	clear->clearDepth(true, 1.0f);
+	clear->clearColor(0, true, cr::core::Color(60, 60, 60, 255));
+	stage->addCommand(clear);
+	cr::render::BatchListCommand *batchlist = new cr::render::BatchListCommand();
+	batchlist->setContext("AMBIENT");
+	stage->addCommand(batchlist);
 	graphics.addPipeline(scenepipeline);
 	// Setup second pipeline (blurs the texture and renders it to the screen)
 	cr::render::Pipeline::Ptr blurpipeline = new cr::render::Pipeline();
-	{
-		// Vertical blur pass
-		cr::render::RenderPass::Ptr verticalpass = new cr::render::RenderPass("VERTICAL_BLUR");
-		// TODO: Disable Z culling
-		//verticalpass->setClear(false, false);
-		verticalpass->setClear(true, true, cr::core::Color(255, 60, 60, 255));
-		verticalpass->setRenderTarget(blurtarget1);
-		blurpipeline->addPass(verticalpass);
-		// Horizontal blur pass
-		cr::render::RenderPass::Ptr horizontalpass = new cr::render::RenderPass("HORIZONTAL_BLUR");
-		// TODO: Disable Z culling
-		//horizontalpass->setClear(false, false);
-		horizontalpass->setClear(true, true, cr::core::Color(60, 255, 60, 255));
-		horizontalpass->setRenderTarget(blurtarget2);
-		blurpipeline->addPass(horizontalpass);
-		// Draw the texture to the screen
-		cr::render::RenderPass::Ptr screenpass = new cr::render::RenderPass("COPY_COLOR");
-		// TODO: Disable Z culling
-		//screenpass->setClear(false, false);
-		screenpass->setClear(true, true, cr::core::Color(60, 60, 255, 255));
-		blurpipeline->addPass(screenpass);
-	}
+	cr::render::PipelineSequence *blursequence = blurpipeline->addSequence("main");
+	blurpipeline->setDefaultSequence(blursequence);
+	stage = blursequence->addStage("blur");
+	settarget = new cr::render::SetTargetCommand();
+	settarget->setTarget(blurtarget1);
+	stage->addCommand(settarget);
+	// TODO: Remove these clear commands once disabling z culling works
+	clear = new cr::render::ClearCommand();
+	clear->clearDepth(true, 1.0f);
+	stage->addCommand(clear);
+	batchlist = new cr::render::BatchListCommand();
+	batchlist->setContext("VERTICAL_BLUR");
+	stage->addCommand(batchlist);
+	settarget = new cr::render::SetTargetCommand();
+	settarget->setTarget(blurtarget2);
+	clear = new cr::render::ClearCommand();
+	clear->clearDepth(true, 1.0f);
+	stage->addCommand(clear);
+	stage->addCommand(settarget);
+	batchlist = new cr::render::BatchListCommand();
+	batchlist->setContext("HORIZONTAL_BLUR");
+	stage->addCommand(batchlist);
+	settarget = new cr::render::SetTargetCommand();
+	stage->addCommand(settarget);
+	clear = new cr::render::ClearCommand();
+	clear->clearDepth(true, 1.0f);
+	stage->addCommand(clear);
+	batchlist = new cr::render::BatchListCommand();
+	batchlist->setContext("COPY_COLOR");
+	stage->addCommand(batchlist);
 	graphics.addPipeline(blurpipeline);
 	// Load shaders
 	cr::render::ShaderText::Ptr blurshader1;
@@ -239,11 +254,11 @@ int main(int argc, char **argv)
 		rotation += 0.1f;
 		cr::math::Quaternion quat(cr::math::Vector3F(0, rotation, 0));
 		renderable->setTransMat(quat.toMatrix());
-		scenepipeline->submit(renderable);
+		scenesequence->submit(renderable);
 		// Draw blur passes
-		blurpipeline->submit(blurjob1);
-		blurpipeline->submit(blurjob2);
-		blurpipeline->submit(screenjob);
+		blursequence->submit(blurjob1);
+		blursequence->submit(blurjob2);
+		blursequence->submit(screenjob);
 		// Finish and render frame
 		graphics.endFrame();
 		fps++;
