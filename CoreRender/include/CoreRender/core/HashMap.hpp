@@ -31,7 +31,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		#include <tr1/unordered_map>
 	#else
 		#include <ext/hash_map>
-	#endif
 namespace __gnu_cxx
 {
 	template<> struct hash<std::string>
@@ -42,6 +41,7 @@ namespace __gnu_cxx
 		}
 	};
 }
+	#endif
 #else
 	#include <map>
 #endif
@@ -56,7 +56,7 @@ namespace core
 		typedef std::hash_map<Key, Value> Type;
 #elif defined(CORERENDER_GCC)
 	#ifdef __GXX_EXPERIMENTAL_CXX0X__
-		typedef _std::tr1::unordered_map<Key, Value> Type;
+		typedef std::tr1::unordered_map<Key, Value> Type;
 	#else
 		typedef __gnu_cxx::hash_map<Key, Value> Type;
 	#endif
