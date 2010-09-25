@@ -155,7 +155,7 @@ namespace res
 			                                              const std::string &name)
 			{
 				// TODO: Dynamic checks in debug version?
-				Resource::Ptr res = getOrLoad(type, name);
+				Resource::Ptr res = getOrCreate(type, name);
 				typename T::Ptr derived = (T*)res.get();
 				return derived;
 			}
