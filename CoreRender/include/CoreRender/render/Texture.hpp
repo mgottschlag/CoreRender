@@ -121,6 +121,15 @@ namespace render
 					return false;
 			}
 		}
+
+		/**
+		 * Converts a string to a texture format enum value. The string has to
+		 * contain exactly the name of the enum member so that for example
+		 * "RGBA16F" results in RGBA16F being returned.
+		 * @param str Texture format name.
+		 * @return Texture format.
+		 */
+		static TextureFormat::List fromString(const std::string &str);
 	};
 	/**
 	 * Type of the texture.

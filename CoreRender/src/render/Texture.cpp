@@ -34,6 +34,51 @@ namespace render
 		return false;
 	}
 
+	TextureFormat::List TextureFormat::fromString(const std::string &str)
+	{
+		if (str == "RGBA8")
+			return RGBA8;
+		if (str == "RGBA16F")
+			return RGBA16F;
+		if (str == "RGBA32F")
+			return RGBA32F;
+		if (str == "R8")
+			return R8;
+		if (str == "R16")
+			return R16;
+		if (str == "R32")
+			return R32;
+		if (str == "R16F")
+			return R16F;
+		if (str == "R32F")
+			return R32F;
+		if (str == "RG8")
+			return RG8;
+		if (str == "RG16")
+			return RG16;
+		if (str == "RG32")
+			return RG32;
+		if (str == "RG16F")
+			return RG16F;
+		if (str == "RG32F")
+			return RG32F;
+		if (str == "RGB_DXT1")
+			return RGB_DXT1;
+		if (str == "RGBA_DXT1")
+			return RGBA_DXT1;
+		if (str == "RGBA_DXT3")
+			return RGBA_DXT3;
+		if (str == "RGBA_DXT5")
+			return RGBA_DXT5;
+		if (str == "Depth24Stencil8")
+			return Depth24Stencil8;
+		if (str == "Depth16")
+			return Depth16;
+		if (str == "Depth24")
+			return Depth24;
+		return Invalid;
+	}
+
 	unsigned int TextureFormat::getSize(TextureFormat::List format,
 	                                     unsigned int texels)
 	{
