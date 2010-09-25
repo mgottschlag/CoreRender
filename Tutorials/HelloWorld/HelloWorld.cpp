@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 	// Load pipeline
 	cr::render::PipelineDefinition::Ptr pipelinedef;
 	pipelinedef = rmgr->getOrLoad<cr::render::PipelineDefinition>("PipelineDefinition",
-	                                                              "/pipelines/Blur.pipeline.xml");
+	                                                              "/pipelines/Simple.pipeline.xml");
 	pipelinedef->waitForLoading(true);
 	cr::render::Pipeline::Ptr pipeline = pipelinedef->createPipeline();
 	graphics.addPipeline(pipeline);
