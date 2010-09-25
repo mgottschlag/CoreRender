@@ -1,0 +1,8 @@
+<Pipeline>
+	<Sequence name="main">
+		<Stage name="scenepass">
+			<Clear cleardepth="true" clearcolor0="true" color="0.2, 0.2, 0.2, 1.0" />
+			<DrawGeometry context="AMBIENT" />
+		</Stage>
+	</Sequence>
+</Pipeline>

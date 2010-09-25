@@ -48,9 +48,6 @@ class RenderBatch;
 			Batch,
 			BatchList,
 			BindTexture,
-			FullscreenQuad,
-			DeferredLightLoop,
-			ForwardLightLoop,
 			UnbindTextures,
 			Sequence
 		};
@@ -170,19 +167,6 @@ class RenderBatch;
 			int name;
 			Texture::Ptr texture;
 	};
-	class FullscreenQuadCommand : public PipelineCommand
-	{
-		public:
-			FullscreenQuadCommand()
-				: PipelineCommand(PipelineCommandType::FullscreenQuad)
-			{
-			}
-
-			virtual void apply(Renderer *renderer, PipelineCommandInfo *command);
-		private:
-			Material::Ptr material;
-			std::string context;
-	};
 	class UnbindTexturesCommand : public PipelineCommand
 	{
 		public:
@@ -192,7 +176,7 @@ class RenderBatch;
 			}
 
 			virtual void apply(Renderer *renderer, PipelineCommandInfo *command);
-	private:
+		private:
 	};
 	class SequenceCommand : public PipelineCommand
 	{

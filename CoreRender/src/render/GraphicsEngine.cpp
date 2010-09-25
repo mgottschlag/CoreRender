@@ -28,6 +28,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/res/DefaultResourceFactory.hpp"
 #include "CoreRender/render/Animation.hpp"
 #include "CoreRender/render/RenderTarget.hpp"
+#include "CoreRender/render/PipelineDefinition.hpp"
 #include "FrameData.hpp"
 #include "CoreRender/core/MemoryPool.hpp"
 
@@ -270,6 +271,8 @@ namespace render
 		rmgr->addFactory("Animation", factory);
 		factory = new res::DefaultResourceFactory<RenderTarget>(rmgr);
 		rmgr->addFactory("RenderTarget", factory);
+		factory = new res::DefaultResourceFactory<PipelineDefinition>(rmgr);
+		rmgr->addFactory("PipelineDefinition", factory);
 		return true;
 	}
 	bool GraphicsEngine::resize(unsigned int width,

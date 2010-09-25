@@ -116,6 +116,7 @@ set(SRC
 	src/render/opengl/VideoDriverOpenGL.cpp
 	src/render/Pipeline.cpp
 	src/render/PipelineCommand.cpp
+	src/render/PipelineDefinition.cpp
 	src/render/PipelineSequence.cpp
 	src/render/PipelineStage.cpp
 	src/render/RenderContextReuseOpenGL.cpp

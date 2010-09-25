@@ -24,29 +24,132 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "../res/Resource.hpp"
 #include "../core/StringTable.hpp"
-#include "PipelineCommand.hpp"
+#include "Pipeline.hpp"
+
+#include <map>
+
+class TiXmlElement;
 
 namespace cr
 {
 namespace render
 {
+	struct CommandDefinition
+	{
+		PipelineCommandType::List type;
+		std::vector<std::string> params;
+	};
+
+	struct StageDefinition
+	{
+		~StageDefinition()
+		{
+			for (unsigned int i = 0; i < commands.size(); i++)
+				delete commands[i];
+		}
+		std::string name;
+		std::vector<CommandDefinition*> commands;
+	};
+
+	struct SequenceDefinition
+	{
+		~SequenceDefinition()
+		{
+			for (unsigned int i = 0; i < stages.size(); i++)
+				delete stages[i];
+		}
+		std::string name;
+		std::vector<StageDefinition*> stages;
+	};
+
 	class PipelineDefinition : public res::Resource
 	{
 		public:
 			PipelineDefinition(res::ResourceManager *rmgr, const std::string &name);
 			virtual ~PipelineDefinition();
 
-			struct Stage
+			SequenceDefinition *addSequence(const std::string &name);
+			int findSequence(const std::string &name);
+			SequenceDefinition *getSequence(const std::string &name);
+			SequenceDefinition *getSequence(unsigned int index);
+			void removeSequence(unsigned int index);
+			unsigned int getSequenceCount();
+
+			void setDefaultSequence(const std::string &sequence);
+			std::string getDefaultSequence();
+
+			void addDeferredLightLoop(const std::string &sequence);
+			unsigned int getDeferredLightLoopCount();
+			std::string getDeferredLightLoop(unsigned int index);
+
+			void addForwardLightLoop(const std::string &sequence);
+			unsigned int getForwardLightLoopCount();
+			std::string getForwardLightLoop(unsigned int index);
+
+			struct TextureInfo
 			{
-				std::vector<PipelineCommand*> commands;
+				std::string name;
+				float size;
+				TextureFormat::List format;
 			};
-			struct Sequence
+			void addTexture(const std::string &name,
+			                TextureFormat::List format,
+			                float size = 1.0f);
+			TextureInfo *getTexture(const std::string &name);
+			void removeTexture(const std::string &name);
+			unsigned int getTextureCount();
+
+			struct FrameBufferInfo
 			{
-				std::vector<Stage*> stages;
+				std::string name;
+				float size;
+				bool depthbuffer;
 			};
 
+			void addFrameBuffer(const std::string &name,
+			                    float size = 1.0f,
+			                    bool depthbuffer = false);
+			FrameBufferInfo *getFrameBuffer(const std::string &name);
+			void removeFrameBuffer(const std::string &name);
+			unsigned int getFrameBufferCount();
+
+			struct RenderTargetInfo
+			{
+				std::string name;
+				std::string framebuffer;
+				std::string depthbuffer;
+				std::vector<std::string> colorbuffers;
+			};
+
+			RenderTargetInfo *addRenderTarget(const std::string &name);
+			RenderTargetInfo *getRenderTarget(const std::string &name);
+			void removeRenderTarget(const std::string &name);
+			unsigned int getRenderTargetCount();
+
+			Pipeline::Ptr createPipeline();
+
+			virtual bool load();
+
+			const char *getType()
+			{
+				return "PipelineDefinition";
+			}
+
+			typedef core::SharedPointer<PipelineDefinition> Ptr;
 		private:
-			std::vector<Pass*> passes;
+			bool loadSequence(TiXmlElement *xml);
+			void loadStage(SequenceDefinition *sequence, TiXmlElement *xml);
+
+			std::vector<SequenceDefinition*> sequences;
+
+			std::string defaultsequence;
+
+			std::vector<std::string> forwardlightloops;
+			std::vector<std::string> deferredlightloops;
+
+			std::map<std::string, TextureInfo*> textures;
+			std::map<std::string, FrameBufferInfo*> framebuffers;
+			std::map<std::string, RenderTargetInfo*> rendertargets;
 	};
 }
 }
