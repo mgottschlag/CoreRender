@@ -242,6 +242,9 @@ namespace render
 			                                 bool fullscreen);
 			VideoDriver *createDriver(VideoDriverType::List type);
 
+			void createDefaultResources();
+			void destroyDefaultResources();
+
 			res::ResourceManager *rmgr;
 			core::FileSystem::Ptr fs;
 			core::Log::Ptr log;
@@ -261,6 +264,10 @@ namespace render
 			std::queue<InputEvent> inputqueue;
 
 			RenderStats stats;
+
+			// Default resources
+			IndexBuffer::Ptr fsquadib;
+			VertexBuffer::Ptr fsquadvb;
 	};
 }
 }

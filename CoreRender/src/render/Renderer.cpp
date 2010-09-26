@@ -249,7 +249,8 @@ namespace render
 					}
 					break;
 				case PipelineCommandType::Batch:
-					driver->draw(info->commands[i].batch);
+					if (info->commands[i].batch)
+						driver->draw(info->commands[i].batch);
 					break;
 				case PipelineCommandType::BindTexture:
 					// TODO

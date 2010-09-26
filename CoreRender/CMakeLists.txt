@@ -121,6 +121,7 @@ set(SRC
 	src/render/PipelineStage.cpp
 	src/render/RenderContextReuseOpenGL.cpp
 	src/render/Renderer.cpp
+	src/render/RenderJob.cpp
 	src/render/RenderResource.cpp
 	src/render/RenderTarget.cpp
 	src/render/RenderThread.cpp

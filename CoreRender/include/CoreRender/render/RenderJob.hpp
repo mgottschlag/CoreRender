@@ -31,6 +31,9 @@ namespace cr
 {
 namespace render
 {
+	struct RenderBatch;
+	class Renderer;
+
 	/**
 	 * Defines a combination of geometry/material which can be rendered via
 	 * Pipeline::submit().
@@ -46,6 +49,16 @@ namespace render
 				indextype(2), sortkey(0.0f)
 			{
 			}
+
+			/**
+			 * Creates the rendering information for this job ready to be sent
+			 * to the render thread. Is only called internally, you usually do
+			 * not need to call this manually.
+			 */
+			RenderBatch *createBatch(const std::string &context,
+			                         Renderer *renderer,
+			                         UniformData &uniforms,
+			                         unsigned int flags);
 
 			/**
 			 * Vertex buffer resource to be used for rendering.

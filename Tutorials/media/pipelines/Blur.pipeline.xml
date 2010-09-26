@@ -1,0 +1,48 @@
+<Pipeline>
+	<!-- Target texture setup -->
+	<Texture name="targettex1" size="0.5" format="RGBA8" />
+	<Texture name="targettex1" size="0.5" format="RGBA8" />
+	<Texture name="targettex2" size="0.5" format="RGBA8" />
+	<!-- Frame buffers -->
+	<FrameBuffer size="0.5" name="fb" depthbuffer="true" />
+
+	<!-- Render targets -->
+	<!-- Render the scene to a texture -->
+	<RenderTarget name="scenetarget" framebuffer="fb">
+		<ColorBuffer texture="targettex1" />
+	</RenderTarget>
+	<!-- Vertical blur pass -->
+	<RenderTarget name="blurtarget1" framebuffer="fb">
+		<ColorBuffer texture="targettex2" />
+	</RenderTarget>
+	<!-- Horizontal blur pass -->
+	<RenderTarget name="blurtarget2" framebuffer="fb">
+		<ColorBuffer texture="targettex1" />
+	</RenderTarget>
+
+	<!-- Actual render definition -->
+	<Sequence name="main">
+		<!-- Render the scene into a texture -->
+		<Stage name="scenepass">
+			<SetTarget name="scenetarget" />
+			<Clear cleardepth="true" clearcolor0="true" color="0.2, 0.2, 0.2, 1.0" />
+			<DrawGeometry context="AMBIENT" />
+		</Stage>
+		<!-- Blur the image -->
+		<Stage name="blurpass" target="blurtarget1">
+			<SetTarget name="blurtarget1" />
+			<Clear cleardepth="true" />
+			<BindTexture name="source" texture="targettex1" />
+			<FullscreenQuad material="/materials/Blur.material.xml" context="VERTICAL_BLUR"/>
+			<SetTarget name="blurtarget2" />
+			<Clear cleardepth="true" />
+			<BindTexture name="source" texture="targettex2" />
+			<FullscreenQuad material="/materials/Blur.material.xml" context="HORIZONTAL_BLUR"/>
+			<SetTarget name="" />
+			<Clear cleardepth="true" />
+			<BindTexture name="source" texture="targettex1" />
+			<FullscreenQuad material="/materials/Blur.material.xml" context="COPY_COLOR"/>
+			<UnbindTextures />
+		</Stage>
+	</Sequence>
+</Pipeline>

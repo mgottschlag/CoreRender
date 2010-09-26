@@ -101,87 +101,9 @@ namespace render
 		for (unsigned int i = 0; i < batchlists.size(); i++)
 		{
 			std::string context = batchlists[i]->getContext();
-			Shader::Ptr shader = text->getShader(context, flags);
-			if (!shader)
+			RenderBatch *batch = job->createBatch(context, renderer, uniforms, flags);
+			if (!batch)
 				continue;
-			// Allocate render batch
-			core::MemoryPool *memory = renderer->getNextFrameMemory();
-			RenderBatch *batch = (RenderBatch*)memory->allocate(sizeof(RenderBatch));
-			batch->startindex = job->startindex;
-			batch->endindex = job->endindex;
-			batch->basevertex = job->basevertex;
-			batch->vertexoffset = job->vertexoffset;
-			batch->indextype = job->indextype;
-			batch->vertices = job->vertices->getHandle();
-			batch->indices = job->indices->getHandle();
-			batch->shader = shader->getHandle();
-			batch->blendMode = shader->getBlendMode();
-			batch->sortkey = job->sortkey;
-			batch->renderflags = 0;
-			// Attribs
-			if (job->layout->getElementCount() > 0)
-			{
-				batch->attribcount = job->layout->getElementCount();
-				unsigned int memsize = sizeof(AttribMapping) * batch->attribcount;
-				batch->attribs = (AttribMapping*)memory->allocate(memsize);
-				AttribMapping *attribs = batch->attribs;
-				for (unsigned int i = 0; i < batch->attribcount; i++)
-				{
-					VertexLayoutElement *attrib = job->layout->getElement(i);
-					attribs[i].shaderhandle = shader->getAttrib(attrib->name);
-					attribs[i].components = attrib->components;
-					attribs[i].stride = attrib->stride;
-					attribs[i].type = attrib->type;
-					attribs[i].address = job->layout->getSlotOffset(job->vertexcount,
-					                                                attrib->vbslot)
-					                   + attrib->offset;
-				}
-			}
-			else
-			{
-				batch->attribcount = 0;
-				batch->attribs = 0;
-			}
-			// Uniforms
-			const UniformData::UniformMap &uniformdata = uniforms.getData();
-			batch->uniformcount = uniformdata.size();
-			unsigned int memsize = sizeof(UniformMapping) * batch->uniformcount;
-			batch->uniforms = (UniformMapping*)memory->allocate(memsize);
-			{
-				unsigned int i = 0;
-				for (UniformData::UniformMap::const_iterator it = uniformdata.begin();
-				     it != uniformdata.end(); ++it, ++i)
-				{
-					batch->uniforms[i].type = it->second.getType();
-					unsigned int size = ShaderVariableType::getSize(batch->uniforms[i].type);
-					batch->uniforms[i].shaderhandle = shader->getUniform(it->second.getName());
-					batch->uniforms[i].data = (float*)memory->allocate(size * sizeof(float));
-					memcpy(batch->uniforms[i].data,
-					       it->second.getData(),
-					       size * sizeof(float));
-				}
-			}
-			// Textures
-			const std::vector<Material::TextureInfo> &textureinfo = job->material->getTextures();
-			batch->texcount = textureinfo.size();
-			if (textureinfo.size() > 0)
-			{
-				// TODO: Unify this?
-				unsigned int memsize = sizeof(TextureEntry) * batch->texcount;
-				TextureEntry *textures = (TextureEntry*)memory->allocate(memsize);
-				for (unsigned int i = 0; i < textureinfo.size(); i++)
-				{
-					textures[i].shaderhandle = shader->getTexture(textureinfo[i].name);
-					textures[i].textureindex = i;
-					textures[i].texhandle = textureinfo[i].texture->getHandle();
-					textures[i].type = textureinfo[i].texture->getTextureType();
-				}
-				batch->textures = textures;
-			}
-			else
-			{
-				batch->textures = 0;
-			}
 			batchlists[i]->submit(batch);
 		}
 	}

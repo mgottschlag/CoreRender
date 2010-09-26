@@ -126,7 +126,8 @@ namespace render
 			void removeRenderTarget(const std::string &name);
 			unsigned int getRenderTargetCount();
 
-			Pipeline::Ptr createPipeline();
+			Pipeline::Ptr createPipeline(unsigned int screenwidth = 512,
+			                             unsigned int screenheight = 512);
 
 			virtual bool load();
 

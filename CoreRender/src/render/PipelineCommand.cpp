@@ -22,6 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/PipelineCommand.hpp"
 #include "CoreRender/core/MemoryPool.hpp"
 #include "CoreRender/render/Renderer.hpp"
+#include "CoreRender/render/RenderJob.hpp"
 #include "FrameData.hpp"
 
 #include <cstring>
@@ -56,7 +57,7 @@ namespace render
 
 	void SetTargetCommand::apply(Renderer *renderer, PipelineCommandInfo *command)
 	{
-		if (!target)
+		if (!target || !target->getFrameBuffer())
 		{
 			command->target = 0;
 			command->type = getType();
@@ -122,6 +123,43 @@ namespace render
 		command->type = getType();
 		info = command;
 		this->renderer = renderer;
+	}
+
+	BatchCommand::BatchCommand()
+		: PipelineCommand(PipelineCommandType::Batch), job(0)
+	{
+	}
+	BatchCommand::~BatchCommand()
+	{
+		if (job)
+			delete job;
+	}
+
+	void BatchCommand::setJob(RenderJob *job, const std::string &context)
+	{
+		if (this->job)
+			delete this->job;
+		this->job = job;
+		this->context = context;
+	}
+
+	void BatchCommand::apply(Renderer *renderer, PipelineCommandInfo *command)
+	{
+		command->type = getType();
+		if (!job->material->getShader())
+		{
+			command->batch = 0;
+			return;
+		}
+		// Get uniform data
+		UniformData uniforms = job->material->getShader()->getUniformData();
+		uniforms.setValues(job->material->getUniformData());
+		uniforms.setValues(job->uniforms);
+		// Get flag values
+		ShaderText::Ptr text = job->material->getShader();
+		unsigned int flags = text->getFlags(job->material->getShaderFlags());
+		// Create batch
+		command->batch = job->createBatch(context, renderer, uniforms, flags);
 	}
 }
 }

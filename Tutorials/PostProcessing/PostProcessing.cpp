@@ -23,41 +23,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <iostream>
 
-float vertices[4 * 4] = {
-	-1.0f, -1.0f, 0.0f, 0.0f,
-	1.0f, -1.0f, 1.0f, 0.0f,
-	1.0f, 1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f, 0.0f, 1.0f
-};
-
-unsigned char indices[6] = {
-	0, 1, 2,
-	0, 2, 3
-};
-
-const unsigned int targetwidth = 400;
-const unsigned int targetheight = 300;
-
-cr::render::RenderJob *createFSQuadJob(cr::render::VertexBuffer::Ptr vb,
-                                       cr::render::IndexBuffer::Ptr ib,
-                                       cr::render::Material::Ptr material,
-                                       cr::render::VertexLayout::Ptr layout)
-{
-	cr::render::RenderJob *job = new cr::render::RenderJob;
-	job->vertices = vb;
-	job->vertexcount = 4;
-	job->indices = ib;
-	job->endindex = 6;
-	job->indextype = 1;
-	job->startindex = 0;
-	job->basevertex = 0;
-	job->vertexoffset = 0;
-	job->material = material;
-	job->layout = layout;
-	job->uniforms.add("targetsize") = cr::math::Vector2F(targetwidth, targetheight);
-	return job;
-}
-
 int main(int argc, char **argv)
 {
 	cr::render::GraphicsEngine graphics;
@@ -88,121 +53,13 @@ int main(int argc, char **argv)
 	                                                                         "/models/dwarf.anim");
 	cr::render::Model::Ptr cube = rmgr->getOrLoad<cr::render::Model>("Model",
 	                                                                 "/models/cube.model.xml");
-	// Create a single frame buffer for all passes
-	// This can be done as all use a similar setup and have the same size and is
-	// much faster than using multiple frame buffers
-	cr::render::FrameBuffer::Ptr fb = rmgr->createResource<cr::render::FrameBuffer>("FrameBuffer");
-	fb->setSize(targetwidth, targetheight, false);
-	cr::render::FrameBuffer::Ptr scenefb = rmgr->createResource<cr::render::FrameBuffer>("FrameBuffer");
-	scenefb->setSize(targetwidth, targetheight, true);
-	// Create two textures with half the size of the screen
-	// We will use one of them as the target and one as the source texture and
-	// swap in every pass
-	cr::render::Texture2D::Ptr targettex1 = rmgr->createResource<cr::render::Texture2D>("Texture2D");
-	targettex1->set(targetwidth, targetheight, cr::render::TextureFormat::RGBA8);
-	cr::render::Texture2D::Ptr targettex2 = rmgr->createResource<cr::render::Texture2D>("Texture2D");
-	targettex2->set(targetwidth, targetheight, cr::render::TextureFormat::RGBA8);
-	// Create first render target to render the scene to a texture
-	cr::render::RenderTarget::Ptr scenetarget;
-	scenetarget = rmgr->createResource<cr::render::RenderTarget>("RenderTarget");
-	scenetarget->setFrameBuffer(scenefb);
-	scenetarget->addColorBuffer(targettex1);
-	// Create second render target (horizontal blur pass)
-	cr::render::RenderTarget::Ptr blurtarget1;
-	blurtarget1 = rmgr->createResource<cr::render::RenderTarget>("RenderTarget");
-	blurtarget1->setFrameBuffer(fb);
-	blurtarget1->addColorBuffer(targettex2);
-	// Create second render target (vertical blur pass)
-	cr::render::RenderTarget::Ptr blurtarget2;
-	blurtarget2 = rmgr->createResource<cr::render::RenderTarget>("RenderTarget");
-	blurtarget2->setFrameBuffer(fb);
-	blurtarget2->addColorBuffer(targettex1);
-	// Setup first pipeline (renders the model to the texture)
-	cr::render::Pipeline::Ptr scenepipeline = new cr::render::Pipeline();
-	cr::render::PipelineSequence *scenesequence = scenepipeline->addSequence("main");
-	scenepipeline->setDefaultSequence(scenesequence);
-	cr::render::PipelineStage *stage = scenesequence->addStage("scene");
-	cr::render::SetTargetCommand *settarget = new cr::render::SetTargetCommand();
-	settarget->setTarget(scenetarget);
-	stage->addCommand(settarget);
-	cr::render::ClearCommand *clear = new cr::render::ClearCommand();
-	clear->clearDepth(true, 1.0f);
-	clear->clearColor(0, true, cr::core::Color(60, 60, 60, 255));
-	stage->addCommand(clear);
-	cr::render::BatchListCommand *batchlist = new cr::render::BatchListCommand();
-	batchlist->setContext("AMBIENT");
-	stage->addCommand(batchlist);
-	graphics.addPipeline(scenepipeline);
-	// Setup second pipeline (blurs the texture and renders it to the screen)
-	cr::render::Pipeline::Ptr blurpipeline = new cr::render::Pipeline();
-	cr::render::PipelineSequence *blursequence = blurpipeline->addSequence("main");
-	blurpipeline->setDefaultSequence(blursequence);
-	stage = blursequence->addStage("blur");
-	settarget = new cr::render::SetTargetCommand();
-	settarget->setTarget(blurtarget1);
-	stage->addCommand(settarget);
-	// TODO: Remove these clear commands once disabling z culling works
-	clear = new cr::render::ClearCommand();
-	clear->clearDepth(true, 1.0f);
-	stage->addCommand(clear);
-	batchlist = new cr::render::BatchListCommand();
-	batchlist->setContext("VERTICAL_BLUR");
-	stage->addCommand(batchlist);
-	settarget = new cr::render::SetTargetCommand();
-	settarget->setTarget(blurtarget2);
-	clear = new cr::render::ClearCommand();
-	clear->clearDepth(true, 1.0f);
-	stage->addCommand(clear);
-	stage->addCommand(settarget);
-	batchlist = new cr::render::BatchListCommand();
-	batchlist->setContext("HORIZONTAL_BLUR");
-	stage->addCommand(batchlist);
-	settarget = new cr::render::SetTargetCommand();
-	stage->addCommand(settarget);
-	clear = new cr::render::ClearCommand();
-	clear->clearDepth(true, 1.0f);
-	stage->addCommand(clear);
-	batchlist = new cr::render::BatchListCommand();
-	batchlist->setContext("COPY_COLOR");
-	stage->addCommand(batchlist);
-	graphics.addPipeline(blurpipeline);
-	// Load shaders
-	cr::render::ShaderText::Ptr blurshader1;
-	blurshader1 = rmgr->getOrLoad<cr::render::ShaderText>("ShaderText",
-	                                                      "/shaders/vblur.shader.xml");
-	cr::render::ShaderText::Ptr blurshader2;
-	blurshader2 = rmgr->getOrLoad<cr::render::ShaderText>("ShaderText",
-	                                                      "/shaders/hblur.shader.xml");
-	cr::render::ShaderText::Ptr copyshader;
-	copyshader = rmgr->getOrLoad<cr::render::ShaderText>("ShaderText",
-	                                                     "/shaders/copy.shader.xml");
-	// Create material for horizontal blur pass
-	cr::render::Material::Ptr blurmaterial1 = rmgr->createResource<cr::render::Material>("Material");
-	blurmaterial1->addTexture("source", targettex1);
-	blurmaterial1->setShader(blurshader1);
-	// Create material for vertical blur pass
-	cr::render::Material::Ptr blurmaterial2 = rmgr->createResource<cr::render::Material>("Material");
-	blurmaterial2->addTexture("source", targettex2);
-	blurmaterial2->setShader(blurshader2);
-	// Create material for final screen pass
-	cr::render::Material::Ptr copymaterial = rmgr->createResource<cr::render::Material>("Material");
-	copymaterial->addTexture("source", targettex1);
-	copymaterial->setShader(copyshader);
-	// Create fullscreen quad for blur/screen passes
-	cr::render::VertexBuffer::Ptr fsquadvb = rmgr->createResource<cr::render::VertexBuffer>("VertexBuffer");
-	fsquadvb->set(4 * 4 * sizeof(float), vertices);
-	cr::render::IndexBuffer::Ptr fsquadib = rmgr->createResource<cr::render::IndexBuffer>("IndexBuffer");
-	fsquadib->set(6 * sizeof(unsigned char), indices);
-	// Create vertex layout
-	cr::render::VertexLayout::Ptr layout = new cr::render::VertexLayout(2);
-	layout->setElement(0, "pos", 0, 2, 0, cr::render::VertexElementType::Float, 16);
-	layout->setElement(1, "texcoord0", 0, 2, 8, cr::render::VertexElementType::Float, 16);
-	// Create render job for the horizontal blur pass
-	cr::render::RenderJob *blurjob1 = createFSQuadJob(fsquadvb, fsquadib, blurmaterial1, layout);
-	// Create render job for the vertical blur pass
-	cr::render::RenderJob *blurjob2 = createFSQuadJob(fsquadvb, fsquadib, blurmaterial2, layout);
-	// Create render job for the final screen pass
-	cr::render::RenderJob *screenjob = createFSQuadJob(fsquadvb, fsquadib, copymaterial, layout);
+	// Load pipeline
+	cr::render::PipelineDefinition::Ptr pipelinedef;
+	pipelinedef = rmgr->getOrLoad<cr::render::PipelineDefinition>("PipelineDefinition",
+	                                                              "/pipelines/Blur.pipeline.xml");
+	pipelinedef->waitForLoading(true);
+	cr::render::Pipeline::Ptr pipeline = pipelinedef->createPipeline(800, 600);
+	graphics.addPipeline(pipeline);
 	// Setup camera matrix for the scene
 	/*cr::math::Matrix4 projmat = cr::math::Matrix4::PerspectiveFOV(60.0f, 4.0f/3.0f, 1.0f, 1000.0f);
 	projmat = projmat * cr::math::Matrix4::TransMat(cr::math::Vector3F(0, 0, -100));
@@ -218,9 +75,6 @@ int main(int argc, char **argv)
 	// Wait for resources to be loaded
 	model->waitForLoading(true);
 	anim->waitForLoading(true);
-	blurshader1->waitForLoading(true);
-	blurshader2->waitForLoading(true);
-	copyshader->waitForLoading(true);
 	// Finished loading
 	graphics.getLog()->info("Starting rendering.");
 	// Render loop
@@ -254,11 +108,7 @@ int main(int argc, char **argv)
 		rotation += 0.1f;
 		cr::math::Quaternion quat(cr::math::Vector3F(0, rotation, 0));
 		renderable->setTransMat(quat.toMatrix());
-		scenesequence->submit(renderable);
-		// Draw blur passes
-		blursequence->submit(blurjob1);
-		blursequence->submit(blurjob2);
-		blursequence->submit(screenjob);
+		pipeline->getDefaultSequence()->submit(renderable);
 		// Finish and render frame
 		graphics.endFrame();
 		fps++;
@@ -279,30 +129,11 @@ int main(int argc, char **argv)
 
 	// Delete resources
 	delete renderable;
-	delete blurjob1;
-	delete blurjob2;
-	delete screenjob;
-	scenetarget = 0;
-	blurtarget1 = 0;
-	blurtarget2 = 0;
-	scenepipeline = 0;
-	blurpipeline = 0;
 	model = 0;
 	anim = 0;
 	cube = 0;
-	blurmaterial1 = 0;
-	blurmaterial2 = 0;
-	copymaterial = 0;
-	blurshader1 = 0;
-	blurshader2 = 0;
-	copyshader = 0;
-	targettex1 = 0;
-	targettex2 = 0;
-	fb = 0;
-	scenefb = 0;
-	layout = 0;
-	fsquadvb = 0;
-	fsquadib = 0;
+	pipelinedef = 0;
+	pipeline = 0;
 
 	graphics.shutdown();
 	return 0;

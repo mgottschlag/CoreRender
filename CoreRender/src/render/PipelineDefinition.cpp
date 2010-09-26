@@ -124,15 +124,56 @@ namespace render
 		return forwardlightloops[index];
 	}
 
-	Pipeline::Ptr PipelineDefinition::createPipeline()
+	Pipeline::Ptr PipelineDefinition::createPipeline(unsigned int screenwidth,
+	                                                 unsigned int screenheight)
 	{
 		Pipeline::Ptr pipeline = new Pipeline();
 		// Create textures
-		// TODO
+		std::map<std::string, Texture2D::Ptr> textures;
+		{
+			std::map<std::string, TextureInfo*>::iterator it;
+			for (it = this->textures.begin(); it != this->textures.end(); it++)
+			{
+				float size = it->second->size;
+				Texture2D::Ptr tex = getManager()->createResource<Texture2D>("Texture2D");
+				tex->set((unsigned int)(size * screenwidth),
+				         (unsigned int)(size * screenheight),
+				         it->second->format);
+				textures.insert(std::make_pair(it->first, tex));
+			}
+		}
 		// Create framebuffers
-		// TODO
+		std::map<std::string, FrameBuffer::Ptr> framebuffers;
+		{
+			std::map<std::string, FrameBufferInfo*>::iterator it;
+			for (it = this->framebuffers.begin(); it != this->framebuffers.end(); it++)
+			{
+				float size = it->second->size;
+				FrameBuffer::Ptr fb = getManager()->createResource<FrameBuffer>("FrameBuffer");
+				fb->setSize((unsigned int)(size * screenwidth),
+				            (unsigned int)(size * screenheight),
+				            it->second->depthbuffer);
+				framebuffers.insert(std::make_pair(it->first, fb));
+			}
+		}
 		// Create render targets
-		// TODO
+		std::map<std::string, RenderTarget::Ptr> rendertargets;
+		{
+			std::map<std::string, RenderTargetInfo*>::iterator it;
+			for (it = this->rendertargets.begin(); it != this->rendertargets.end(); it++)
+			{
+				RenderTarget::Ptr target = getManager()->createResource<RenderTarget>("RenderTarget");
+				// TODO: The user might have inserted invalid names here
+				target->setFrameBuffer(framebuffers[it->second->framebuffer]);
+				if (it->second->depthbuffer != "")
+					target->setDepthBuffer(textures[it->second->depthbuffer]);
+				for (unsigned int i = 0; i < it->second->colorbuffers.size(); i++)
+				{
+					target->addColorBuffer(textures[it->second->colorbuffers[i]]);
+				}
+				rendertargets.insert(std::make_pair(it->first, target));
+			}
+		}
 		// Create sequences
 		for (unsigned int i = 0; i < sequences.size(); i++)
 		{
@@ -151,7 +192,10 @@ namespace render
 						case PipelineCommandType::SetTarget:
 						{
 							std::string target = src->commands[k]->params[0];
-							// TODO
+							SetTargetCommand *cmd = new SetTargetCommand;
+							if (target != "")
+								cmd->setTarget(rendertargets[target]);
+							stage->addCommand(cmd);
 							break;
 						}
 						case PipelineCommandType::BatchList:
@@ -166,7 +210,6 @@ namespace render
 						{
 							bool cleardepth = src->commands[k]->params[0] == "true";
 							float depth = strtof(src->commands[k]->params[1].c_str(), 0);
-							getManager()->getLog()->warning("Depth: %d/%f.", cleardepth, depth);
 							std::istringstream colorstr(src->commands[k]->params[2]);
 							float color[4];
 							char separator;
@@ -183,8 +226,41 @@ namespace render
 								                                         color[1] * 255.0,
 								                                         color[2] * 255.0,
 								                                         color[3] * 255.0));
-								getManager()->getLog()->warning("Color: %d.", index);
 							}
+							stage->addCommand(cmd);
+							break;
+						}
+						case PipelineCommandType::Batch:
+						{
+							std::string materialname = src->commands[k]->params[0];
+							std::string context = src->commands[k]->params[1];
+							// Get resources needed for the fs quad
+							Resource::Ptr res = getManager()->getResource("__fsquadib");
+							IndexBuffer::Ptr indices = (IndexBuffer*)res.get();
+							res = getManager()->getResource("__fsquadvb");
+							VertexBuffer::Ptr vertices = (VertexBuffer*)res.get();
+							Material::Ptr material = getManager()->getOrLoad<Material>("Material",
+							                                                           materialname);
+							// Create vertex layout
+							// TODO: We do not want to have one layout instance per quad
+							cr::render::VertexLayout::Ptr layout = new cr::render::VertexLayout(2);
+							layout->setElement(0, "pos", 0, 2, 0, cr::render::VertexElementType::Float, 16);
+							layout->setElement(1, "texcoord0", 0, 2, 8, cr::render::VertexElementType::Float, 16);
+							// Create render job
+							RenderJob *job = new RenderJob;
+							job->vertices = vertices;
+							job->indices = indices;
+							job->vertexcount = 4;
+							job->endindex = 6;
+							job->indextype = 1;
+							job->startindex = 0;
+							job->basevertex = 0;
+							job->vertexoffset = 0;
+							job->material = material;
+							job->layout = layout;
+							// Create command
+							BatchCommand *cmd = new BatchCommand;
+							cmd->setJob(job, context);
 							stage->addCommand(cmd);
 							break;
 						}
@@ -419,6 +495,7 @@ namespace render
 			}
 			// Add framebuffer info
 			RenderTargetInfo *target = addRenderTarget(name);
+			target->framebuffer = fbname;
 			// Depth buffer
 			TiXmlElement *depthbufferelem = element->FirstChildElement("DepthBuffer");
 			if (depthbufferelem)
@@ -600,7 +677,29 @@ namespace render
 			}
 			else if (!strcmp(element->Value(), "FullscreenQuad"))
 			{
-				// TODO
+				// Get material
+				const char *material = element->Attribute("material");
+				if (!material)
+				{
+					getManager()->getLog()->error("%s: Material missing.",
+					                              getName().c_str());
+					continue;
+				}
+				// Get context
+				const char *context = element->Attribute("context");
+				if (!context)
+				{
+					getManager()->getLog()->error("%s: Context missing.",
+					                              getName().c_str());
+					continue;
+				}
+				// Create command
+				// TODO: We abuse Batch for specific fullscreen quads here
+				CommandDefinition *command = new CommandDefinition;
+				command->type = PipelineCommandType::Batch;
+				command->params.push_back(material);
+				command->params.push_back(context);
+				stage->commands.push_back(command);
 			}
 			else if (!strcmp(element->Value(), "Sequence"))
 			{

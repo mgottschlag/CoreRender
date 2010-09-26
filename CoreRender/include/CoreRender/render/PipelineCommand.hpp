@@ -33,9 +33,8 @@ namespace cr
 {
 namespace render
 {
-
-class RenderBatch;
-
+	class RenderJob;
+	struct RenderBatch;
 	struct PipelineCommandInfo;
 
 	struct PipelineCommandType
@@ -217,6 +216,19 @@ class RenderBatch;
 			std::vector<RenderBatch*> batches;
 			PipelineCommandInfo *info;
 			Renderer *renderer;
+	};
+	class BatchCommand : public PipelineCommand
+	{
+		public:
+			BatchCommand();
+			virtual ~BatchCommand();
+
+			void setJob(RenderJob *job, const std::string &context);
+
+			virtual void apply(Renderer *renderer, PipelineCommandInfo *command);
+		private:
+			RenderJob *job;
+			std::string context;
 	};
 }
 }

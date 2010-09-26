@@ -273,6 +273,8 @@ namespace render
 		rmgr->addFactory("RenderTarget", factory);
 		factory = new res::DefaultResourceFactory<PipelineDefinition>(rmgr);
 		rmgr->addFactory("PipelineDefinition", factory);
+		// Create default resources
+		createDefaultResources();
 		return true;
 	}
 	bool GraphicsEngine::resize(unsigned int width,
@@ -284,6 +286,8 @@ namespace render
 	}
 	void GraphicsEngine::shutdown()
 	{
+		// Delete default resources
+		destroyDefaultResources();
 		// Stop and destroy render thread
 		if (multithreaded)
 		{
@@ -483,6 +487,30 @@ namespace render
 		{
 			return 0;
 		}
+	}
+
+	void GraphicsEngine::createDefaultResources()
+	{
+		// Full screen quad
+		float vertices[4 * 4] = {
+			-1.0f, -1.0f, 0.0f, 0.0f,
+			1.0f, -1.0f, 1.0f, 0.0f,
+			1.0f, 1.0f, 1.0f, 1.0f,
+			-1.0f, 1.0f, 0.0f, 1.0f
+		};
+		unsigned char indices[6] = {
+			0, 1, 2,
+			0, 2, 3
+		};
+		fsquadib = rmgr->createResource<IndexBuffer>("IndexBuffer", "__fsquadib");
+		fsquadib->set(6, indices);
+		fsquadvb = rmgr->createResource<VertexBuffer>("VertexBuffer", "__fsquadvb");
+		fsquadvb->set(4 * 4 * sizeof(float), vertices);
+	}
+	void GraphicsEngine::destroyDefaultResources()
+	{
+		fsquadib = 0;
+		fsquadvb = 0;
 	}
 }
 }
