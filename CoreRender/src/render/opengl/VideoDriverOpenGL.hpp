@@ -91,7 +91,7 @@ namespace opengl
 			unsigned int currentvertices;
 			unsigned int currentindices;
 			
-			unsigned int currentBlendMode;
+			unsigned int currentblendmode;
 	};
 
 }

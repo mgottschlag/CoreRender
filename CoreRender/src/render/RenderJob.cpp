@@ -52,7 +52,7 @@ namespace render
 		batch->vertices = vertices->getHandle();
 		batch->indices = indices->getHandle();
 		batch->shader = shader->getHandle();
-		batch->blendMode = shader->getBlendMode();
+		batch->blendmode = shader->getBlendMode();
 		batch->sortkey = sortkey;
 		batch->renderflags = 0;
 		// Attribs

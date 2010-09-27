@@ -322,22 +322,20 @@ namespace render
 			std::string tsname = "";
 			if (tsnameattrib)
 				tsname = tsnameattrib;
-			
-			TiXmlElement *elmChild = element->FirstChildElement("Blend");
-			
-			std::string blendmodestr = "";
-			BlendMode::List blendMode = BlendMode::Solid;
-			
-			if ( elmChild )
+			// Read blend mode
+			TiXmlElement *child = element->FirstChildElement("Blend");
+			BlendMode::List blendmode = BlendMode::Solid;
+			if (child)
 			{
-				blendmodestr = elmChild->Attribute("mode");
-				
-				if (blendmodestr.compare("Additive") == 0)
-					blendMode = BlendMode::Additive;
+				const char *blendmodestr = child->Attribute("mode");
+				if (blendmodestr)
+				{
+					if (!strcmp(blendmodestr, "Additive"))
+						blendmode = BlendMode::Additive;
+				}
 			}
-			
 			// Add context
-			addContext(name, vsname, fsname, gsname, tsname, blendMode);
+			addContext(name, vsname, fsname, gsname, tsname, blendmode);
 		}
 		// Add attribs
 		for (TiXmlNode *node = root->FirstChild("Attrib");

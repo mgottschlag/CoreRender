@@ -80,7 +80,7 @@ namespace render
 		unsigned int vertexoffset;
 		unsigned int indextype;
 
-		unsigned int blendMode;
+		unsigned int blendmode;
 		unsigned int renderflags;
 	};
 
