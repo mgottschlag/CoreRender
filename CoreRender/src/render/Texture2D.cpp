@@ -185,7 +185,7 @@ namespace render
 			memcpy(datacopy, image.accessPixels(), datasize);
 			// Convert from BGRA to RGBA
 			unsigned int *pixels = (unsigned int*)datacopy;
-			for (int i = 0; i < image.getWidth() * image.getHeight(); ++i)
+			for (unsigned int i = 0; i < image.getWidth() * image.getHeight(); ++i)
 			{
 				// TODO: Breaks on big-endian
 				unsigned int color = pixels[i];

@@ -39,7 +39,10 @@ namespace render
 			 * Constructor.
 			 */
 			RenderStats()
-				: polygons(0), batches(0), fps(0.0f)
+				: polygons(0), batches(0), fps(0.0f),
+				frametime(core::Duration::Seconds(0)),
+				rendertime(core::Duration::Seconds(0)),
+				waittime(core::Duration::Seconds(0))
 			{
 			}
 			/**
