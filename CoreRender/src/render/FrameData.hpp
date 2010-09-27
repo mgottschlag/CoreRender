@@ -80,7 +80,9 @@ namespace render
 		unsigned int vertexoffset;
 		unsigned int indextype;
 
-		unsigned int blendmode;
+		BlendMode::List blendmode;
+		bool depthwrite;
+		DepthTest::List depthtest;
 		unsigned int renderflags;
 	};
 

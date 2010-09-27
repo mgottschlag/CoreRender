@@ -25,6 +25,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "RenderResource.hpp"
 #include "../core/HashMap.hpp"
 #include "DefaultUniform.hpp"
+#include "DepthTest.hpp"
+#include "BlendMode.hpp"
 
 namespace cr
 {
@@ -57,16 +59,44 @@ namespace render
 			/**
 			 * Sets the blend mode for this shader
 			 */
-			void setBlendMode(unsigned int mode)
+			void setBlendMode(BlendMode::List mode)
 			{
-				blendMode = mode;
+				blendmode = mode;
 			}
 			/**
 			 * Get the blend mode for this shader
 			 */
-			unsigned int getBlendMode()
+			BlendMode::List getBlendMode()
 			{
-				return blendMode;
+				return blendmode;
+			}
+			/**
+			 * Sets whether z writes are enabled.
+			 */
+			void setDepthWrite(bool depthwrite)
+			{
+				this->depthwrite = depthwrite;
+			}
+			/**
+			 * Returns whether z writes are enabled.
+			 */
+			bool getDepthWrite()
+			{
+				return depthwrite;
+			}
+			/**
+			 * Sets whether and how the depth test is performed.
+			 */
+			void setDepthTest(DepthTest::List depthtest)
+			{
+				this->depthtest = depthtest;
+			}
+			/**
+			 * Returns whether and how the depth test is performed.
+			 */
+			DepthTest::List getDepthTest()
+			{
+				return depthtest;
 			}
 			
 			/**
@@ -186,7 +216,9 @@ namespace render
 			std::string fs;
 			std::string gs;
 			std::string ts;
-			unsigned int blendMode;
+			BlendMode::List blendmode;
+			bool depthwrite;
+			DepthTest::List depthtest;
 
 			typedef core::HashMap<std::string, int>::Type HandleMap;
 			HandleMap attribs;

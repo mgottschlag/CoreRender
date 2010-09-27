@@ -148,7 +148,13 @@
 
 	<Texture name="source" />
 
-	<Context name="COPY_COLOR" vs="VS_COPY" fs="FS_COPY" />
-	<Context name="HORIZONTAL_BLUR" vs="VS_HBLUR" fs="FS_HBLUR" />
-	<Context name="VERTICAL_BLUR" vs="VS_VBLUR" fs="FS_VBLUR" />
+	<Context name="COPY_COLOR" vs="VS_COPY" fs="FS_COPY">
+		<Depth write="false" test="Always" />
+	</Context>
+	<Context name="HORIZONTAL_BLUR" vs="VS_HBLUR" fs="FS_HBLUR">
+		<Depth write="false" test="Always" />
+	</Context>
+	<Context name="VERTICAL_BLUR" vs="VS_VBLUR" fs="FS_VBLUR">
+		<Depth write="false" test="Always" />
+	</Context>
 </Shader>

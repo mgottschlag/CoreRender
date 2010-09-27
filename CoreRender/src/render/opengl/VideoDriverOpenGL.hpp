@@ -91,7 +91,9 @@ namespace opengl
 			unsigned int currentvertices;
 			unsigned int currentindices;
 			
-			unsigned int currentblendmode;
+			BlendMode::List currentblendmode;
+			bool currentdepthwrite;
+			DepthTest::List currentdepthtest;
 	};
 
 }

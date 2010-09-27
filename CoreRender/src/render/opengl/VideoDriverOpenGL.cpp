@@ -37,7 +37,8 @@ namespace opengl
 {
 	VideoDriverOpenGL::VideoDriverOpenGL(core::Log::Ptr log)
 		: log(log), currentfb(0), currentshader(0), currentvertices(0),
-		currentindices(0), currentblendmode(BlendMode::Solid)
+		currentindices(0), currentblendmode(BlendMode::Solid),
+		currentdepthwrite(true), currentdepthtest(DepthTest::Less)
 	{
 	}
 	VideoDriverOpenGL::~VideoDriverOpenGL()
@@ -220,6 +221,13 @@ namespace opengl
 		             (float)color.getBlue() / 255.0f,
 		             (float)color.getAlpha() / 255.0f);
 		glClearDepth(depth);
+		// Reset depth mask because we unconditionally want to write depth
+		if (zbuffer && !currentdepthwrite)
+		{
+			glDepthMask(GL_TRUE);
+			currentdepthwrite = true;
+		}
+		// Clear buffers
 		if (colorbuffer && zbuffer)
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		else if (colorbuffer)
@@ -238,18 +246,15 @@ namespace opengl
 			glUseProgram(batch->shader);
 			currentshader = batch->shader;
 		}
-		
+		// Change blend mode
 		if (batch->blendmode != currentblendmode)// different mode
 		{
-			
 			// If move from a Solid mode to another Mode enableBlend
 			if (currentblendmode == BlendMode::Solid)
 			{
 				glEnable(GL_BLEND);
 			}
-			
 			currentblendmode = batch->blendmode;
-			
 			switch (currentblendmode)
 			{
 				case BlendMode::Solid :
@@ -259,9 +264,43 @@ namespace opengl
 					glBlendFunc(GL_SRC_ALPHA,GL_DST_ALPHA);
 					break;
 			}
-			
 		}
-
+		// Change depth test
+		if (batch->depthtest != currentdepthtest)
+		{
+			switch (batch->depthtest)
+			{
+				case DepthTest::Always:
+					glDepthFunc(GL_ALWAYS);
+					break;
+				case DepthTest::Equal:
+					glDepthFunc(GL_EQUAL);
+					break;
+				case DepthTest::Less:
+					glDepthFunc(GL_LESS);
+					break;
+				case DepthTest::LessEqual:
+					glDepthFunc(GL_LEQUAL);
+					break;
+				case DepthTest::Greater:
+					glDepthFunc(GL_GREATER);
+					break;
+				case DepthTest::GreaterEqual:
+					glDepthFunc(GL_GEQUAL);
+					break;
+			}
+			currentdepthtest = batch->depthtest;
+		}
+		// Change depth write
+		if (batch->depthwrite != currentdepthwrite)
+		{
+			if (batch->depthwrite)
+				glDepthMask(GL_TRUE);
+			else
+				glDepthMask(GL_FALSE);
+			currentdepthwrite = batch->depthwrite;
+		}
+		// Change vertex/index buffer
 		if (batch->vertices != currentvertices)
 		{
 			glBindBuffer(GL_ARRAY_BUFFER, batch->vertices);

@@ -31,15 +31,12 @@
 		<!-- Blur the image -->
 		<Stage name="blurpass" target="blurtarget1">
 			<SetTarget name="blurtarget1" />
-			<Clear cleardepth="true" />
 			<BindTexture name="source" texture="targettex1" />
 			<FullscreenQuad material="/materials/Blur.material.xml" context="VERTICAL_BLUR"/>
 			<SetTarget name="blurtarget2" />
-			<Clear cleardepth="true" />
 			<BindTexture name="source" texture="targettex2" />
 			<FullscreenQuad material="/materials/Blur.material.xml" context="HORIZONTAL_BLUR"/>
 			<SetTarget name="" />
-			<Clear cleardepth="true" />
 			<BindTexture name="source" texture="targettex1" />
 			<FullscreenQuad material="/materials/Blur.material.xml" context="COPY_COLOR"/>
 			<UnbindTextures />

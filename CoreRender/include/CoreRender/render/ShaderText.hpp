@@ -27,6 +27,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Shader.hpp"
 #include "ShaderVariableType.hpp"
 #include "UniformData.hpp"
+#include "DepthTest.hpp"
 
 #include <map>
 
@@ -97,7 +98,9 @@ namespace render
 			                const std::string &fs,
 			                const std::string &gs = "",
 			                const std::string &ts = "",
-			                const BlendMode::List &blendmode = BlendMode::Solid);
+			                BlendMode::List blendmode = BlendMode::Solid,
+			                bool depthwrite = true,
+			                DepthTest::List depthtest = DepthTest::Less);
 			/**
 			 * Returns whether this material has a certain context.
 			 * @param name Name of the context.
@@ -203,7 +206,9 @@ namespace render
 				std::string fs;
 				std::string gs;
 				std::string ts;
-				BlendMode::List blendMode;
+				BlendMode::List blendmode;
+				bool depthwrite;
+				DepthTest::List depthtest;
 			};
 
 			std::map<std::string, std::string> texts;

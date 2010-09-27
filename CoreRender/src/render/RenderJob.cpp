@@ -53,6 +53,8 @@ namespace render
 		batch->indices = indices->getHandle();
 		batch->shader = shader->getHandle();
 		batch->blendmode = shader->getBlendMode();
+		batch->depthwrite = shader->getDepthWrite();
+		batch->depthtest = shader->getDepthTest();
 		batch->sortkey = sortkey;
 		batch->renderflags = 0;
 		// Attribs

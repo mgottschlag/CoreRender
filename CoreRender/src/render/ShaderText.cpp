@@ -65,10 +65,12 @@ namespace render
 	                            const std::string &fs,
 	                            const std::string &gs,
 	                            const std::string &ts,
-	                            const BlendMode::List &blendmode)
+	                            BlendMode::List blendmode,
+	                            bool depthwrite,
+	                            DepthTest::List depthtest)
 	{	
 		Context context = {
-			vs, fs, gs, ts, blendmode
+			vs, fs, gs, ts, blendmode, depthwrite, depthtest
 		};
 		// Store context info
 		contexts[name] = context;
@@ -221,7 +223,9 @@ namespace render
 			return false;
 		}
 		// Set shader data
-		shader->setBlendMode(ctx.blendMode);
+		shader->setBlendMode(ctx.blendmode);
+		shader->setDepthWrite(ctx.depthwrite);
+		shader->setDepthTest(ctx.depthtest);
 		shader->setVertexShader(flagtext + texts[ctx.vs]);
 		shader->setFragmentShader(flagtext + texts[ctx.fs]);
 		if (ctx.gs != "")
@@ -344,8 +348,41 @@ namespace render
 						blendmode = BlendMode::Additive;
 				}
 			}
+			// Read depth mode info
+			bool depthwrite = true;
+			DepthTest::List depthtest = DepthTest::Less;
+			child = element->FirstChildElement("Depth");
+			if (child)
+			{
+				const char *writestr = child->Attribute("write");
+				if (writestr && strcmp(writestr, "true"))
+					depthwrite = false;
+				const char *teststr = child->Attribute("test");
+				if (writestr)
+				{
+					if (!strcmp(teststr, "Always"))
+						depthtest = DepthTest::Always;
+					else if (!strcmp(teststr, "Equal"))
+						depthtest = DepthTest::Equal;
+					else if (!strcmp(teststr, "Less"))
+						depthtest = DepthTest::Less;
+					else if (!strcmp(teststr, "LessEqual"))
+						depthtest = DepthTest::LessEqual;
+					else if (!strcmp(teststr, "Greater"))
+						depthtest = DepthTest::Greater;
+					else if (!strcmp(teststr, "GreaterEqual"))
+						depthtest = DepthTest::GreaterEqual;
+				}
+			}
 			// Add context
-			addContext(name, vsname, fsname, gsname, tsname, blendmode);
+			addContext(name,
+			           vsname,
+			           fsname,
+			           gsname,
+			           tsname,
+			           blendmode,
+			           depthwrite,
+			           depthtest);
 		}
 		// Add attribs
 		for (TiXmlNode *node = root->FirstChild("Attrib");
