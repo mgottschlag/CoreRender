@@ -26,6 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <sstream>
 #include <cstdio>
 #include <iomanip>
+#include <cstring>
 
 namespace cr
 {
@@ -128,6 +129,15 @@ namespace core
 		write(level, format, args);
 		va_end(args);
 	}
+	static void replaceAll(std::string &s, const char *a, const char *b)
+	{
+		size_t startpos = s.find(a);
+		while (startpos != std::string::npos)
+		{
+			s.replace(startpos, strlen(a), b);
+			startpos = s.find(a, startpos + 1);
+		}
+	}
 	void Log::write(LogLevel::List level,
 	                const char *format,
 	                std::va_list args)
@@ -170,7 +180,11 @@ namespace core
 				<< std::fixed << seconds << "</td><td class=\""
 				<< cssclass << "\">";
 			file->write(stream.str());
-			file->write(msg);
+			std::string msgstr = msg;
+			replaceAll(msgstr, "&", "&amp;");
+			replaceAll(msgstr, "<", "&lt;");
+			replaceAll(msgstr, ">", "&gt;");
+			file->write(msgstr);
 			file->write("</td></tr>\n");
 		}
 	}
