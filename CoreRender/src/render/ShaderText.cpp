@@ -338,14 +338,26 @@ namespace render
 				tsname = tsnameattrib;
 			// Read blend mode
 			TiXmlElement *child = element->FirstChildElement("Blend");
-			BlendMode::List blendmode = BlendMode::Solid;
+			BlendMode::List blendmode = BlendMode::Replace;
 			if (child)
 			{
 				const char *blendmodestr = child->Attribute("mode");
 				if (blendmodestr)
 				{
-					if (!strcmp(blendmodestr, "Additive"))
-						blendmode = BlendMode::Additive;
+					if (!strcmp(blendmodestr, "Add"))
+						blendmode = BlendMode::Add;
+					else if (!strcmp(blendmodestr, "AddBlended"))
+						blendmode = BlendMode::AddBlended;
+					else if (!strcmp(blendmodestr, "Blend"))
+						blendmode = BlendMode::Blend;
+					else if (!strcmp(blendmodestr, "Replace"))
+						blendmode = BlendMode::Replace;
+					else if (!strcmp(blendmodestr, "Multiply"))
+						blendmode = BlendMode::Multiply;
+					else if (!strcmp(blendmodestr, "Minimum"))
+						blendmode = BlendMode::Minimum;
+					else if (!strcmp(blendmodestr, "Maximum"))
+						blendmode = BlendMode::Maximum;
 				}
 			}
 			// Read depth mode info

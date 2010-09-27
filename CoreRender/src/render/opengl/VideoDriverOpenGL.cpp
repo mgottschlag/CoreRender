@@ -37,7 +37,7 @@ namespace opengl
 {
 	VideoDriverOpenGL::VideoDriverOpenGL(core::Log::Ptr log)
 		: log(log), currentfb(0), currentshader(0), currentvertices(0),
-		currentindices(0), currentblendmode(BlendMode::Solid),
+		currentindices(0), currentblendmode(BlendMode::Replace),
 		currentdepthwrite(true), currentdepthtest(DepthTest::Less)
 	{
 	}
@@ -246,22 +246,40 @@ namespace opengl
 			glUseProgram(batch->shader);
 			currentshader = batch->shader;
 		}
-		// Change blend mode
-		if (batch->blendmode != currentblendmode)// different mode
+		// Change blend mode if necessary
+		if (batch->blendmode != currentblendmode)
 		{
-			// If move from a Solid mode to another Mode enableBlend
-			if (currentblendmode == BlendMode::Solid)
-			{
+			// Enable blending if we previously rendered solid geometry
+			if (currentblendmode == BlendMode::Replace)
 				glEnable(GL_BLEND);
-			}
+			// Switch between blending equations
+			if (batch->blendmode == BlendMode::Minimum)
+				glBlendEquation(GL_MIN);
+			else if (batch->blendmode == BlendMode::Minimum)
+				glBlendEquation(GL_MAX);
+			else if (currentblendmode == BlendMode::Minimum
+			         || currentblendmode == BlendMode::Maximum)
+				glBlendEquation(GL_FUNC_ADD);
+			// Set blend function
 			currentblendmode = batch->blendmode;
 			switch (currentblendmode)
 			{
-				case BlendMode::Solid :
+				case BlendMode::Replace:
 					glDisable(GL_BLEND);
 					break;
-				case BlendMode::Additive :
-					glBlendFunc(GL_SRC_ALPHA,GL_DST_ALPHA);
+				case BlendMode::Add:
+				case BlendMode::Minimum:
+				case BlendMode::Maximum:
+					glBlendFunc(GL_ONE, GL_ONE);
+					break;
+				case BlendMode::AddBlended:
+					glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+					break;
+				case BlendMode::Blend:
+					glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+					break;
+				case BlendMode::Multiply:
+					glBlendFunc(GL_DST_COLOR, GL_ZERO);
 					break;
 			}
 		}

@@ -98,7 +98,7 @@ namespace render
 			                const std::string &fs,
 			                const std::string &gs = "",
 			                const std::string &ts = "",
-			                BlendMode::List blendmode = BlendMode::Solid,
+			                BlendMode::List blendmode = BlendMode::Replace,
 			                bool depthwrite = true,
 			                DepthTest::List depthtest = DepthTest::Less);
 			/**

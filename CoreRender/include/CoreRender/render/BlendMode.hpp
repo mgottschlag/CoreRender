@@ -27,29 +27,47 @@ namespace cr
 namespace render
 {
 	/**
-	 * Type of the implementation of the rendering backend. This can for example
-	 * be OpenGL.
+	 * Defines the way geometry is blended with the render target.
 	 */
 	struct BlendMode
 	{
 		enum List
 		{
 			/**
-			 * 
+			 * No blending, only takes the color from the current rendering
+			 * operation.
 			 */
-			Additive,
+			Replace,
 			/**
-			 * No blending.
+			 * Blends between the output of the rendering operation and the
+			 * render target based on the alpha value of the shader output.
 			 */
-			Solid,
+			Blend,
 			/**
-			 * 
+			 * Adds the output of the shader onto the value of the pixel in the
+			 * render target.
 			 */
-			Min,
+			Add,
 			/**
-			 * 
+			 * Like Add, but additionally multiplies the color which is added
+			 * with the alpha value.
 			 */
-			Max
+			AddBlended,
+			/**
+			 * Multiplies the color of the render target with the output of the
+			 * shader.
+			 */
+			Multiply,
+			/**
+			 * Takes the minimum of each color channel from either the render
+			 * target or the output of the shader.
+			 */
+			Minimum,
+			/**
+			 * Takes the maximum of each color channel from either the render
+			 * target or the output of the shader.
+			 */
+			Maximum
 		};
 	};
 }
