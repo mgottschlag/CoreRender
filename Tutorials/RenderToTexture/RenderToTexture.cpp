@@ -87,6 +87,8 @@ int main(int argc, char **argv)
 	batchlist->setContext("AMBIENT");
 	stage->addCommand(batchlist);
 	graphics.addPipeline(rttpipeline);
+	rttsequence->getDefaultUniforms().push_back(cr::render::DefaultUniform(cr::render::DefaultUniformName::ProjMatrix,
+	                                                                       cr::math::Matrix4::Ortho(100.0f, 100.0f, 100.0f, -100.0f)));
 	// Setup second pipeline (renders the cube onto the screen)
 	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();
 	cr::render::PipelineSequence *sequence = pipeline->addSequence("main");
@@ -100,10 +102,8 @@ int main(int argc, char **argv)
 	batchlist->setContext("AMBIENT");
 	stage->addCommand(batchlist);
 	graphics.addPipeline(pipeline);
-	// Setup camera matrix
-	cr::math::Matrix4 projmat = cr::math::Matrix4::PerspectiveFOV(60.0f, 4.0f/3.0f, 1.0f, 1000.0f);
-	projmat = projmat * cr::math::Matrix4::TransMat(cr::math::Vector3F(0, 0, -100));
-	projmat = projmat * cr::math::Quaternion(cr::math::Vector3F(45.0, 0.0, 0.0)).toMatrix();
+	sequence->getDefaultUniforms().push_back(cr::render::DefaultUniform(cr::render::DefaultUniformName::ProjMatrix,
+	                                                                    cr::math::Matrix4::Ortho(4.0f, 4.0f, 4.0f, -4.0f)));
 	// Get material
 	// We need to change the texture of the material later
 	cr::render::Material::Ptr material;
@@ -119,13 +119,11 @@ int main(int argc, char **argv)
 	// Create renderable
 	cr::render::ModelRenderable *renderable = new cr::render::ModelRenderable();
 	renderable->setModel(model);
-	renderable->setProjMat(cr::math::Matrix4::Ortho(100.0f, 100.0f, 100.0f, -100.0f));
 	renderable->setTransMat(cr::math::Matrix4::TransMat(cr::math::Vector3F(0.0f, -40.0f, 0.0f)));
 	renderable->addAnimStage(anim, 1.0);
 	// Create cube renderable
 	cr::render::ModelRenderable *cuberenderable = new cr::render::ModelRenderable();
 	cuberenderable->setModel(cube);
-	cuberenderable->setProjMat(cr::math::Matrix4::Ortho(4.0f, 4.0f, 4.0f, -4.0f));
 	// Finished loading
 	graphics.getLog()->info("Starting rendering.");
 	// Render loop

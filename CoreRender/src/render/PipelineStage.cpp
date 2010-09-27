@@ -80,11 +80,12 @@ namespace render
 	}
 
 	void PipelineStage::beginFrame(Renderer *renderer,
+	                               PipelineSequence *sequence,
 	                               PipelineCommandInfo *commands)
 	{
 		// Apply commands (if possible, batch lists are not complete yet here)
 		for (unsigned int i = 0; i < this->commands.size(); i++)
-			this->commands[i]->apply(renderer, &commands[i]);
+			this->commands[i]->apply(renderer, sequence, &commands[i]);
 	}
 	void PipelineStage::finish()
 	{

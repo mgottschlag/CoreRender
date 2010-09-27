@@ -220,6 +220,13 @@ namespace opengl
 		{
 			it->second = glGetUniformLocation(handle, it->first.c_str());
 		}
+		// Get default uniform locations
+		for (unsigned int i = 0; i < DefaultUniformName::Count; i++)
+		{
+			const char *name = DefaultUniformName::getName((DefaultUniformName::List)i);
+			defaultuniforms.location[i] = glGetUniformLocation(handle,
+			                                                   name);
+		}
 	}
 
 	void ShaderOpenGL::printShaderInfoLog(unsigned int shader)

@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/Renderer.hpp"
 #include "CoreRender/render/RenderJob.hpp"
 #include "FrameData.hpp"
+#include "CoreRender/render/PipelineSequence.hpp"
 
 #include <cstring>
 #include <tbb/parallel_sort.h>
@@ -32,7 +33,9 @@ namespace cr
 {
 namespace render
 {
-	void ClearCommand::apply(Renderer *renderer, PipelineCommandInfo *command)
+	void ClearCommand::apply(Renderer *renderer,
+	                         PipelineSequence *sequence,
+	                         PipelineCommandInfo *command)
 	{
 		// Allocate clear info
 		core::MemoryPool *memory = renderer->getNextFrameMemory();
@@ -55,7 +58,9 @@ namespace render
 		command->clear = info;
 	}
 
-	void SetTargetCommand::apply(Renderer *renderer, PipelineCommandInfo *command)
+	void SetTargetCommand::apply(Renderer *renderer,
+	                             PipelineSequence *sequence,
+	                             PipelineCommandInfo *command)
 	{
 		if (!target || !target->getFrameBuffer())
 		{
@@ -118,7 +123,9 @@ namespace render
 		batches.clear();
 	}
 
-	void BatchListCommand::apply(Renderer *renderer, PipelineCommandInfo *command)
+	void BatchListCommand::apply(Renderer *renderer,
+	                             PipelineSequence *sequence,
+	                             PipelineCommandInfo *command)
 	{
 		command->type = getType();
 		info = command;
@@ -143,7 +150,9 @@ namespace render
 		this->context = context;
 	}
 
-	void BatchCommand::apply(Renderer *renderer, PipelineCommandInfo *command)
+	void BatchCommand::apply(Renderer *renderer,
+	                         PipelineSequence *sequence,
+	                         PipelineCommandInfo *command)
 	{
 		command->type = getType();
 		if (!job->material->getShader())
@@ -155,11 +164,29 @@ namespace render
 		UniformData uniforms = job->material->getShader()->getUniformData();
 		uniforms.setValues(job->material->getUniformData());
 		uniforms.setValues(job->uniforms);
+		// Get default uniform data
+		core::MemoryPool *memory = renderer->getNextFrameMemory();
+		DefaultUniformValues *defuniforms;
+		defuniforms = (DefaultUniformValues*)memory->allocate(sizeof(DefaultUniformValues));
+		for (unsigned int i = 0; i < sequence->getDefaultUniforms().size(); i++)
+		{
+			memcpy(defuniforms->uniforms[sequence->getDefaultUniforms()[i].name],
+			       sequence->getDefaultUniforms()[i].data, 16 * sizeof(float));
+		}
+		for (unsigned int i = 0; i < job->defaultuniforms.size(); i++)
+		{
+			memcpy(defuniforms->uniforms[job->defaultuniforms[i].name],
+			       job->defaultuniforms[i].data, 16 * sizeof(float));
+		}
 		// Get flag values
 		ShaderText::Ptr text = job->material->getShader();
 		unsigned int flags = text->getFlags(job->material->getShaderFlags());
 		// Create batch
-		command->batch = job->createBatch(context, renderer, uniforms, flags);
+		command->batch = job->createBatch(context,
+		                                  renderer,
+		                                  uniforms,
+		                                  defuniforms,
+		                                  flags);
 	}
 }
 }

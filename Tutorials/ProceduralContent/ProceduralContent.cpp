@@ -163,7 +163,7 @@ int main(int argc, char **argv)
 	cr::math::Vector2F scale(0.5f, 0.5f);
 	job->uniforms["scale"] = scale;
 	cr::math::Matrix4 matrix = cr::math::Matrix4::ScaleMat(cr::math::Vector3F(0.5f, 0.5f, 0.5f));
-	job->uniforms["worldMat"] = matrix;
+	job->defaultuniforms.push_back(cr::render::DefaultUniform(cr::render::DefaultUniformName::TransMatrix, matrix));
 	// Setup pipeline
 	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();
 	cr::render::PipelineSequence *sequence = pipeline->addSequence("main");
@@ -177,6 +177,8 @@ int main(int argc, char **argv)
 	batchlist->setContext("AMBIENT");
 	stage->addCommand(batchlist);
 	graphics.addPipeline(pipeline);
+	sequence->getDefaultUniforms().push_back(cr::render::DefaultUniform(cr::render::DefaultUniformName::ProjMatrix,
+	                                                                    cr::math::Matrix4::Identity()));
 	// Render loop
 	bool stopping = false;
 	while (!stopping)
@@ -209,7 +211,7 @@ int main(int argc, char **argv)
 		graphics.beginFrame();
 		// Render objects
 		matrix = matrix * cr::math::Quaternion(cr::math::Vector3F(0.0, 0.1, 0.1)).toMatrix();
-		job->uniforms["worldMat"] = matrix;
+		job->defaultuniforms[0] = cr::render::DefaultUniform(cr::render::DefaultUniformName::TransMatrix, matrix);
 		sequence->submit(job);
 		// Finish and render frame
 		graphics.endFrame();

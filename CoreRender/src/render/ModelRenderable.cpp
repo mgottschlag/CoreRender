@@ -156,9 +156,8 @@ namespace render
 			}
 			// Set standard uniforms
 			// TODO: We only have to do this if we do not use skinning
-			math::Matrix4 oldtransmat = getTransMat();
-			uniforms["worldMat"] = getWorldMat() * node->abstrans;
-			uniforms["worldNormalMat"] = getWorldNormalMat();
+			math::Matrix4 transmat = getTransMat();
+			job.defaultuniforms.push_back(DefaultUniform(DefaultUniformName::TransMatrix, transmat));
 		}
 		// Clear node list again
 		for (Model::AnimationNodeMap::iterator it = nodes.begin();

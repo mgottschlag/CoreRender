@@ -33,6 +33,7 @@ namespace render
 	RenderBatch *RenderJob::createBatch(const std::string &context,
 	                                    Renderer *renderer,
 	                                    UniformData &uniforms,
+	                                    DefaultUniformValues *defuniforms,
 	                                    unsigned int flags)
 	{
 		Shader::Ptr shader = material->getShader()->getShader(context, flags);
@@ -95,6 +96,32 @@ namespace render
 				       size * sizeof(float));
 			}
 		}
+		// Default uniforms
+		batch->defuniformlocations = &shader->getDefaultUniformLocations();
+		batch->defuniforms = defuniforms;
+		// Compute derived uniforms
+		// TODO: We can save memory copies here
+		// TODO: We only need to compute those uniforms which are used in the shader
+		// TODO: Those coming from the sequence only need to be computed once?
+		math::Matrix4 transmat;
+		for (unsigned int i = 0; i < 16; i++)
+			transmat.m[i] = defuniforms->uniforms[DefaultUniformName::TransMatrix][i];
+		math::Matrix4 transmatinv = transmat.inverse();
+		for (unsigned int i = 0; i < 16; i++)
+			defuniforms->uniforms[DefaultUniformName::TransMatrixInv][i] = transmatinv.m[i];
+		math::Matrix4 projmat;
+		for (unsigned int i = 0; i < 16; i++)
+			projmat.m[i] = defuniforms->uniforms[DefaultUniformName::ProjMatrix][i];
+		math::Matrix4 projmatinv = projmat.inverse();
+		for (unsigned int i = 0; i < 16; i++)
+			defuniforms->uniforms[DefaultUniformName::ProjMatrixInv][i] = projmatinv.m[i];
+		math::Matrix4 worldmat = projmat * transmat;
+		for (unsigned int i = 0; i < 16; i++)
+			defuniforms->uniforms[DefaultUniformName::WorldMatrix][i] = worldmat.m[i];
+		math::Matrix4 worldmatinv = transmatinv * projmatinv;
+		for (unsigned int i = 0; i < 16; i++)
+			defuniforms->uniforms[DefaultUniformName::WorldMatrixInv][i] = worldmatinv.m[i];
+		// TODO: World normal matrix
 		// Textures
 		const std::vector<Material::TextureInfo> &textureinfo = material->getTextures();
 		batch->texcount = textureinfo.size();

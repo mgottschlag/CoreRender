@@ -22,6 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_PIPELINESEQUENCE_HPP_INCLUDED_
 #define _CORERENDER_RENDER_PIPELINESEQUENCE_HPP_INCLUDED_
 
+#include "DefaultUniform.hpp"
+
 #include <string>
 #include <vector>
 
@@ -52,6 +54,11 @@ class BatchListCommand;
 			void removeStage(unsigned int index);
 			unsigned int getStageCount();
 
+			std::vector<DefaultUniform> &getDefaultUniforms()
+			{
+				return uniforms;
+			}
+
 			/**
 			 * Submits a renderable object to the render sequence and prepares
 			 * batches for rendering.
@@ -78,6 +85,8 @@ class BatchListCommand;
 			PipelineSequenceInfo *info;
 
 			Renderer *renderer;
+
+			std::vector<DefaultUniform> uniforms;
 	};
 }
 }

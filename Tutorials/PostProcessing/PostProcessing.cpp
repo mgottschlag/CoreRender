@@ -66,10 +66,10 @@ int main(int argc, char **argv)
 	projmat = projmat * cr::math::Quaternion(cr::math::Vector3F(45.0, 0.0, 0.0)).toMatrix();*/
 	cr::math::Matrix4 projmat = cr::math::Matrix4::Ortho(100.0f, 100.0f, 100.0f, -100.0f);
 	projmat = projmat * cr::math::Matrix4::TransMat(cr::math::Vector3F(0, -40, 0));
+	pipeline->getDefaultSequence()->getDefaultUniforms().push_back(cr::render::DefaultUniform(cr::render::DefaultUniformName::ProjMatrix, projmat));
 	// Create renderable
 	cr::render::ModelRenderable *renderable = new cr::render::ModelRenderable();
 	renderable->setModel(model);
-	renderable->setProjMat(projmat);
 	renderable->setTransMat(cr::math::Matrix4::TransMat(cr::math::Vector3F(0.0f, -40.0f, 0.0f)));
 	renderable->addAnimStage(anim, 1.0);
 	// Wait for resources to be loaded

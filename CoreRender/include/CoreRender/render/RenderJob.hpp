@@ -58,6 +58,7 @@ namespace render
 			RenderBatch *createBatch(const std::string &context,
 			                         Renderer *renderer,
 			                         UniformData &uniforms,
+			                         DefaultUniformValues *defuniforms,
 			                         unsigned int flags);
 
 			/**
@@ -112,6 +113,11 @@ namespace render
 			 * Vertex layout of the vertex data to be rendered.
 			 */
 			VertexLayout::Ptr layout;
+			/**
+			 * Default uniform values. This contains several optimized uniforms
+			 * which are usually used for most shaders.
+			 */
+			std::vector<DefaultUniform> defaultuniforms;
 			/**
 			 * Additional uniforms to be set. This can be used to override the
 			 * uniforms set in ShaderText and Material or to provide additional

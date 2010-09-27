@@ -94,6 +94,20 @@ namespace render
 		UniformData uniforms = job->material->getShader()->getUniformData();
 		uniforms.setValues(job->material->getUniformData());
 		uniforms.setValues(job->uniforms);
+		// Get default uniform data
+		core::MemoryPool *memory = renderer->getNextFrameMemory();
+		DefaultUniformValues *defuniforms;
+		defuniforms = (DefaultUniformValues*)memory->allocate(sizeof(DefaultUniformValues));
+		for (unsigned int i = 0; i < this->uniforms.size(); i++)
+		{
+			memcpy(defuniforms->uniforms[this->uniforms[i].name],
+			       this->uniforms[i].data, 16 * sizeof(float));
+		}
+		for (unsigned int i = 0; i < job->defaultuniforms.size(); i++)
+		{
+			memcpy(defuniforms->uniforms[job->defaultuniforms[i].name],
+			       job->defaultuniforms[i].data, 16 * sizeof(float));
+		}
 		// Get flag values
 		ShaderText::Ptr text = job->material->getShader();
 		unsigned int flags = text->getFlags(job->material->getShaderFlags());
@@ -101,7 +115,11 @@ namespace render
 		for (unsigned int i = 0; i < batchlists.size(); i++)
 		{
 			std::string context = batchlists[i]->getContext();
-			RenderBatch *batch = job->createBatch(context, renderer, uniforms, flags);
+			RenderBatch *batch = job->createBatch(context,
+			                                      renderer,
+			                                      uniforms,
+			                                      defuniforms,
+			                                      flags);
 			if (!batch)
 				continue;
 			batchlists[i]->submit(batch);
@@ -125,7 +143,9 @@ namespace render
 		unsigned int commandoffset = 0;
 		for (unsigned int i = 0; i < stages.size(); i++)
 		{
-			stages[i]->beginFrame(renderer, &info->commands[commandoffset]);
+			stages[i]->beginFrame(renderer,
+			                      this,
+			                      &info->commands[commandoffset]);
 			commandoffset += stages[i]->getCommandCount();
 		}
 		// Collect list of batch lists to insert batches into

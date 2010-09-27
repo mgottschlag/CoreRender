@@ -63,13 +63,13 @@ int main(int argc, char **argv)
 	cr::math::Matrix4 projmat = cr::math::Matrix4::PerspectiveFOV(60.0f, 4.0f/3.0f, 1.0f, 1000.0f);
 	projmat = projmat * cr::math::Matrix4::TransMat(cr::math::Vector3F(0, 0, -100));
 	projmat = projmat * cr::math::Quaternion(cr::math::Vector3F(45.0, 0.0, 0.0)).toMatrix();
+	pipeline->getDefaultSequence()->getDefaultUniforms().push_back(cr::render::DefaultUniform(cr::render::DefaultUniformName::ProjMatrix, projmat));
 	// Wait for resources to be loaded
 	model->waitForLoading(true);
 	anim->waitForLoading(true);
 	// Create renderable
 	cr::render::ModelRenderable *renderable = new cr::render::ModelRenderable();
 	renderable->setModel(model);
-	renderable->setProjMat(projmat);
 	renderable->setTransMat(cr::math::Quaternion(cr::math::Vector3F(0.0, 45.0, 0.0)).toMatrix());
 	renderable->addAnimStage(anim, 1.0);
 	// Finished loading

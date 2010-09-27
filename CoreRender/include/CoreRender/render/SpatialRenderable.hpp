@@ -46,9 +46,7 @@ namespace render
 			 * Constructor.
 			 */
 			SpatialRenderable()
-				: transmat(math::Matrix4::Identity()),
-				projmat(math::Matrix4::Identity()),
-				dirty(true)
+				: transmat(math::Matrix4::Identity())
 			{
 			}
 			/**
@@ -65,16 +63,6 @@ namespace render
 			void setTransMat(const math::Matrix4 &transmat)
 			{
 				this->transmat = transmat;
-				dirty = true;
-			}
-			/**
-			 * Sets the projection matrix for rendering.
-			 * * @param projmat New projection matrix.
-			 */
-			void setProjMat(const math::Matrix4 &projmat)
-			{
-				this->projmat = projmat;
-				dirty = true;
 			}
 			/**
 			 * Returns the transformation matrix.
@@ -82,53 +70,10 @@ namespace render
 			 */
 			const math::Matrix4 &getTransMat()
 			{
-				if (dirty)
-					updateMatrices();
 				return transmat;
 			}
-			/**
-			 * Returns the projection matrix.
-			 * @return Projection matrix.
-			 */
-			const math::Matrix4 &getProjMat()
-			{
-				if (dirty)
-					updateMatrices();
-				return projmat;
-			}
-			/**
-			 * Returns the world matrix (projection * transformation).
-			 * @return World matrix.
-			 */
-			const math::Matrix4 &getWorldMat()
-			{
-				if (dirty)
-					updateMatrices();
-				return worldmat;
-			}
-			/**
-			 * Returns the world normal matrix (transposed inverse of the world
-			 * matrix).
-			 * @return World normal matrix.
-			 */
-			const math::Matrix4 &getWorldNormalMat()
-			{
-				if (dirty)
-					updateMatrices();
-				return worldnormalmat;
-			}
 		private:
-			void updateMatrices()
-			{
-				dirty = false;
-				worldmat = projmat * transmat;
-				worldnormalmat = transmat.inverse().transposed();
-			}
 			math::Matrix4 transmat;
-			math::Matrix4 projmat;
-			math::Matrix4 worldmat;
-			math::Matrix4 worldnormalmat;
-			bool dirty;
 	};
 }
 }

@@ -33,6 +33,7 @@ namespace render
 	class BatchListCommand;
 	class Renderer;
 	struct PipelineCommandInfo;
+	class PipelineSequence;
 
 	class PipelineStage
 	{
@@ -48,7 +49,9 @@ namespace render
 			BatchListCommand *getBatchList(unsigned int index);
 			unsigned int getBatchListCount();
 
-			void beginFrame(Renderer *renderer, PipelineCommandInfo *commands);
+			void beginFrame(Renderer *renderer,
+			                PipelineSequence *sequence,
+			                PipelineCommandInfo *commands);
 			void finish();
 
 			std::string getName();

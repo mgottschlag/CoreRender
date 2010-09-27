@@ -70,6 +70,9 @@ namespace render
 		int vertices;
 		int indices;
 
+		const DefaultUniformLocations *defuniformlocations;
+		DefaultUniformValues *defuniforms;
+
 		float sortkey;
 		unsigned int startindex;
 		unsigned int endindex;

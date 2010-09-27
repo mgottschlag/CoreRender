@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "RenderResource.hpp"
 #include "../core/HashMap.hpp"
+#include "DefaultUniform.hpp"
 
 namespace cr
 {
@@ -168,6 +169,11 @@ namespace render
 				return text;
 			}
 
+			const DefaultUniformLocations &getDefaultUniformLocations()
+			{
+				return defaultuniforms;
+			}
+
 			typedef core::SharedPointer<Shader> Ptr;
 		protected:
 			int handle;
@@ -186,6 +192,8 @@ namespace render
 			HandleMap attribs;
 			HandleMap uniforms;
 			HandleMap textures;
+
+			DefaultUniformLocations defaultuniforms;
 	};
 }
 }

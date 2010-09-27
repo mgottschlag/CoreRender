@@ -36,6 +36,7 @@ namespace render
 	class RenderJob;
 	struct RenderBatch;
 	struct PipelineCommandInfo;
+	class PipelineSequence;
 
 	struct PipelineCommandType
 	{
@@ -59,7 +60,9 @@ namespace render
 			{
 			}
 
-			virtual void apply(Renderer *renderer, PipelineCommandInfo *command) = 0;
+			virtual void apply(Renderer *renderer,
+			                   PipelineSequence *sequence,
+			                   PipelineCommandInfo *command) = 0;
 
 			PipelineCommandType::List getType()
 			{
@@ -114,7 +117,9 @@ namespace render
 				}
 			}
 
-			virtual void apply(Renderer *renderer, PipelineCommandInfo *command);
+			virtual void apply(Renderer *renderer,
+			                   PipelineSequence *sequence,
+			                   PipelineCommandInfo *command);
 		private:
 			bool cleardepth;
 			float depth;
@@ -139,7 +144,9 @@ namespace render
 			{
 				this->target = target;
 			}
-			virtual void apply(Renderer *renderer, PipelineCommandInfo *command);
+			virtual void apply(Renderer *renderer,
+			                   PipelineSequence *sequence,
+			                   PipelineCommandInfo *command);
 		private:
 			RenderTarget::Ptr target;
 	};
@@ -161,7 +168,9 @@ namespace render
 				this->texture = texture;
 			}
 
-			virtual void apply(Renderer *renderer, PipelineCommandInfo *command);
+			virtual void apply(Renderer *renderer,
+			                   PipelineSequence *sequence,
+			                   PipelineCommandInfo *command);
 		private:
 			int name;
 			Texture::Ptr texture;
@@ -174,7 +183,9 @@ namespace render
 			{
 			}
 
-			virtual void apply(Renderer *renderer, PipelineCommandInfo *command);
+			virtual void apply(Renderer *renderer,
+			                   PipelineSequence *sequence,
+			                   PipelineCommandInfo *command);
 		private:
 	};
 	class SequenceCommand : public PipelineCommand
@@ -185,7 +196,9 @@ namespace render
 			{
 			}
 
-			virtual void apply(Renderer *renderer, PipelineCommandInfo *command);
+			virtual void apply(Renderer *renderer,
+			                   PipelineSequence *sequence,
+			                   PipelineCommandInfo *command);
 		private:
 	};
 	class BatchListCommand : public PipelineCommand
@@ -209,7 +222,9 @@ namespace render
 
 			void finish();
 
-			virtual void apply(Renderer *renderer, PipelineCommandInfo *command);
+			virtual void apply(Renderer *renderer,
+			                   PipelineSequence *sequence,
+			                   PipelineCommandInfo *command);
 		private:
 			std::string context;
 
@@ -225,7 +240,9 @@ namespace render
 
 			void setJob(RenderJob *job, const std::string &context);
 
-			virtual void apply(Renderer *renderer, PipelineCommandInfo *command);
+			virtual void apply(Renderer *renderer,
+			                   PipelineSequence *sequence,
+			                   PipelineCommandInfo *command);
 		private:
 			RenderJob *job;
 			std::string context;

@@ -365,7 +365,21 @@ namespace opengl
 					break;
 			}
 		}
-		// TODO
+		// Default uniforms
+		{
+			const int *locations = batch->defuniformlocations->location;
+			float (*values)[16] = batch->defuniforms->uniforms;
+			for (unsigned int i = DefaultUniformName::TransMatrix;
+			     i <= DefaultUniformName::WorldNormalMatrixInv; i++)
+			{
+				// TODO: Normal matrices have a different size
+				glUniformMatrix4fv(locations[i], 1, GL_FALSE, values[i]);
+			}
+			if (locations[DefaultUniformName::ViewPosition])
+				glUniform3fv(locations[DefaultUniformName::ViewPosition],
+				             1,
+				             values[DefaultUniformName::ViewPosition]);
+		}
 		// Apply textures
 		for (unsigned int i = 0; i < batch->texcount; i++)
 		{
