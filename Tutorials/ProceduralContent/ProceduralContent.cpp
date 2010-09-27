@@ -23,6 +23,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <iostream>
 
+using namespace cr;
+
 float vertices[24 * 8] = {
 	// Front
 	1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0,
@@ -110,28 +112,28 @@ static const std::string fs = "\n"
 
 int main(int argc, char **argv)
 {
-	cr::render::GraphicsEngine graphics;
+	render::GraphicsEngine graphics;
 	// Initialize CoreRender
-	if (!graphics.init(cr::render::VideoDriverType::OpenGL, 800, 600, false, 0, true))
+	if (!graphics.init(render::VideoDriverType::OpenGL, 800, 600, false, 0, true))
 	{
 		std::cerr << "Graphics engine failed to initialize!" << std::endl;
 		return -1;
 	}
-	graphics.getLog()->setConsoleLevel(cr::core::LogLevel::Debug);
-	cr::res::ResourceManager *rmgr = graphics.getResourceManager();
+	graphics.getLog()->setConsoleLevel(core::LogLevel::Debug);
+	res::ResourceManager *rmgr = graphics.getResourceManager();
 
 	// Load some resources
-	cr::render::Texture2D::Ptr texture = rmgr->createResource<cr::render::Texture2D>("Texture2D");
+	render::Texture2D::Ptr texture = rmgr->createResource<render::Texture2D>("Texture2D");
 	texture->set(8,
 	             8,
-	             cr::render::TextureFormat::RGBA8,
-	             cr::render::TextureFormat::RGBA8,
+	             render::TextureFormat::RGBA8,
+	             render::TextureFormat::RGBA8,
 	             texdata);
-	cr::render::VertexBuffer::Ptr vb = rmgr->createResource<cr::render::VertexBuffer>("VertexBuffer");
+	render::VertexBuffer::Ptr vb = rmgr->createResource<render::VertexBuffer>("VertexBuffer");
 	vb->set(24 * 8 * sizeof(float), vertices);
-	cr::render::IndexBuffer::Ptr ib = rmgr->createResource<cr::render::IndexBuffer>("IndexBuffer");
+	render::IndexBuffer::Ptr ib = rmgr->createResource<render::IndexBuffer>("IndexBuffer");
 	ib->set(36 * sizeof(unsigned short), indices);
-	cr::render::ShaderText::Ptr shader = rmgr->createResource<cr::render::ShaderText>("ShaderText");
+	render::ShaderText::Ptr shader = rmgr->createResource<render::ShaderText>("ShaderText");
 	shader->addText("VS_COMMON", vs);
 	shader->addText("FS_AMBIENT", fs);
 	shader->addContext("AMBIENT", "VS_COMMON", "FS_AMBIENT");
@@ -140,18 +142,18 @@ int main(int argc, char **argv)
 	shader->addAttrib("normal");
 	shader->addTexture("tex");
 	float defscale[2] = {1.0f, 1.0f};
-	shader->addUniform("scale", cr::render::ShaderVariableType::Float2, defscale);
-	shader->addUniform("worldMat", cr::render::ShaderVariableType::Float4x4, 0);
-	cr::render::Material::Ptr material = rmgr->createResource<cr::render::Material>("Material");
+	shader->addUniform("scale", render::ShaderVariableType::Float2, defscale);
+	shader->addUniform("worldMat", render::ShaderVariableType::Float4x4, 0);
+	render::Material::Ptr material = rmgr->createResource<render::Material>("Material");
 	material->addTexture("tex", texture);
 	material->setShader(shader);
 	// Create vertex layout
-	cr::render::VertexLayout::Ptr layout = new cr::render::VertexLayout(3);
-	layout->setElement(0, "pos", 0, 3, 0, cr::render::VertexElementType::Float, 32);
-	layout->setElement(1, "normal", 0, 3, 12, cr::render::VertexElementType::Float, 32);
-	layout->setElement(2, "texcoord", 0, 2, 24, cr::render::VertexElementType::Float, 32);
+	render::VertexLayout::Ptr layout = new render::VertexLayout(3);
+	layout->setElement(0, "pos", 0, 3, 0, render::VertexElementType::Float, 32);
+	layout->setElement(1, "normal", 0, 3, 12, render::VertexElementType::Float, 32);
+	layout->setElement(2, "texcoord", 0, 2, 24, render::VertexElementType::Float, 32);
 	// Create render job
-	cr::render::RenderJob *job = new cr::render::RenderJob;
+	render::RenderJob *job = new render::RenderJob;
 	job->vertices = vb;
 	job->vertexcount = 24;
 	job->indices = ib;
@@ -160,46 +162,46 @@ int main(int argc, char **argv)
 	job->material = material;
 	job->layout = layout;
 	job->uniforms = shader->getUniformData();
-	cr::math::Vector2F scale(0.5f, 0.5f);
+	math::Vector2F scale(0.5f, 0.5f);
 	job->uniforms["scale"] = scale;
-	cr::math::Matrix4 matrix = cr::math::Matrix4::ScaleMat(cr::math::Vector3F(0.5f, 0.5f, 0.5f));
-	job->defaultuniforms.push_back(cr::render::DefaultUniform(cr::render::DefaultUniformName::TransMatrix, matrix));
+	math::Matrix4 matrix = math::Matrix4::ScaleMat(math::Vector3F(0.5f, 0.5f, 0.5f));
+	job->defaultuniforms.push_back(render::DefaultUniform(render::DefaultUniformName::TransMatrix, matrix));
 	// Setup pipeline
-	cr::render::Pipeline::Ptr pipeline = new cr::render::Pipeline();
-	cr::render::PipelineSequence *sequence = pipeline->addSequence("main");
+	render::Pipeline::Ptr pipeline = new render::Pipeline();
+	render::PipelineSequence *sequence = pipeline->addSequence("main");
 	pipeline->setDefaultSequence(sequence);
-	cr::render::PipelineStage *stage = sequence->addStage("scene");
-	cr::render::ClearCommand *clear = new cr::render::ClearCommand();
+	render::PipelineStage *stage = sequence->addStage("scene");
+	render::ClearCommand *clear = new render::ClearCommand();
 	clear->clearDepth(true, 1.0f);
-	clear->clearColor(0, true, cr::core::Color(60, 60, 60, 255));
+	clear->clearColor(0, true, core::Color(60, 60, 60, 255));
 	stage->addCommand(clear);
-	cr::render::BatchListCommand *batchlist = new cr::render::BatchListCommand();
+	render::BatchListCommand *batchlist = new render::BatchListCommand();
 	batchlist->setContext("AMBIENT");
 	stage->addCommand(batchlist);
 	graphics.addPipeline(pipeline);
-	sequence->getDefaultUniforms().push_back(cr::render::DefaultUniform(cr::render::DefaultUniformName::ProjMatrix,
-	                                                                    cr::math::Matrix4::Identity()));
+	sequence->getDefaultUniforms().push_back(render::DefaultUniform(render::DefaultUniformName::ProjMatrix,
+	                                                                math::Matrix4::Identity()));
 	// Render loop
 	bool stopping = false;
 	while (!stopping)
 	{
 		// Process input
-		cr::render::InputEvent input;
+		render::InputEvent input;
 		while (graphics.getInput(&input))
 		{
 			switch (input.type)
 			{
-				case cr::render::InputEventType::WindowClosed:
+				case render::InputEventType::WindowClosed:
 					stopping = true;
 					break;
-				case cr::render::InputEventType::KeyDown:
-					if (input.keyboard.key == cr::render::KeyCode::Up)
+				case render::InputEventType::KeyDown:
+					if (input.keyboard.key == render::KeyCode::Up)
 						scale.y *= 1.1f;
-					if (input.keyboard.key == cr::render::KeyCode::Down)
+					if (input.keyboard.key == render::KeyCode::Down)
 						scale.y /= 1.1f;
-					if (input.keyboard.key == cr::render::KeyCode::Left)
+					if (input.keyboard.key == render::KeyCode::Left)
 						scale.x *= 1.1f;
-					if (input.keyboard.key == cr::render::KeyCode::Right)
+					if (input.keyboard.key == render::KeyCode::Right)
 						scale.x /= 1.1f;
 					job->uniforms["scale"] = scale;
 					break;
@@ -210,12 +212,11 @@ int main(int argc, char **argv)
 		// Begin frame
 		graphics.beginFrame();
 		// Render objects
-		matrix = matrix * cr::math::Quaternion(cr::math::Vector3F(0.0, 0.1, 0.1)).toMatrix();
-		job->defaultuniforms[0] = cr::render::DefaultUniform(cr::render::DefaultUniformName::TransMatrix, matrix);
+		matrix = matrix * math::Quaternion(math::Vector3F(0.0, 0.1, 0.1)).toMatrix();
+		job->defaultuniforms[0] = render::DefaultUniform(render::DefaultUniformName::TransMatrix, matrix);
 		sequence->submit(job);
 		// Finish and render frame
 		graphics.endFrame();
-		
 	}
 
 	// Delete resources
