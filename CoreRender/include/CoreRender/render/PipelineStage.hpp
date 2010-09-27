@@ -35,25 +35,76 @@ namespace render
 	struct PipelineCommandInfo;
 	class PipelineSequence;
 
+	/**
+	 * Class which holds several render commands which get executed at
+	 * PipelineSequence::beginFrame().
+	 */
 	class PipelineStage
 	{
 		public:
+			/**
+			 * Constructor.
+			 * @param name Name of the stage.
+			 */
 			PipelineStage(const std::string &name);
+			/**
+			 * Destructor.
+			 */
 			~PipelineStage();
 
+			/**
+			 * Adds a command at the end of the stage. The stage takes over
+			 * ownership of the command and frees it when necessary.
+			 */
 			unsigned int addCommand(PipelineCommand *command);
+			/**
+			 * Returns the command at a certain index.
+			 * @param index Index of the command.
+			 * @return Command at the index.
+			 */
 			PipelineCommand *getCommand(unsigned int index);
+			/**
+			 * Removes the command at a certain index.
+			 * @param index Index of the command.
+			 */
 			void removeCommand(unsigned int index);
+			/**
+			 * Returns the number of commands in this stage.
+			 */
 			unsigned int getCommandCount();
 
+			/**
+			 * Returns the batch list command at a certain index.
+			 * @param index Index of the command.
+			 * @return Batch list command.
+			 */
 			BatchListCommand *getBatchList(unsigned int index);
+			/**
+			 * Returns the number of BatchListCommand commands in the stage.
+			 * @return Number of batch list commands.
+			 */
 			unsigned int getBatchListCount();
 
+			/**
+			 * Calls PipelineCommand::apply() for all commands. Do not call this
+			 * directly.
+			 * @param renderer Renderer used for rendering.
+			 * @param sequence Sequence this stage belongs to.
+			 * @param commands Memory buffer in which the commands are placed
+			 * for rendering in the render thread.
+			 */
 			void beginFrame(Renderer *renderer,
 			                PipelineSequence *sequence,
 			                PipelineCommandInfo *commands);
+			/**
+			 * Finishes all batch list commands and prepares the buffers which
+			 * are sent to the render thread.
+			 */
 			void finish();
 
+			/**
+			 * Returns the name of the stage.
+			 */
 			std::string getName();
 		private:
 			std::string name;

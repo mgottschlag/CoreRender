@@ -38,35 +38,82 @@ namespace render
 	struct PipelineCommandInfo;
 	class PipelineSequence;
 
+	/**
+	 * Type of a rendering command.
+	 */
 	struct PipelineCommandType
 	{
 		enum List
 		{
 			Invalid,
+			/**
+			 * Clears the current render target.
+			 */
 			Clear,
+			/**
+			 * Sets the current render target.
+			 */
 			SetTarget,
+			/**
+			 * Renders a single render job (for example for fullscreen quads).
+			 */
 			Batch,
+			/**
+			 * Renders the whole jobs submitted to the sequence using a certain
+			 * context.
+			 */
 			BatchList,
+			/**
+			 * Binds a texture for all following batches.
+			 */
 			BindTexture,
+			/**
+			 * Unbind all previously bound textures.
+			 */
 			UnbindTextures,
+			/**
+			 * Recursively renders another sequence.
+			 */
 			Sequence
 		};
 	};
+	/**
+	 * Smallest part of a render pipeline, describes a single step in the
+	 * rendering process.
+	 */
 	class PipelineCommand
 	{
 		public:
+			/**
+			 * Constructor.
+			 * @param type Type of the command.
+			 */
 			PipelineCommand(PipelineCommandType::List type)
 				: type(type)
 			{
 			}
+			/**
+			 * Destructor.
+			 */
 			virtual ~PipelineCommand()
 			{
 			}
 
+			/**
+			 * Executes this rendering commands. This prepares the data which is
+			 * sent to the render thread.
+			 * @param renderer Renderer used for rendering.
+			 * @param sequence Sequence this command belongs to.
+			 * @param command Memory into which the command data is placed.
+			 */
 			virtual void apply(Renderer *renderer,
 			                   PipelineSequence *sequence,
 			                   PipelineCommandInfo *command) = 0;
 
+			/**
+			 * Returns the type of the command.
+			 * @return Command type.
+			 */
 			PipelineCommandType::List getType()
 			{
 				return type;
@@ -83,11 +130,22 @@ namespace render
 			{
 			}
 
+			/**
+			 * Sets whether and how the depth buffer shall be cleared.
+			 * @param enable If true, the depth buffer is cleared.
+			 * @param depth Depth with which the buffer is filled on clearing.
+			 */
 			void clearDepth(bool enable, float depth = 1.0f)
 			{
 				cleardepth = enable;
 				this->depth = depth;
 			}
+			/**
+			 * Sets whether and how a single color buffer shall be cleared.
+			 * @param index Index of the color buffer in the render target.
+			 * @param enable If true, the buffer is cleared.
+			 * @param color Color used to fill the buffer with.
+			 */
 			void clearColor(unsigned int index, bool enable, core::Color color)
 			{
 				// Update existing entry
@@ -143,6 +201,10 @@ namespace render
 			{
 			}
 
+			/**
+			 * Sets the target this command switches to.
+			 * @param target Render target or 0 to render to the screen.
+			 */
 			void setTarget(RenderTarget::Ptr target)
 			{
 				this->target = target;
@@ -161,11 +223,18 @@ namespace render
 			{
 			}
 
+			/**
+			 * Sets the name of the texture sampler in the shader which shall be
+			 * set.
+			 */
 			void setName(const std::string &name)
 			{
 				// TODO: Use an int instead of string here
 				this->name = name;
 			}
+			/**
+			 * Sets the texture which shall be bound.
+			 */
 			void setTexture(Texture::Ptr texture)
 			{
 				this->texture = texture;
@@ -212,17 +281,35 @@ namespace render
 			{
 			}
 
+			/**
+			 * Sets the context which shall be rendered for all materials
+			 * supporting it.
+			 * @param context Context name.
+			 */
 			void setContext(const std::string &context)
 			{
 				this->context = context;
 			}
+			/**
+			 * Returns the context which is rendered in this command.
+			 * @return Context name.
+			 */
 			std::string getContext()
 			{
 				return context;
 			}
 
+			/**
+			 * Submits a single batch to the batch list. Do not call this
+			 * directly, use PipelineSequence::submit() instead.
+			 * @param batch Batch to be rendered.
+			 */
 			void submit(RenderBatch *batch);
 
+			/**
+			 * Sorts the batches and places them in a buffer ready to be sent to
+			 * the render thread.
+			 */
 			void finish();
 
 			virtual void apply(Renderer *renderer,
@@ -241,6 +328,11 @@ namespace render
 			BatchCommand();
 			virtual ~BatchCommand();
 
+			/**
+			 * Sets the job rendered in this context.
+			 * @param job Job to be rendered.
+			 * @param context Context which is selected for rendering the job.
+			 */
 			void setJob(RenderJob *job, const std::string &context);
 
 			virtual void apply(Renderer *renderer,

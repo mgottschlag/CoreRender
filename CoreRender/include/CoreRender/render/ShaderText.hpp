@@ -88,10 +88,14 @@ namespace render
 			 * shader.
 			 * @param ts Tesselation shader text name. Leave as "" for no
 			 * tesselation shader.
+			 * @param blendmode Blend mode which this context should use.
+			 * @param depthwrite If true, the material writes into the depth
+			 * buffer.
+			 * @param depthtest The depth test which should be used for this
+			 * material. This can be used to always render independent of the
+			 * contents of the depth buffer.
 			 * @return Always returns true as this function currently does not
 			 * check whether the texts actually exist.
-			 * @todo Currently shader creation happens in getShader(). It has
-			 * to be done here though as getShader() is called too late.
 			 */
 			bool addContext(const std::string &name,
 			                const std::string &vs,

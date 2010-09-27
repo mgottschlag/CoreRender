@@ -117,20 +117,17 @@ namespace cr
  *
  * @subsection pipeline Rendering pipeline
  * The rendering pipeline in CoreRender is completely programmable. It mainly
- * consists of the two classes cr::render::Pipeline and cr::render::RenderPass.
- * While cr::render::GraphicsEngine holds multiple pipelines, each pipeline
- * again can hold more than one render pass.
+ * consists of the class cr::render::Pipeline which through multiple sequences
+ * and stages holds a list of rendering commands (cr::render::PipelineCommand)
+ * which are executed when the scene is prepared for rendering. Each sequence
+ * is used to render one camera as a sequence has a set of uniforms (like
+ * projection matrix).
  *
- * A pipeline defines a complete render operation, e.g. rendering the scene from
- * a camera. This can be done in multiple passes, where every pass is related to
- * a certain shader context. As an example, you might want to first render the
- * context "AMBIENT" for all renderable objects which draws all non-translucent
- * objects, then draw the context "TRANSLUCENT" which is only defined for your
- * translucent render jobs. In this case you would have one pipeline containing
- * two render passes. The first render pass additionally would have to dop a
- * clear operation to clear the screen before drawing. You might as well want to
- * have a second pipeline after that to render maybe a GUI, or a pipeline before
- * that to render an additional camera to a texture.
+ * When geometry is then submitted through PipelineSequence::submit(), it is
+ * added to all batch list commands, each one rendering a single context. As an
+ * example, you would have a batch list command which renders an "AMBIENT"
+ * context for all solid geometry, and then a command rendering a "TRANSLUCENT"
+ * context for translucent objects in a second pass.
  *
  * Contexts are defined in cr::render::ShaderText and can have arbitrary names.
  * A shader can support a number of different contexts, so can e.g. the same
