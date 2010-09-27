@@ -372,10 +372,12 @@ namespace opengl
 			for (unsigned int i = DefaultUniformName::TransMatrix;
 			     i <= DefaultUniformName::WorldNormalMatrixInv; i++)
 			{
+				if (locations[i] == -1)
+					continue;
 				// TODO: Normal matrices have a different size
 				glUniformMatrix4fv(locations[i], 1, GL_FALSE, values[i]);
 			}
-			if (locations[DefaultUniformName::ViewPosition])
+			if (locations[DefaultUniformName::ViewPosition] != -1)
 				glUniform3fv(locations[DefaultUniformName::ViewPosition],
 				             1,
 				             values[DefaultUniformName::ViewPosition]);
