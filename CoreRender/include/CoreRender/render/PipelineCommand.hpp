@@ -59,6 +59,9 @@ namespace render
 				: type(type)
 			{
 			}
+			virtual ~PipelineCommand()
+			{
+			}
 
 			virtual void apply(Renderer *renderer,
 			                   PipelineSequence *sequence,
