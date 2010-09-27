@@ -60,10 +60,13 @@ int main(int argc, char **argv)
 	pipelinedef->waitForLoading(true);
 	cr::render::Pipeline::Ptr pipeline = pipelinedef->createPipeline(800, 600);
 	graphics.addPipeline(pipeline);
+	// Set target size
+	{
+		cr::render::Material::Ptr blurmaterial = rmgr->getOrLoad<cr::render::Material>("Material",
+		                                                                               "/materials/Blur.material.xml");
+		blurmaterial->getUniformData().add("targetSize") = cr::math::Vector2F(400, 300);
+	}
 	// Setup camera matrix for the scene
-	/*cr::math::Matrix4 projmat = cr::math::Matrix4::PerspectiveFOV(60.0f, 4.0f/3.0f, 1.0f, 1000.0f);
-	projmat = projmat * cr::math::Matrix4::TransMat(cr::math::Vector3F(0, 0, -100));
-	projmat = projmat * cr::math::Quaternion(cr::math::Vector3F(45.0, 0.0, 0.0)).toMatrix();*/
 	cr::math::Matrix4 projmat = cr::math::Matrix4::Ortho(100.0f, 100.0f, 100.0f, -100.0f);
 	projmat = projmat * cr::math::Matrix4::TransMat(cr::math::Vector3F(0, -40, 0));
 	pipeline->getDefaultSequence()->getDefaultUniforms().push_back(cr::render::DefaultUniform(cr::render::DefaultUniformName::ProjMatrix, projmat));

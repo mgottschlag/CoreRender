@@ -23,6 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/Renderer.hpp"
 #include "CoreRender/core/MemoryPool.hpp"
 #include "FrameData.hpp"
+#include "CoreRender/render/PipelineSequence.hpp"
 
 #include <cstring>
 
@@ -32,6 +33,7 @@ namespace render
 {
 	RenderBatch *RenderJob::createBatch(const std::string &context,
 	                                    Renderer *renderer,
+	                                    SequenceState *sequence,
 	                                    UniformData &uniforms,
 	                                    DefaultUniformValues *defuniforms,
 	                                    unsigned int flags)
@@ -124,18 +126,30 @@ namespace render
 		// TODO: World normal matrix
 		// Textures
 		const std::vector<Material::TextureInfo> &textureinfo = material->getTextures();
-		batch->texcount = textureinfo.size();
-		if (textureinfo.size() > 0)
+		batch->texcount = textureinfo.size() + sequence->textures.size();
+		if (batch->texcount > 0)
 		{
 			// TODO: Unify this?
 			unsigned int memsize = sizeof(TextureEntry) * batch->texcount;
 			TextureEntry *textures = (TextureEntry*)memory->allocate(memsize);
+			// Normal texturesd
 			for (unsigned int i = 0; i < textureinfo.size(); i++)
 			{
 				textures[i].shaderhandle = shader->getTexture(textureinfo[i].name);
 				textures[i].textureindex = i;
 				textures[i].texhandle = textureinfo[i].texture->getHandle();
 				textures[i].type = textureinfo[i].texture->getTextureType();
+			}
+			// Sequence textures
+			std::map<std::string, Texture::Ptr>::iterator it;
+			unsigned int i = textureinfo.size();
+			for (it = sequence->textures.begin(); it != sequence->textures.end(); it++)
+			{
+				textures[i].shaderhandle = shader->getTexture(it->first);
+				textures[i].textureindex = i;
+				textures[i].texhandle = it->second->getHandle();
+				textures[i].type = it->second->getTextureType();
+				i++;
 			}
 			batch->textures = textures;
 		}

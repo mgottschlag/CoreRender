@@ -154,13 +154,13 @@ namespace render
 	{
 		public:
 			BindTextureCommand()
-				: PipelineCommand(PipelineCommandType::BindTexture),
-				name(-1)
+				: PipelineCommand(PipelineCommandType::BindTexture)
 			{
 			}
 
-			void setName(int name)
+			void setName(const std::string &name)
 			{
+				// TODO: Use an int instead of string here
 				this->name = name;
 			}
 			void setTexture(Texture::Ptr texture)
@@ -172,7 +172,7 @@ namespace render
 			                   PipelineSequence *sequence,
 			                   PipelineCommandInfo *command);
 		private:
-			int name;
+			std::string name;
 			Texture::Ptr texture;
 	};
 	class UnbindTexturesCommand : public PipelineCommand

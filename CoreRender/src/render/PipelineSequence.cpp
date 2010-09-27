@@ -117,6 +117,7 @@ namespace render
 			std::string context = batchlists[i]->getContext();
 			RenderBatch *batch = job->createBatch(context,
 			                                      renderer,
+			                                      &getState(),
 			                                      uniforms,
 			                                      defuniforms,
 			                                      flags);
@@ -128,6 +129,8 @@ namespace render
 
 	void PipelineSequence::beginFrame(Renderer *renderer)
 	{
+		// Reset previous state
+		state.textures.clear();
 		// Allocate sequence info
 		core::MemoryPool *memory = renderer->getNextFrameMemory();
 		info = (PipelineSequenceInfo*)memory->allocate(sizeof(PipelineSequenceInfo));

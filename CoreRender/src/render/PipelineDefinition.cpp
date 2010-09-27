@@ -258,9 +258,41 @@ namespace render
 							job->vertexoffset = 0;
 							job->material = material;
 							job->layout = layout;
+							job->uniforms.add("targetSize") = math::Vector2F(400, 300);
 							// Create command
 							BatchCommand *cmd = new BatchCommand;
 							cmd->setJob(job, context);
+							stage->addCommand(cmd);
+							break;
+						}
+						case PipelineCommandType::BindTexture:
+						{
+							std::string name = src->commands[k]->params[0];
+							std::string texturename = src->commands[k]->params[1];
+							// Find texture
+							std::map<std::string, Texture2D::Ptr>::iterator it;
+							it = textures.find(texturename);
+							Texture::Ptr texture = 0;
+							if (it != textures.end())
+								texture = it->second;
+							else
+							{
+								// TODO: Only works for 2D textures
+								texture = getManager()->getOrLoad<Texture>("Texture2D", texturename);
+							}
+							// Create command
+							BindTextureCommand *cmd = new BindTextureCommand;
+							cmd->setName(name);
+							cmd->setTexture(texture);
+							stage->addCommand(cmd);
+							break;
+						}
+						case PipelineCommandType::UnbindTextures:
+						{
+							getManager()->getLog()->info("%s: UnbindTextures.",
+							                             getName().c_str());
+							// Create command
+							UnbindTexturesCommand *cmd = new UnbindTexturesCommand;
 							stage->addCommand(cmd);
 							break;
 						}
@@ -669,11 +701,35 @@ namespace render
 			}
 			else if (!strcmp(element->Value(), "BindTexture"))
 			{
-				// TODO
+				// Get sampler name
+				const char *name = element->Attribute("name");
+				if (!name)
+				{
+					getManager()->getLog()->error("%s: Sampler name missing.",
+					                              getName().c_str());
+					continue;
+				}
+				// Get texture name
+				const char *texture = element->Attribute("texture");
+				if (!texture)
+				{
+					getManager()->getLog()->error("%s: Texture name missing.",
+					                              getName().c_str());
+					continue;
+				}
+				// Create command
+				CommandDefinition *command = new CommandDefinition;
+				command->type = PipelineCommandType::BindTexture;
+				command->params.push_back(name);
+				command->params.push_back(texture);
+				stage->commands.push_back(command);
 			}
 			else if (!strcmp(element->Value(), "UnbindTextures"))
 			{
-				// TODO
+				// Create command
+				CommandDefinition *command = new CommandDefinition;
+				command->type = PipelineCommandType::UnbindTextures;
+				stage->commands.push_back(command);
 			}
 			else if (!strcmp(element->Value(), "FullscreenQuad"))
 			{

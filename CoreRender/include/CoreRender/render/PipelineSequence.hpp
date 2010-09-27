@@ -23,9 +23,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_RENDER_PIPELINESEQUENCE_HPP_INCLUDED_
 
 #include "DefaultUniform.hpp"
+#include "Texture.hpp"
 
 #include <string>
 #include <vector>
+#include <map>
 
 namespace cr
 {
@@ -40,6 +42,11 @@ class BatchListCommand;
 	class Renderer;
 	struct PipelineInfo;
 	struct PipelineSequenceInfo;
+
+	struct SequenceState
+	{
+		std::map<std::string, Texture::Ptr> textures;
+	};
 
 	class PipelineSequence
 	{
@@ -76,6 +83,11 @@ class BatchListCommand;
 			void prepare(PipelineInfo *info);
 
 			std::string getName();
+
+			SequenceState &getState()
+			{
+				return state;
+			}
 		private:
 			std::string name;
 
@@ -87,6 +99,8 @@ class BatchListCommand;
 			Renderer *renderer;
 
 			std::vector<DefaultUniform> uniforms;
+
+			SequenceState state;
 	};
 }
 }

@@ -92,6 +92,33 @@ namespace render
 		command->type = getType();
 	}
 
+	void BindTextureCommand::apply(Renderer *renderer,
+	                               PipelineSequence *sequence,
+	                               PipelineCommandInfo *command)
+	{
+		if (name == "")
+			return;
+		if (texture)
+			sequence->getState().textures[name] = texture;
+		else
+		{
+			std::map<std::string, Texture::Ptr>::iterator it;
+			it = sequence->getState().textures.find(name);
+			if (it != sequence->getState().textures.end())
+				sequence->getState().textures.erase(it);
+		}
+		// Fill in command
+		command->type = getType();
+	}
+	void UnbindTexturesCommand::apply(Renderer *renderer,
+	                                  PipelineSequence *sequence,
+	                                  PipelineCommandInfo *command)
+	{
+		sequence->getState().textures.clear();
+		// Fill in command
+		command->type = getType();
+	}
+
 	void BatchListCommand::submit(RenderBatch *batch)
 	{
 		batches.push_back(batch);
@@ -184,6 +211,7 @@ namespace render
 		// Create batch
 		command->batch = job->createBatch(context,
 		                                  renderer,
+		                                  &sequence->getState(),
 		                                  uniforms,
 		                                  defuniforms,
 		                                  flags);
