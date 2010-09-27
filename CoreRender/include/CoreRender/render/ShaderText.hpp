@@ -153,6 +153,16 @@ namespace render
 			void updateShaders();
 
 			/**
+			 * Creates all available shaders for a specific combination of
+			 * flags. This function is necessary because the shader cannot be
+			 * created directly in getShader() as this function usually is
+			 * called while already rendering, at a time where no new resources
+			 * can be added anymore.
+			 * @param flags The flag values for which shaders are generated.
+			 */
+			void prepareShaders(unsigned int flags);
+
+			/**
 			 * Returns a shader instance for a context, taking a certain flag
 			 * set into account. Not that this must not called after
 			 * GraphicsEngine::beginFrame() as it might create a new resource.

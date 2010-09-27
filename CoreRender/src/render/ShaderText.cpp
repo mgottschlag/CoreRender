@@ -157,6 +157,16 @@ namespace render
 		// TODO: Do we need this?
 	}
 
+	void ShaderText::prepareShaders(unsigned int flags)
+	{
+		for (std::map<std::string, Context>::iterator it = contexts.begin();
+		     it != contexts.end(); it++)
+		{
+			// Let getShader() create the shader now
+			getShader(it->first, flags);
+		}
+	}
+
 	Shader::Ptr ShaderText::getShader(const std::string &context,
 	                                  unsigned int flags)
 	{

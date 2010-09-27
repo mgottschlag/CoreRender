@@ -42,6 +42,7 @@ namespace render
 	void Material::setShader(ShaderText::Ptr shader)
 	{
 		this->shader = shader;
+		shader->prepareShaders(shader->getFlags(getShaderFlags()));
 	}
 	ShaderText::Ptr Material::getShader()
 	{
@@ -163,7 +164,6 @@ namespace render
 			addTexture(name, texture);
 		}
 		// Load uniforms
-				// Add uniforms
 		for (TiXmlNode *node = root->FirstChild("Uniform");
 		     node != 0;
 		     node = root->IterateChildren("Uniform", node))

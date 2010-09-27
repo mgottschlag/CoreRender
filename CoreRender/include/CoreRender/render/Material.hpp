@@ -68,6 +68,7 @@ namespace render
 			void setShaderFlags(const std::string &flags)
 			{
 				shaderflags = flags;
+				shader->prepareShaders(shader->getFlags(flags));
 			}
 			/**
 			 * Returns a shader flag string.
