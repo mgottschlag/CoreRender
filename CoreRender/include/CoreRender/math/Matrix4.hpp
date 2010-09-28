@@ -143,47 +143,79 @@ namespace math
 			}
 			static Matrix4 PerspectiveFOV(float fov,
 			                              float aspectratio,
-			                              float znear,
-			                              float zfar)
+			                              float near,
+			                              float far)
 			{
 				float radians = fov / 180.0 * 3.1415;
 				float t = tan(radians);
-				float ta = t * aspectratio;
-				float d = zfar - znear;
-				float f = zfar;
-				float n = znear;
-				return Matrix4(1 / ta, 0,     0,             0,
-				               0,     1 / t, 0,             0,
-				               0,     0,     -f / d,  -f * n / d,
-				               0,     0,     -1,            0);
+				return Perspective(2 * t * near * aspectratio,
+				                   2 * t * near,
+				                   near,
+				                   far);
 			}
 			static Matrix4 Perspective(float width,
 			                           float height,
-			                           float znear,
-			                           float zfar)
+			                           float near,
+			                           float far)
 			{
-				float t = height / zfar;
-				float ta = width / zfar;
-				float d = zfar - znear;
-				float f = zfar;
-				float n = znear;
-				return Matrix4(1 / ta, 0,     0,             0,
-				               0,     1 / t, 0,             0,
-				               0,     0,     -f / d,  -f * n / d,
+				return Perspective(-width / 2,
+				                   width / 2,
+				                   -height / 2,
+				                   height / 2,
+				                   near,
+				                   far);
+			}
+			static Matrix4 Perspective(float left,
+			                           float right,
+			                           float bottom,
+			                           float top,
+			                           float near,
+			                           float far)
+			{
+				float w = right - left;
+				float h = top - bottom;
+				float r = right;
+				float l = left;
+				float t = top;
+				float b = bottom;
+				float n = near;
+				float f = far;
+				return Matrix4(2*n/w, 0,     (r+l)/w,       0,
+				               0,     2*n/h, (t+b)/h,       0,
+				               0,     0,     -(f+n)/(f-n),  -2*f*n/(f-n),
 				               0,     0,     -1,            0);
 			}
 			static Matrix4 Ortho(float width,
 			                     float height,
-			                     float znear,
-			                     float zfar)
+			                     float near,
+			                     float far)
 			{
-				float r = width / 2;
-				float t = height / 2;
-				float d = zfar - znear;
-				return Matrix4(1 / r, 0,     0,      0,
-				               0,     1 / t, 0,      0,
-				               0,     0,     1 / d, (zfar + znear) / d,
-				               0,     0,     0,      1);
+				return Ortho(-width / 2,
+				             width / 2,
+				             -height / 2,
+				             height / 2,
+				             near,
+				             far);
+			}
+			static Matrix4 Ortho(float left,
+			                     float right,
+			                     float bottom,
+			                     float top,
+			                     float near,
+			                     float far)
+			{
+				float w = right - left;
+				float h = top - bottom;
+				float r = right;
+				float l = left;
+				float t = top;
+				float b = bottom;
+				float n = near;
+				float f = far;
+				return Matrix4(2/w, 0,   0,        -(r+l)/w,
+				               0,   2/h, 0,        -(t+b)/h,
+				               0,   0,   -2/(f-n), -(f+n)/(f-n),
+				               0,   0,   0,        1);
 			}
 
 			float determinant() const

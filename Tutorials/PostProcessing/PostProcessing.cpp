@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 	}
 	// Setup camera matrix for the scene
 	{
-		math::Matrix4 projmat = math::Matrix4::Ortho(100.0f, 100.0f, 100.0f, -100.0f);
+		math::Matrix4 projmat = math::Matrix4::Ortho(100.0f, 100.0f, -100.0f, 100.0f);
 		projmat = projmat * math::Matrix4::TransMat(math::Vector3F(0, -40, 0));
 		render::DefaultUniform projuniform(render::DefaultUniformName::ProjMatrix, projmat);
 		pipeline->getDefaultSequence()->getDefaultUniforms().push_back(projuniform);

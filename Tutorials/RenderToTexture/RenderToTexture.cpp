@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 	graphics.addPipeline(rttpipeline);
 	{
 		render::DefaultUniform projuniform(render::DefaultUniformName::ProjMatrix,
-		                                   math::Matrix4::Ortho(100.0f, 100.0f, 100.0f, -100.0f));
+		                                   math::Matrix4::Ortho(100.0f, 100.0f, -100.0f, 100.0f));
 		rttsequence->getDefaultUniforms().push_back(projuniform);
 	}
 	// Setup second pipeline (renders the cube onto the screen)
@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 	graphics.addPipeline(pipeline);
 	{
 		render::DefaultUniform projuniform(render::DefaultUniformName::ProjMatrix,
-		                                   math::Matrix4::Ortho(4.0f, 4.0f, 4.0f, -4.0f));
+		                                   math::Matrix4::Ortho(4.0f, 4.0f, -4.0f, 4.0f));
 		sequence->getDefaultUniforms().push_back(projuniform);
 	}
 	// Get material
