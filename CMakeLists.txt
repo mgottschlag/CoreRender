@@ -7,7 +7,6 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
 add_subdirectory(CoreRender)
-add_subdirectory(CoreRenderUtil)
 add_subdirectory(Tutorials)
 add_subdirectory(Tools)
 add_subdirectory(Tests)
