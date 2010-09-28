@@ -42,6 +42,7 @@ namespace render
 	{
 		PipelineCommandType::List type;
 		std::vector<std::string> params;
+		std::vector<res::Resource::Ptr> resources;
 	};
 
 	/**
@@ -302,6 +303,9 @@ namespace render
 			                             unsigned int screenheight = 512);
 
 			virtual bool load();
+
+			virtual bool waitForLoading(bool recursive,
+			                            bool highpriority = false);
 
 			const char *getType()
 			{

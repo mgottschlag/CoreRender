@@ -289,8 +289,6 @@ namespace render
 						}
 						case PipelineCommandType::UnbindTextures:
 						{
-							getManager()->getLog()->info("%s: UnbindTextures.",
-							                             getName().c_str());
 							// Create command
 							UnbindTexturesCommand *cmd = new UnbindTexturesCommand;
 							stage->addCommand(cmd);
@@ -741,6 +739,10 @@ namespace render
 					                              getName().c_str());
 					continue;
 				}
+				// Preload material
+				// We have to do this here to be able to wait for loading
+				Resource::Ptr materialres = getManager()->getOrLoad("Material",
+				                                                    material);
 				// Get context
 				const char *context = element->Attribute("context");
 				if (!context)
@@ -755,6 +757,7 @@ namespace render
 				command->type = PipelineCommandType::Batch;
 				command->params.push_back(material);
 				command->params.push_back(context);
+				command->resources.push_back(materialres);
 				stage->commands.push_back(command);
 			}
 			else if (!strcmp(element->Value(), "Sequence"))
@@ -768,6 +771,31 @@ namespace render
 				                              element->Value());
 			}
 		}
+	}
+
+	bool PipelineDefinition::waitForLoading(bool recursive, bool highpriority)
+	{
+		if (!Resource::waitForLoading(recursive, highpriority))
+			return false;
+		if (!recursive)
+			return true;
+		bool success = true;
+		// Wait for all command resources
+		for (unsigned int i = 0; i < sequences.size(); i++)
+		{
+			SequenceDefinition *sequence = sequences[i];
+			for (unsigned int j = 0; j < sequence->stages.size(); j++)
+			{
+				StageDefinition *stage = sequence->stages[j];
+				for (unsigned int k = 0; k < stage->commands.size(); k++)
+				{
+					CommandDefinition *command = stage->commands[k];
+					for (unsigned int l = 0; l < command->resources.size(); l++)
+						success = success && command->resources[l]->waitForLoading(true, highpriority);
+				}
+			}
+		}
+		return success;
 	}
 }
 }

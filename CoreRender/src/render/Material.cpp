@@ -250,6 +250,8 @@ namespace render
 	{
 		if (!Resource::waitForLoading(recursive, highpriority))
 			return false;
+		if (!recursive)
+			return true;
 		// Wait for the shader
 		bool result = true;
 		if (shader)
