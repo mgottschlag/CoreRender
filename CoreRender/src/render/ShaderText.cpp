@@ -159,13 +159,17 @@ namespace render
 		// TODO: Do we need this?
 	}
 
-	void ShaderText::prepareShaders(unsigned int flags)
+	void ShaderText::prepareShaders(const std::string &flags)
 	{
-		for (std::map<std::string, Context>::iterator it = contexts.begin();
-		     it != contexts.end(); it++)
 		{
-			// Let getShader() create the shader now
-			getShader(it->first, flags);
+			// Add flag combination to the list of needed shaders
+			tbb::spin_mutex::scoped_lock lock(preparationmutex);
+			preparationlist.push_back(flags);
+		}
+		if (!isLoading())
+		{
+			// We are not loading any more, so all data is ready
+			prepareAllShaders();
 		}
 	}
 
@@ -553,6 +557,9 @@ namespace render
 			// Add flag
 			addFlag(name, defvalue);
 		}
+		// Prepare shaders which have been requested earlier
+		prepareAllShaders();
+		// Finish loading
 		finishLoading(true);
 		return true;
 	}
@@ -641,6 +648,24 @@ namespace render
 				output += line + "\n";
 		}
 		return true;
+	}
+
+	void ShaderText::prepareAllShaders()
+	{
+		tbb::spin_mutex::scoped_lock lock(preparationmutex);
+		// Load all flag combinations in the preparation list
+		for (unsigned int i = 0; i < preparationlist.size(); i++)
+		{
+			unsigned int flags = getFlags(preparationlist[i]);
+			for (std::map<std::string, Context>::iterator it = contexts.begin();
+			     it != contexts.end(); it++)
+			{
+				// Let getShader() create the shader now
+				getShader(it->first, flags);
+			}
+		}
+		// Clear the list
+		preparationlist.clear();
 	}
 }
 }

@@ -167,7 +167,7 @@ namespace render
 			 * can be added anymore.
 			 * @param flags The flag values for which shaders are generated.
 			 */
-			void prepareShaders(unsigned int flags);
+			void prepareShaders(const std::string &flags);
 
 			/**
 			 * Returns a shader instance for a context, taking a certain flag
@@ -204,6 +204,8 @@ namespace render
 			                     std::string &output,
 			                     const std::string &directory);
 
+			void prepareAllShaders();
+
 			struct Context
 			{
 				std::string vs;
@@ -226,6 +228,9 @@ namespace render
 			std::vector<Shader::Ptr> shaders;
 
 			UniformData uniforms;
+
+			std::vector<std::string> preparationlist;
+			tbb::spin_mutex preparationmutex;
 	};
 }
 }

@@ -42,7 +42,7 @@ namespace render
 	void Material::setShader(ShaderText::Ptr shader)
 	{
 		this->shader = shader;
-		shader->prepareShaders(shader->getFlags(getShaderFlags()));
+		shader->prepareShaders(getShaderFlags());
 	}
 	ShaderText::Ptr Material::getShader()
 	{
