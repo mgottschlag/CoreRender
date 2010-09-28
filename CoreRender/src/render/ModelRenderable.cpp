@@ -156,7 +156,7 @@ namespace render
 			}
 			// Set standard uniforms
 			// TODO: We only have to do this if we do not use skinning
-			math::Matrix4 transmat = getTransMat();
+			math::Matrix4 transmat = getTransMat() * node->abstrans;
 			job.defaultuniforms.push_back(DefaultUniform(DefaultUniformName::TransMatrix, transmat));
 		}
 		// Clear node list again
