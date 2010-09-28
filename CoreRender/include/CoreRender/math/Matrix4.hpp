@@ -147,7 +147,7 @@ namespace math
 			                              float far)
 			{
 				float radians = fov / 180.0 * 3.1415;
-				float t = tan(radians);
+				float t = tan(radians / 2);
 				return Perspective(2 * t * near * aspectratio,
 				                   2 * t * near,
 				                   near,

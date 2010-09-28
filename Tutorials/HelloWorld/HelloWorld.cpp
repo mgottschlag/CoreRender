@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 	graphics.addPipeline(pipeline);
 	// Setup camera matrix
 	math::Matrix4 projmat = math::Matrix4::PerspectiveFOV(60.0f, 4.0f/3.0f, 1.0f, 1000.0f);
-	projmat = projmat * math::Matrix4::TransMat(math::Vector3F(0, 0, -100));
+	projmat = projmat * math::Matrix4::TransMat(math::Vector3F(0, 0, -150));
 	projmat = projmat * math::Quaternion(math::Vector3F(45.0, 0.0, 0.0)).toMatrix();
 	render::DefaultUniform projuniform(render::DefaultUniformName::ProjMatrix, projmat);
 	pipeline->getDefaultSequence()->getDefaultUniforms().push_back(projuniform);
