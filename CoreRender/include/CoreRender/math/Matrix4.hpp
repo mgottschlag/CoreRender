@@ -314,6 +314,17 @@ namespace math
 				return newmat;
 			}
 
+			Vector3F transformPoint(const Vector3F &point) const
+			{
+				Vector4F transformed = *this * Vector4F(point.x,
+				                                        point.y,
+				                                        point.z,
+				                                        1.0f);
+				return Vector3F(transformed.x / transformed.w,
+				                transformed.y / transformed.w,
+				                transformed.z / transformed.w);
+			}
+
 			Vector4F operator*(const Vector4F &v) const
 			{
 				Vector4F out;

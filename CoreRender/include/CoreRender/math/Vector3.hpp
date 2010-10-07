@@ -75,14 +75,14 @@ namespace math
 			 * computationally expensive than getLength(). Good for comparing
 			 * vector lengths.
 			 */
-			float getSquaredLength()
+			float getSquaredLength() const
 			{
 				return x * x + y * y + z * z;
 			}
 			/**
 			 * Returns the length of the vector.
 			 */
-			float getLength()
+			float getLength() const
 			{
 				return sqrt(getSquaredLength());
 			}
@@ -134,14 +134,14 @@ namespace math
 			/**
 			 * Dot product.
 			 */
-			float dot(const Vector3<T> other)
+			float dot(const Vector3<T> other) const
 			{
 				return x * other.x + y * other.y + z * other.z;
 			}
 			/**
 			 * Cross product.
 			 */
-			Vector3<T> cross(const Vector3<T> other)
+			Vector3<T> cross(const Vector3<T> other) const
 			{
 				return Vector3<T>(y * other.z - z * other.y,
 				                  z * other.x - x * other.z,
@@ -151,7 +151,7 @@ namespace math
 			/**
 			 * Returns the rotation of this vector relative to (0/0/1).
 			 */
-			Vector3<float> getAngle()
+			Vector3<float> getAngle() const
 			{
 				Vector3<float> angle;
 				angle.y = atan2(x, z) * 180.0f / 3.1415f;
@@ -174,8 +174,9 @@ namespace math
 			 * \param d Interpolation factor. If it is 0, then the vector will
 			 * be set to a, if it is 1, the vector will be b.
 			 */
-			Vector3<T> &interpolate(const Vector3<T> &a, const Vector3<T> &b,
-				float d)
+			Vector3<T> &interpolate(const Vector3<T> &a,
+			                        const Vector3<T> &b,
+			                        float d)
 			{
 				Vector3<T> dv = b - a;
 				*this = a + dv * d;
