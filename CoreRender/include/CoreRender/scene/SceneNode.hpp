@@ -33,6 +33,8 @@ namespace cr
 {
 namespace scene
 {
+	class CameraConfig;
+
 	class SceneNode : public core::ReferenceCounted
 	{
 		public:
@@ -61,15 +63,15 @@ namespace scene
 			void setParent(SceneNode::Ptr parent);
 			SceneNode::Ptr getParent();
 
-			virtual void setVisible(bool visible);
+			void setVisible(bool visible);
 			bool isVisible();
 
 			void remove();
 
 			void update(bool abstranschanged);
-			void render(render::PipelineSequence *sequence);
+			void render(CameraConfig *camera);
 		private:
-			virtual void submit(render::PipelineSequence *sequence)
+			virtual void submit(CameraConfig *camera)
 			{
 			}
 			virtual void onUpdate(bool abstranschanged)
@@ -83,9 +85,11 @@ namespace scene
 			std::vector<SceneNode::Ptr> children;
 
 			bool transmatdirty;
+		protected:
 			math::Vector3F position;
 			math::Quaternion rotation;
 			math::Vector3F scale;
+		private:
 			math::Matrix4 transmat;
 			math::Matrix4 abstrans;
 

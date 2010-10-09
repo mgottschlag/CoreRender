@@ -28,6 +28,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "SpotLightSceneNode.hpp"
 #include "PointLightSceneNode.hpp"
 #include "ModelSceneNode.hpp"
+#include "LightManager.hpp"
 
 namespace cr
 {
@@ -80,8 +81,14 @@ namespace scene
 			                                              float near = 1.0f,
 			                                              float far = 1000.0f,
 			                                              SceneNode::Ptr parent = 0);
-			SpotLightSceneNode::Ptr addSpotLightNode(SceneNode::Ptr parent = 0);
-			PointLightSceneNode::Ptr addPointLightNode(SceneNode::Ptr parent = 0);
+			SpotLightSceneNode::Ptr addSpotLightNode(render::Material::Ptr deferredmat,
+			                                         const std::string &lightcontext,
+			                                         const std::string &shadowcontext = "",
+			                                         SceneNode::Ptr parent = 0);
+			PointLightSceneNode::Ptr addPointLightNode(render::Material::Ptr deferredmat,
+			                                           const std::string &lightcontext,
+			                                           const std::string &shadowcontext = "",
+			                                           SceneNode::Ptr parent = 0);
 
 			SceneNode::Ptr getRootNode()
 			{
@@ -104,9 +111,13 @@ namespace scene
 
 			render::GraphicsEngine *graphics;
 
+			tbb::spin_mutex mutex;
 			std::vector<CameraSceneNode::Ptr> activecameras;
+			std::vector<LightSceneNode::Ptr> activelights;
 
 			SceneNode::Ptr rootnode;
+
+			LightManager lights;
 	};
 }
 }

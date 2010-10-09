@@ -22,26 +22,39 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_SCENE_POINTLIGHTSCENENODE_HPP_INCLUDED_
 #define _CORERENDER_SCENE_POINTLIGHTSCENENODE_HPP_INCLUDED_
 
-#include "SceneNode.hpp"
-#include "CoreRender/render/Pipeline.hpp"
+#include "LightSceneNode.hpp"
 
 namespace cr
 {
+namespace render
+{
+	class BatchListCommand;
+}
 namespace scene
 {
-	class Scene;
-
-	class PointLightSceneNode
+	class PointLightSceneNode : public LightSceneNode
 	{
 		public:
-			PointLightSceneNode(Scene *scene, render::Pipeline::Ptr model);
+			PointLightSceneNode(LightManager *lights,
+			                    render::Material::Ptr deferredmat,
+			                    const std::string &lightcontext,
+			                    const std::string &shadowcontext);
 			virtual ~PointLightSceneNode();
 
-			virtual void setVisible(bool visible);
+			virtual void addToForwardLightLoop(LightLoopInfo *loop);
+			virtual void removeFromForwardLightLoop(LightLoopInfo *loop,
+			                                        unsigned int index);
+			virtual void addToDeferredLightLoop(LightLoopInfo *loop);
+			virtual void removeFromDeferredLightLoop(LightLoopInfo *loop,
+			                                        unsigned int index);
 
 			typedef core::SharedPointer<PointLightSceneNode> Ptr;
 		private:
-			virtual void submit(render::Pipeline::Ptr pipeline);
+			virtual void onUpdate(bool abstranschanged);
+
+			void setUniforms(render::BatchListCommand *batchlist);
+
+			std::vector<CameraConfig*> forwardconfigs;
 	};
 }
 }

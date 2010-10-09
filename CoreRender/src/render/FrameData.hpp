@@ -27,6 +27,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/FrameBuffer.hpp"
 #include "CoreRender/render/BlendMode.hpp"
 #include "CoreRender/render/PipelineCommand.hpp"
+#include "CoreRender/math/BoundingBox.hpp"
 
 namespace cr
 {
@@ -83,7 +84,6 @@ namespace render
 		BlendMode::List blendmode;
 		bool depthwrite;
 		DepthTest::List depthtest;
-		unsigned int renderflags;
 	};
 
 
@@ -116,8 +116,6 @@ namespace render
 		RenderBatch **batches;
 	};
 
-	struct PipelineSequenceInfo;
-
 	struct PipelineCommandInfo
 	{
 		PipelineCommandType::List type;
@@ -126,20 +124,22 @@ namespace render
 			RenderBatch *batch;
 			BatchList *batchlist;
 			ClearInfo *clear;
-			PipelineSequenceInfo *sequence;
 			RenderTargetInfo *target;
+			struct
+			{
+				PipelineCommandInfo *commands;
+				unsigned int size;
+			} list;
 		};
-	};
-
-	struct PipelineSequenceInfo
-	{
-		unsigned int commandcount;
-		PipelineCommandInfo *commands;
 	};
 
 	struct PipelineInfo
 	{
-		PipelineSequenceInfo *sequence;
+		/**
+		 * Contains a single command list which then contains the rest of the
+		 * rendering data.
+		 */
+		PipelineCommandInfo commands;
 	};
 }
 }

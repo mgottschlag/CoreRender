@@ -19,35 +19,55 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_SCENE_SPOTLIGHTSCENENODE_HPP_INCLUDED_
-#define _CORERENDER_SCENE_SPOTLIGHTSCENENODE_HPP_INCLUDED_
+#ifndef _CORERENDER_SCENE_CAMERACONFIG_HPP_INCLUDED_
+#define _CORERENDER_SCENE_CAMERACONFIG_HPP_INCLUDED_
 
-#include "LightSceneNode.hpp"
+#include "CoreRender/math/Matrix4.hpp"
+#include "CoreRender/math/BoundingBox.hpp"
+#include "CoreRender/math/Frustum.hpp"
+
+#include <vector>
+#include <tbb/spin_mutex.h>
 
 namespace cr
 {
+namespace render
+{
+	class BatchListCommand;
+}
 namespace scene
 {
-	class SpotLightSceneNode : public LightSceneNode
+	class CameraConfig
 	{
 		public:
-			SpotLightSceneNode(LightManager *lights,
-			                   render::Material::Ptr deferredmat,
-			                   const std::string &lightcontext,
-			                   const std::string &shadowcontext);
-			virtual ~SpotLightSceneNode();
+			CameraConfig();
+			~CameraConfig();
 
-			void setAngle(float angle);
-			float getAngle();
+			void setProjection(const math::Matrix4 &projmat);
+			math::Matrix4 getProjection();
 
-			virtual void addToForwardLightLoop(render::PipelineStage *stage);
-			virtual void addToDeferredLightLoop(render::PipelineStage* stage);
+			void setBoxCulling(bool active, const math::BoundingBox &box);
+			math::BoundingBox getBoxCulling();
+			bool getBoxCullingActive();
 
-			typedef core::SharedPointer<SpotLightSceneNode> Ptr;
+			void addBatchList(render::BatchListCommand *batchlist);
+			void removeBatchList(render::BatchListCommand *batchlist);
+			void removeBatchList(unsigned int index);
+			render::BatchListCommand *getBatchList(unsigned int index);
+			unsigned int getBatchListCount();
+
+			bool cull(const math::BoundingBox &box);
 		private:
-			virtual void submit(CameraConfig *camera);
+			void updateUniforms();
 
-			float angle;
+			math::Matrix4 projmat;
+			math::Frustum frustum;
+			math::BoundingBox boundingbox;
+			bool useboundingbox;
+
+			std::vector<render::BatchListCommand*> batchlists;
+
+			tbb::spin_mutex mutex;
 	};
 }
 }

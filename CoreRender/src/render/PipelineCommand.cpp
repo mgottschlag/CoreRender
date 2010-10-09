@@ -23,8 +23,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/core/MemoryPool.hpp"
 #include "CoreRender/render/Renderer.hpp"
 #include "CoreRender/render/RenderJob.hpp"
+#include "CoreRender/render/Pipeline.hpp"
+#include "CoreRender/render/Renderable.hpp"
 #include "FrameData.hpp"
-#include "CoreRender/render/PipelineSequence.hpp"
 
 #include <cstring>
 #include <tbb/parallel_sort.h>
@@ -33,9 +34,9 @@ namespace cr
 {
 namespace render
 {
-	void ClearCommand::apply(Renderer *renderer,
-	                         PipelineSequence *sequence,
-	                         PipelineCommandInfo *command)
+	void ClearCommand::beginFrame(Renderer *renderer,
+	                              PipelineState *state,
+	                              PipelineCommandInfo *command)
 	{
 		// Allocate clear info
 		core::MemoryPool *memory = renderer->getNextFrameMemory();
@@ -58,9 +59,9 @@ namespace render
 		command->clear = info;
 	}
 
-	void SetTargetCommand::apply(Renderer *renderer,
-	                             PipelineSequence *sequence,
-	                             PipelineCommandInfo *command)
+	void SetTargetCommand::beginFrame(Renderer *renderer,
+	                                  PipelineState *state,
+	                                  PipelineCommandInfo *command)
 	{
 		if (!target || !target->getFrameBuffer())
 		{
@@ -92,36 +93,97 @@ namespace render
 		command->type = getType();
 	}
 
-	void BindTextureCommand::apply(Renderer *renderer,
-	                               PipelineSequence *sequence,
-	                               PipelineCommandInfo *command)
+	void BindTextureCommand::beginFrame(Renderer *renderer,
+	                                    PipelineState *state,
+	                                    PipelineCommandInfo *command)
 	{
 		if (name == "")
 			return;
 		if (texture)
-			sequence->getState().textures[name] = texture;
+			state->textures[name] = texture;
 		else
 		{
 			std::map<std::string, Texture::Ptr>::iterator it;
-			it = sequence->getState().textures.find(name);
-			if (it != sequence->getState().textures.end())
-				sequence->getState().textures.erase(it);
+			it = state->textures.find(name);
+			if (it != state->textures.end())
+				state->textures.erase(it);
 		}
 		// Fill in command
 		command->type = getType();
 	}
-	void UnbindTexturesCommand::apply(Renderer *renderer,
-	                                  PipelineSequence *sequence,
-	                                  PipelineCommandInfo *command)
+	void UnbindTexturesCommand::beginFrame(Renderer *renderer,
+	                                       PipelineState *state,
+	                                       PipelineCommandInfo *command)
 	{
-		sequence->getState().textures.clear();
+		state->textures.clear();
 		// Fill in command
 		command->type = getType();
+	}
+
+	void BatchListCommand::submit(Renderable *renderable)
+	{
+		unsigned int jobcount = renderable->beginRendering();
+		// TODO: Reduce these calls to one?
+		for (unsigned int i = 0; i < jobcount; i++)
+			submit(renderable->getJob(i));
+		renderable->endRendering();
+	}
+	void BatchListCommand::submit(RenderJob *job)
+	{
+		if (!job->material->getShader())
+			return;
+		// TODO: Check the context earlier!
+		// Get uniform data
+		UniformData uniforms = job->material->getShader()->getUniformData();
+		uniforms.setValues(job->material->getUniformData());
+		uniforms.setValues(job->uniforms);
+		uniforms.setValues(getUniformData());
+		// Get default uniform data
+		core::MemoryPool *memory = renderer->getNextFrameMemory();
+		DefaultUniformValues *defuniforms;
+		defuniforms = (DefaultUniformValues*)memory->allocate(sizeof(DefaultUniformValues));
+		for (unsigned int i = 0; i < pipelinestate->defuniforms.size(); i++)
+		{
+			memcpy(defuniforms->uniforms[pipelinestate->defuniforms[i].name],
+			       pipelinestate->defuniforms[i].data, 16 * sizeof(float));
+		}
+		for (unsigned int i = 0; i < defuniform.size(); i++)
+		{
+			memcpy(defuniforms->uniforms[defuniform[i].name],
+			       defuniform[i].data, 16 * sizeof(float));
+		}
+		for (unsigned int i = 0; i < job->defaultuniforms.size(); i++)
+		{
+			memcpy(defuniforms->uniforms[job->defaultuniforms[i].name],
+			       job->defaultuniforms[i].data, 16 * sizeof(float));
+		}
+		// Get flag values
+		ShaderText::Ptr text = job->material->getShader();
+		unsigned int flags = text->getFlags(job->material->getShaderFlags());
+		// Collect batch info
+		RenderBatch *batch = job->createBatch(getContext(),
+		                                      renderer,
+		                                      pipelinestate,
+		                                      uniforms,
+		                                      defuniforms,
+		                                      flags);
+		if (batch)
+			submit(batch);
 	}
 
 	void BatchListCommand::submit(RenderBatch *batch)
 	{
 		batches.push_back(batch);
+	}
+
+	void BatchListCommand::beginFrame(Renderer *renderer,
+	                                  PipelineState *state,
+	                                  PipelineCommandInfo *command)
+	{
+		command->type = getType();
+		info = command;
+		this->renderer = renderer;
+		pipelinestate = new PipelineState(*state);
 	}
 
 	struct BatchListLess
@@ -131,7 +193,7 @@ namespace render
 			return a->sortkey < b->sortkey;
 		}
 	};
-	void BatchListCommand::finish()
+	void BatchListCommand::endFrame()
 	{
 		// Sort batches
 		if (batches.size() > 0)
@@ -148,15 +210,7 @@ namespace render
 		memcpy(info->batchlist->batches, &batches[0], memsize);
 		// Clear temporary batch list
 		batches.clear();
-	}
-
-	void BatchListCommand::apply(Renderer *renderer,
-	                             PipelineSequence *sequence,
-	                             PipelineCommandInfo *command)
-	{
-		command->type = getType();
-		info = command;
-		this->renderer = renderer;
+		delete pipelinestate;
 	}
 
 	BatchCommand::BatchCommand()
@@ -177,9 +231,9 @@ namespace render
 		this->context = context;
 	}
 
-	void BatchCommand::apply(Renderer *renderer,
-	                         PipelineSequence *sequence,
-	                         PipelineCommandInfo *command)
+	void BatchCommand::beginFrame(Renderer *renderer,
+	                              PipelineState *state,
+	                              PipelineCommandInfo *command)
 	{
 		command->type = getType();
 		if (!job->material->getShader())
@@ -195,10 +249,10 @@ namespace render
 		core::MemoryPool *memory = renderer->getNextFrameMemory();
 		DefaultUniformValues *defuniforms;
 		defuniforms = (DefaultUniformValues*)memory->allocate(sizeof(DefaultUniformValues));
-		for (unsigned int i = 0; i < sequence->getDefaultUniforms().size(); i++)
+		for (unsigned int i = 0; i < state->defuniforms.size(); i++)
 		{
-			memcpy(defuniforms->uniforms[sequence->getDefaultUniforms()[i].name],
-			       sequence->getDefaultUniforms()[i].data, 16 * sizeof(float));
+			memcpy(defuniforms->uniforms[state->defuniforms[i].name],
+			       state->defuniforms[i].data, 16 * sizeof(float));
 		}
 		for (unsigned int i = 0; i < job->defaultuniforms.size(); i++)
 		{
@@ -211,10 +265,77 @@ namespace render
 		// Create batch
 		command->batch = job->createBatch(context,
 		                                  renderer,
-		                                  &sequence->getState(),
+		                                  state,
 		                                  uniforms,
 		                                  defuniforms,
 		                                  flags);
+	}
+
+	CommandList::CommandList()
+		: PipelineCommand(PipelineCommandType::CommandList), active(true)
+	{
+	}
+	CommandList::~CommandList()
+	{
+		for (unsigned int i = 0; i < commands.size(); i++)
+			delete commands[i];
+	}
+
+	void CommandList::setActive(bool active)
+	{
+		this->active = active;
+	}
+	bool CommandList::isActive()
+	{
+		return active;
+	}
+
+	void CommandList::addCommand(PipelineCommand *command)
+	{
+		commands.push_back(command);
+	}
+	PipelineCommand *CommandList::getCommand(unsigned int index)
+	{
+		if (index >= commands.size())
+			return 0;
+		return commands[index];
+	}
+	void CommandList::removeCommand(unsigned int index)
+	{
+		if (index >= commands.size())
+			return;
+		delete commands[index];
+		commands.erase(commands.begin() + index);
+	}
+	unsigned int CommandList::getCommandCount()
+	{
+		return commands.size();
+	}
+
+	void CommandList::beginFrame(Renderer *renderer,
+	                             PipelineState *state,
+	                             PipelineCommandInfo *command)
+	{
+		command->type = getType();
+		// Allocate memory for children
+		core::MemoryPool *memory = renderer->getNextFrameMemory();
+		PipelineCommandInfo *children;
+		unsigned int memsize = sizeof(PipelineCommandInfo) * commands.size();
+		children = (PipelineCommandInfo*)memory->allocate(memsize);
+		command->list.commands = children;
+		command->list.size = commands.size();
+		// Prepare children
+		for (unsigned int i = 0; i < commands.size(); i++)
+		{
+			commands[i]->beginFrame(renderer, state, &children[i]);
+		}
+	}
+	void CommandList::endFrame()
+	{
+		for (unsigned int i = 0; i < commands.size(); i++)
+		{
+			commands[i]->endFrame();
+		}
 	}
 }
 }

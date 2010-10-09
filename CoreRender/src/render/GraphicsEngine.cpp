@@ -321,21 +321,21 @@ namespace render
 	{
 		renderer->uploadNewObjects();
 		// Setup the rendering pipeline
+		core::MemoryPool *memory = renderer->getNextFrameMemory();
+		unsigned int memsize = sizeof(PipelineInfo) * pipelines.size();
+		renderdata = (PipelineInfo*)memory->allocate(memsize);
 		for (unsigned int i = 0; i < pipelines.size(); i++)
 		{
-			pipelines[i]->beginFrame(renderer);
+			pipelines[i]->beginFrame(renderer, &renderdata[i]);
 		}
 		return true;
 	}
 	bool GraphicsEngine::endFrame()
 	{
-		// Collect frame data
-		core::MemoryPool *memory = renderer->getNextFrameMemory();
-		unsigned int memsize = sizeof(PipelineInfo) * pipelines.size();
-		PipelineInfo *renderdata = (PipelineInfo*)memory->allocate(memsize);
+		// Finish frame data
 		for (unsigned int i = 0; i < pipelines.size(); i++)
 		{
-			pipelines[i]->prepare(&renderdata[i]);
+			pipelines[i]->endFrame();
 		}
 		// Wait for last frame to end
 		if (multithreaded)

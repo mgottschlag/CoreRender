@@ -32,6 +32,21 @@ namespace render
 	struct PipelineInfo;
 	class Renderer;
 	class PipelineSequence;
+	class PipelineStage;
+
+	/**
+	 * Current pipeline state which is used to keep track of bound textures
+	 * for PipelineCommand::beginFrame().
+	 */
+	struct PipelineState
+	{
+		PipelineState(std::vector<DefaultUniform> &defuniforms)
+			: defuniforms(defuniforms)
+		{
+		}
+		std::map<std::string, Texture::Ptr> textures;
+		std::vector<DefaultUniform> &defuniforms;
+	};
 
 	/**
 	 * Class which defines the way a scene is rendered to the screen or to
@@ -53,113 +68,99 @@ namespace render
 			virtual ~Pipeline();
 
 			/**
-			 * Adds a new sequence at the end of the pipeline.
-			 * @param name Name of the sequence.
-			 * @return New sequence.
+			 * Returns the command tree which is executed in the render thread
+			 * every time the pipeline is rendered.
 			 */
-			PipelineSequence *addSequence(const std::string &name);
-			/**
-			 * Returns the index of a sequence with a certain name.
-			 * @param name Name of the sequence.
-			 * @return Index of the sequence or -1 if no sequence was found.
-			 */
-			int findSequence(const std::string &name);
-			/**
-			 * Returns the sequence with a certain name.
-			 * @param name Name of the sequence.
-			 * @return Sequence with the name.
-			 */
-			PipelineSequence *getSequence(const std::string &name);
-			/**
-			 * Returns the sequence at a certain index.
-			 * @param index Index of the sequence.
-			 * @return Sequence at the index.
-			 */
-			PipelineSequence *getSequence(unsigned int index);
-			/**
-			 * Removes the sequence at a certain index.
-			 * @param index Index of the sequence to remove.
-			 */
-			void removeSequence(unsigned int index);
-			/**
-			 * Returns the number of sequences attached to this pipeline.
-			 * @return Number of sequences.
-			 */
-			unsigned int getSequenceCount();
+			CommandList &getCommands()
+			{
+				return commands;
+			}
+
+			void addStage(CommandList *commands, const std::string &name);
+			CommandList *getStage(const std::string &name);
+			void removeStage(const std::string &name);
+			unsigned int getStageCount();
 
 			/**
-			 * Sets the default sequence for this pipeline. This sequence is the
-			 * starting point for all rendering, other sequences within the
-			 * pipeline then have to be rendered via SequenceCommand.
-			 * @param sequence New default sequence.
+			 * Adds a command list to the list of deferred light loops.This list
+			 * will then hold the commands for shadow map generation and drawing
+			 * the light.
+			 * @note The list must be empty.
+			 * @param stage Command list to be used as a light loop list.
 			 */
-			void setDefaultSequence(PipelineSequence *sequence);
-			/**
-			 * Returns the default sequence of this pipeline.
-			 * @return Default sequence.
-			 */
-			PipelineSequence *getDefaultSequence();
-
-			/**
-			 * Adds a sequence to the list of deferred light loops. Each
-			 * sequence in this pass will just hold more sequences for all
-			 * shadow map generation passes and one batch per light for deferred
-			 * lighting.
-			 * @param sequence Sequence to be added to the light loop list.
-			 */
-			void addDeferredLightLoop(PipelineSequence *sequence);
+			void addDeferredLightLoop(CommandList *lightloop);
 			/**
 			 * Returns the number of deferred light loops in this pipeline.
 			 * @return Number of light loops.
 			 */
 			unsigned int getDeferredLightLoopCount();
 			/**
-			 * Returns a single sequence which holds a deferred light loop.
+			 * Returns a single command list which holds a deferred light loop.
 			 * @param index Index of the light loop.
 			 */
-			PipelineSequence *getDeferredLightLoop(unsigned int index);
-			
+			CommandList *getDeferredLightLoop(unsigned int index);
+
 			/**
-			 * Adds a sequence to the list of forward light loops. Each
-			 * sequence in this pass will just hold more sequences for all
-			 * shadow map generation passes and for drawing the scene again
-			 * with additive light materials.
-			 * @param sequence Sequence to be added to the light loop list.
+			 * Adds a command list to the list of deferred light loops.This list
+			 * will then hold the commands for shadow map generation and drawing
+			 * all geometry again with lighting from the light.
+			 * @note The list must be empty.
+			 * @param stage Command list to be used as a light loop list.
 			 */
-			void addForwardLightLoop(PipelineSequence *sequence);
+			void addForwardLightLoop(CommandList *lightloop);
 			/**
 			 * Returns the number of forward light loops in this pipeline.
 			 * @return Number of light loops.
 			 */
 			unsigned int getForwardLightLoopCount();
 			/**
-			 * Returns a single sequence which holds a forward light loop.
+			 * Returns a single command list which holds a forward light loop.
 			 * @param index Index of the light loop.
 			 */
-			PipelineSequence *getForwardLightLoop(unsigned int index);
+			CommandList *getForwardLightLoop(unsigned int index);
+
+			void getBatchLists(std::vector<BatchListCommand*> &lists);
 
 			/**
 			 * Begins a new frame. Called by Renderer, do not call this
 			 * manually.
 			 * @param renderer Renderer which renders this frame.
-			 */
-			void beginFrame(Renderer *renderer);
-			/**
-			 * Prepares the pipeline data to be passed to the render thread and
-			 * places it in info.
 			 * @param info Pipeline render info to be passed to the render
 			 * thread.
 			 */
-			void prepare(PipelineInfo *info);
+			void beginFrame(Renderer *renderer, PipelineInfo *info);
+			/**
+			 * Prepares the pipeline data to be passed to the render thread and
+			 * places it in info.
+			 */
+			void endFrame();
+
+			/**
+			 * Returns the default uniform values which are set for this
+			 * pipeline. This is mostly used to set camera settings which are
+			 * valid for all jobs rendered with this pipeline. This function
+			 * returns a reference which can be used to add or modify uniform
+			 * values.
+			 * @return Reference to the default uniform values.
+			 */
+			std::vector<DefaultUniform> &getDefaultUniforms()
+			{
+				return uniforms;
+			}
 
 			typedef core::SharedPointer<Pipeline> Ptr;
 		private:
-			std::vector<PipelineSequence*> sequences;
+			void getBatchLists(CommandList *commands,
+			                   std::vector<BatchListCommand*> &lists);
 
-			PipelineSequence *defaultsequence;
+			core::HashMap<std::string, CommandList*>::Type stages;
 
-			std::vector<PipelineSequence*> forwardlightloops;
-			std::vector<PipelineSequence*> deferredlightloops;
+			std::vector<CommandList*> forwardlightloops;
+			std::vector<CommandList*> deferredlightloops;
+
+			CommandList commands;
+
+			std::vector<DefaultUniform> uniforms;
 	};
 }
 }

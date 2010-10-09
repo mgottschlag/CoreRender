@@ -33,7 +33,7 @@ namespace render
 {
 	struct RenderBatch;
 	class Renderer;
-	struct SequenceState;
+	struct PipelineState;
 
 	/**
 	 * Defines a combination of geometry/material which can be rendered via
@@ -58,7 +58,7 @@ namespace render
 			 */
 			RenderBatch *createBatch(const std::string &context,
 			                         Renderer *renderer,
-			                         SequenceState *sequence,
+			                         PipelineState *pipelinestate,
 			                         UniformData &uniforms,
 			                         DefaultUniformValues *defuniforms,
 			                         unsigned int flags);

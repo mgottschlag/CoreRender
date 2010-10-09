@@ -34,43 +34,23 @@ namespace cr
 {
 namespace render
 {
+	struct PipelineResources;
+
 	/**
 	 * Struct which holds the information necessary to construct a
 	 * PipelineCommand in PipelineDefinition::createPipeline().
 	 */
 	struct CommandDefinition
 	{
+		~CommandDefinition()
+		{
+			for (unsigned int i = 0; i < children.size(); i++)
+				delete children[i];
+		}
 		PipelineCommandType::List type;
 		std::vector<std::string> params;
 		std::vector<res::Resource::Ptr> resources;
-	};
-
-	/**
-	 * Struct which holds the template for a single PipelineStage.
-	 */
-	struct StageDefinition
-	{
-		~StageDefinition()
-		{
-			for (unsigned int i = 0; i < commands.size(); i++)
-				delete commands[i];
-		}
-		std::string name;
-		std::vector<CommandDefinition*> commands;
-	};
-
-	/**
-	 * Struct which holds the template for a single PipelineSequence.
-	 */
-	struct SequenceDefinition
-	{
-		~SequenceDefinition()
-		{
-			for (unsigned int i = 0; i < stages.size(); i++)
-				delete stages[i];
-		}
-		std::string name;
-		std::vector<StageDefinition*> stages;
+		std::vector<CommandDefinition*> children;
 	};
 
 	/**
@@ -91,39 +71,10 @@ namespace render
 			 */
 			virtual ~PipelineDefinition();
 
-			/**
-			 * Adds a new sequence to the pipeline definition.
-			 * @param name Name of the new sequence.
-			 * @return New empty sequence.
-			 */
-			SequenceDefinition *addSequence(const std::string &name);
-			/**
-			 * Finds the index of the sequence with the given name.
-			 * @param name Name of the sequence.
-			 * @return Index of the sequence or -1 if it was not found.
-			 */
-			int findSequence(const std::string &name);
-			/**
-			 * Returns the sequence with the given name.
-			 * @param name Name of the sequence.
-			 * @return Sequence with the name.
-			 */
-			SequenceDefinition *getSequence(const std::string &name);
-			/**
-			 * Returns the sequence at a specific index.
-			 * @param index Index of the sequence.
-			 * @return Sequence at the index.
-			 */
-			SequenceDefinition *getSequence(unsigned int index);
-			/**
-			 * Removes the sequence at a specific index.
-			 * @param index Index of the sequence to be removed.
-			 */
-			void removeSequence(unsigned int index);
-			/**
-			 * Returns the number of sequences in the pipeline definition.
-			 */
-			unsigned int getSequenceCount();
+			CommandDefinition &getCommands()
+			{
+				return commands;
+			}
 
 			/**
 			 * Sets the name of the default sequence. Note that the sequence
@@ -143,7 +94,7 @@ namespace render
 			 * Registers a sequence as a deferred light loop.
 			 * @param sequence Name of the sequence.
 			 */
-			void addDeferredLightLoop(const std::string &sequence);
+			void addDeferredLightLoop(const std::string &listname);
 			/**
 			 * Returns the number of deferred light loops.
 			 * @return Number of registered sequences.
@@ -157,19 +108,19 @@ namespace render
 			std::string getDeferredLightLoop(unsigned int index);
 
 			/**
-			 * Registers a sequence as a forward light loop.
-			 * @param sequence Name of the sequence.
+			 * Registers a stage as a forward light loop.
+			 * @param stage Name of the command list.
 			 */
-			void addForwardLightLoop(const std::string &sequence);
+			void addForwardLightLoop(const std::string &listname);
 			/**
 			 * Returns the number of forward light loops.
-			 * @return Number of registered sequences.
+			 * @return Number of registered stages.
 			 */
 			unsigned int getForwardLightLoopCount();
 			/**
 			 * Gets the name of a forward light loop at a certain index.
 			 * @param index Index of the light loop.
-			 * @return Name of the sequence.
+			 * @return Name of the command list.
 			 */
 			std::string getForwardLightLoop(unsigned int index);
 
@@ -314,12 +265,15 @@ namespace render
 
 			typedef core::SharedPointer<PipelineDefinition> Ptr;
 		private:
-			bool loadSequence(TiXmlElement *xml);
-			void loadStage(SequenceDefinition *sequence, TiXmlElement *xml);
+			bool loadCommands(CommandDefinition *parent, TiXmlElement *xml);
+			bool waitForCommand(CommandDefinition *command, bool highpriority);
 
-			std::vector<SequenceDefinition*> sequences;
+			void createCommands(Pipeline::Ptr pipeline,
+			                    PipelineResources *res,
+			                    CommandList *list,
+			                    CommandDefinition *listsrc);
 
-			std::string defaultsequence;
+			CommandDefinition commands;
 
 			std::vector<std::string> forwardlightloops;
 			std::vector<std::string> deferredlightloops;

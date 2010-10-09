@@ -43,7 +43,7 @@ namespace scene
 
 			typedef core::SharedPointer<ModelSceneNode> Ptr;
 		private:
-			virtual void submit(render::PipelineSequence *sequence);
+			virtual void submit(CameraConfig *camera);
 			virtual void onUpdate(bool abstranschanged);
 
 			render::ModelRenderable *model;

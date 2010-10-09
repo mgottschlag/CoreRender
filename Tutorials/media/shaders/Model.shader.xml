@@ -13,10 +13,16 @@
 		uniform mat4 skinMat[50];
 		#endif
 		varying vec2 texcoord;
+		varying vec3 worldPos;
+		varying vec3 worldNormal;
 		void main()
 		{
 			// Transformation
 			texcoord = texcoord0;
+			vec4 translated = transMat * vec4(pos, 1.0);
+			worldPos = translated.xyz / translated.w;
+			translated = transMat * vec4(normal, 1.0);
+			worldNormal = translated.xyz / translated.w;
 			#if Skinning
 			// Skinning
 			mat4 mat = mat4(0.0);
@@ -43,6 +49,27 @@
 		}
 	]]>
 	</Text>
+	<Text name="FS_POINTLIGHT">
+	<![CDATA[
+		varying vec2 texcoord;
+		uniform sampler2D tex;
+		varying vec3 color;
+		uniform vec3 lightPos;
+		uniform float radius;
+		varying vec3 worldPos;
+		varying vec3 worldNormal;
+		void main()
+		{
+			vec3 lightVec = lightPos - worldPos;
+			float lightDist = length(lightVec);
+			lightVec /= lightDist;
+			// Compute attenuation
+			lightDist = lightDist / radius;
+			float attenuation = max(dot(lightVec, worldNormal), 1.0) * (1.0 - lightDist * lightDist);
+			gl_FragColor = texture2D(tex, texcoord) * attenuation;
+		}
+	]]>
+	</Text>
 
 	<Attrib name="pos" />
 	<Attrib name="normal" />
@@ -51,12 +78,15 @@
 	<Attrib name="jointweight" />
 
 	<Uniform name="worldMat" type="mat4" />
-	<Uniform name="lightDir" type="float3" >
-		1.0, 1.0, -1.0
-	</Uniform>
 	<Uniform name="skinMat" count="50" type="mat4" />
+	<Uniform name="lightPos" type="float3" />
+	<Uniform name="radius" type="float1" />
 
 	<Texture name="tex" />
 
 	<Context name="AMBIENT" vs="VS_GENERAL" fs="FS_AMBIENT" />
+	<Context name="POINTLIGHT" vs="VS_GENERAL" fs="FS_POINTLIGHT">
+		<Depth write="false" test="LessEqual" />
+		<Blend mode="Add" />
+	</Context>
 </Shader>

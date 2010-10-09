@@ -20,8 +20,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/render/PipelineDefinition.hpp"
-#include "CoreRender/render/PipelineSequence.hpp"
-#include "CoreRender/render/PipelineStage.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
 #include "../3rdparty/tinyxml.h"
 
@@ -38,65 +36,11 @@ namespace render
 	}
 	PipelineDefinition::~PipelineDefinition()
 	{
-		for (unsigned int i = 0; i < sequences.size(); i++)
-			delete sequences[i];
 	}
 
-	SequenceDefinition *PipelineDefinition::addSequence(const std::string &name)
+	void PipelineDefinition::addDeferredLightLoop(const std::string &listname)
 	{
-		SequenceDefinition *sequence = new SequenceDefinition();
-		sequence->name = name;
-		sequences.push_back(sequence);
-		return sequence;
-	}
-	int PipelineDefinition::findSequence(const std::string &name)
-	{
-		for (unsigned int i = 0; i < sequences.size(); i++)
-		{
-			if (sequences[i]->name == name)
-				return i;
-		}
-		return -1;
-	}
-	SequenceDefinition *PipelineDefinition::getSequence(const std::string &name)
-	{
-		for (unsigned int i = 0; i < sequences.size(); i++)
-		{
-			if (sequences[i]->name == name)
-				return sequences[i];
-		}
-		return 0;
-	}
-	SequenceDefinition *PipelineDefinition::getSequence(unsigned int index)
-	{
-		if (index >= sequences.size())
-			return 0;
-		return sequences[index];
-	}
-	void PipelineDefinition::removeSequence(unsigned int index)
-	{
-		if (index >= sequences.size())
-			return;
-		delete sequences[index];
-		sequences.erase(sequences.begin() + index);
-	}
-	unsigned int PipelineDefinition::getSequenceCount()
-	{
-		return sequences.size();
-	}
-
-	void PipelineDefinition::setDefaultSequence(const std::string &sequence)
-	{
-		defaultsequence = sequence;
-	}
-	std::string PipelineDefinition::getDefaultSequence()
-	{
-		return defaultsequence;
-	}
-
-	void PipelineDefinition::addDeferredLightLoop(const std::string &sequence)
-	{
-		deferredlightloops.push_back(sequence);
+		deferredlightloops.push_back(listname);
 	}
 	unsigned int PipelineDefinition::getDeferredLightLoopCount()
 	{
@@ -109,9 +53,9 @@ namespace render
 		return deferredlightloops[index];
 	}
 
-	void PipelineDefinition::addForwardLightLoop(const std::string &sequence)
+	void PipelineDefinition::addForwardLightLoop(const std::string &listname)
 	{
-		forwardlightloops.push_back(sequence);
+		forwardlightloops.push_back(listname);
 	}
 	unsigned int PipelineDefinition::getForwardLightLoopCount()
 	{
@@ -124,12 +68,19 @@ namespace render
 		return forwardlightloops[index];
 	}
 
+	struct PipelineResources
+	{
+		std::map<std::string, Texture2D::Ptr> textures;
+		std::map<std::string, FrameBuffer::Ptr> framebuffers;
+		std::map<std::string, RenderTarget::Ptr> rendertargets;
+	};
+
 	Pipeline::Ptr PipelineDefinition::createPipeline(unsigned int screenwidth,
 	                                                 unsigned int screenheight)
 	{
 		Pipeline::Ptr pipeline = new Pipeline();
+		PipelineResources res;
 		// Create textures
-		std::map<std::string, Texture2D::Ptr> textures;
 		{
 			std::map<std::string, TextureInfo*>::iterator it;
 			for (it = this->textures.begin(); it != this->textures.end(); it++)
@@ -139,11 +90,10 @@ namespace render
 				tex->set((unsigned int)(size * screenwidth),
 				         (unsigned int)(size * screenheight),
 				         it->second->format);
-				textures.insert(std::make_pair(it->first, tex));
+				res.textures.insert(std::make_pair(it->first, tex));
 			}
 		}
 		// Create framebuffers
-		std::map<std::string, FrameBuffer::Ptr> framebuffers;
 		{
 			std::map<std::string, FrameBufferInfo*>::iterator it;
 			for (it = this->framebuffers.begin(); it != this->framebuffers.end(); it++)
@@ -153,28 +103,27 @@ namespace render
 				fb->setSize((unsigned int)(size * screenwidth),
 				            (unsigned int)(size * screenheight),
 				            it->second->depthbuffer);
-				framebuffers.insert(std::make_pair(it->first, fb));
+				res.framebuffers.insert(std::make_pair(it->first, fb));
 			}
 		}
 		// Create render targets
-		std::map<std::string, RenderTarget::Ptr> rendertargets;
 		{
 			std::map<std::string, RenderTargetInfo*>::iterator it;
 			for (it = this->rendertargets.begin(); it != this->rendertargets.end(); it++)
 			{
 				RenderTarget::Ptr target = getManager()->createResource<RenderTarget>("RenderTarget");
 				// TODO: The user might have inserted invalid names here
-				target->setFrameBuffer(framebuffers[it->second->framebuffer]);
+				target->setFrameBuffer(res.framebuffers[it->second->framebuffer]);
 				if (it->second->depthbuffer != "")
-					target->setDepthBuffer(textures[it->second->depthbuffer]);
+					target->setDepthBuffer(res.textures[it->second->depthbuffer]);
 				for (unsigned int i = 0; i < it->second->colorbuffers.size(); i++)
 				{
-					target->addColorBuffer(textures[it->second->colorbuffers[i]]);
+					target->addColorBuffer(res.textures[it->second->colorbuffers[i]]);
 				}
-				rendertargets.insert(std::make_pair(it->first, target));
+				res.rendertargets.insert(std::make_pair(it->first, target));
 			}
 		}
-		// Create sequences
+		/*// Create sequences
 		for (unsigned int i = 0; i < sequences.size(); i++)
 		{
 			PipelineSequence *sequence = pipeline->addSequence(sequences[i]->name);
@@ -304,23 +253,17 @@ namespace render
 			// Copy default sequence
 			if (sequences[i]->name == defaultsequence)
 				pipeline->setDefaultSequence(sequence);
-		}
+		}*/
+		// Create commands
+		createCommands(pipeline, &res, &pipeline->getCommands(), &commands);
 		// Copy light loops
 		for (unsigned int i = 0; i < forwardlightloops.size(); i++)
 		{
-			for (unsigned int j = 0; j < sequences.size(); j++)
-			{
-				if (sequences[j]->name == forwardlightloops[i])
-					pipeline->addForwardLightLoop(pipeline->getSequence(j));
-			}
+			pipeline->addForwardLightLoop(pipeline->getStage(forwardlightloops[i]));
 		}
 		for (unsigned int i = 0; i < deferredlightloops.size(); i++)
 		{
-			for (unsigned int j = 0; j < sequences.size(); j++)
-			{
-				if (sequences[j]->name == deferredlightloops[i])
-					pipeline->addDeferredLightLoop(pipeline->getSequence(j));
-			}
+			pipeline->addDeferredLightLoop(pipeline->getStage(forwardlightloops[i]));
 		}
 		return pipeline;
 	}
@@ -569,54 +512,27 @@ namespace render
 			}
 		}
 		// Load sequences
-		TiXmlElement *element = root->FirstChildElement("Sequence");
+		TiXmlElement *element = root->FirstChildElement("Commands");
 		if (element)
 		{
-			if (!loadSequence(element))
+			if (!loadCommands(&commands, element))
 			{
 				finishLoading(false);
 				return false;
 			}
-			defaultsequence = sequences[0]->name;
 		}
 		finishLoading(true);
 		return true;
 	}
 
-	bool PipelineDefinition::loadSequence(TiXmlElement *xml)
+	bool PipelineDefinition::loadCommands(CommandDefinition *parent, TiXmlElement *xml)
 	{
-		// Create sequence
+		// Create command list
+		parent->type = PipelineCommandType::CommandList;
 		const char *name = xml->Attribute("name");
-		if (!name)
-		{
-			getManager()->getLog()->error("%s: Sequence name missing.",
-			                              getName().c_str());
-			return false;
-		}
-		SequenceDefinition *sequence = addSequence(name);
-		// Load stages
-		for (TiXmlElement *element = xml->FirstChildElement("Stage");
-		     element != 0;
-		     element = element->NextSiblingElement("Stage"))
-		{
-			loadStage(sequence, element);
-		}
-		return true;
-	}
-	void PipelineDefinition::loadStage(SequenceDefinition *sequence,
-	                                   TiXmlElement *xml)
-	{
-		// Create stage
-		const char *name = xml->Attribute("name");
-		if (!name)
-		{
-			getManager()->getLog()->error("%s: Sequence name missing.",
-			                              getName().c_str());
-			return;
-		}
-		StageDefinition *stage = new StageDefinition;
-		sequence->stages.push_back(stage);
-		stage->name = name;
+		if (name)
+			parent->params.push_back(name);
+		// TODO: Register stage?
 		// Read commands
 		// TODO: This code is incredibly ugly, replace this with multiple
 		// command classes
@@ -656,7 +572,7 @@ namespace render
 						command->params.push_back(clearcolor);
 					}
 				}
-				stage->commands.push_back(command);
+				parent->children.push_back(command);
 			}
 			else if (!strcmp(element->Value(), "SetTarget"))
 			{
@@ -679,7 +595,7 @@ namespace render
 				CommandDefinition *command = new CommandDefinition;
 				command->type = PipelineCommandType::SetTarget;
 				command->params.push_back(name);
-				stage->commands.push_back(command);
+				parent->children.push_back(command);
 			}
 			else if (!strcmp(element->Value(), "DrawGeometry"))
 			{
@@ -695,7 +611,7 @@ namespace render
 				CommandDefinition *command = new CommandDefinition;
 				command->type = PipelineCommandType::BatchList;
 				command->params.push_back(context);
-				stage->commands.push_back(command);
+				parent->children.push_back(command);
 			}
 			else if (!strcmp(element->Value(), "BindTexture"))
 			{
@@ -720,14 +636,14 @@ namespace render
 				command->type = PipelineCommandType::BindTexture;
 				command->params.push_back(name);
 				command->params.push_back(texture);
-				stage->commands.push_back(command);
+				parent->children.push_back(command);
 			}
 			else if (!strcmp(element->Value(), "UnbindTextures"))
 			{
 				// Create command
 				CommandDefinition *command = new CommandDefinition;
 				command->type = PipelineCommandType::UnbindTextures;
-				stage->commands.push_back(command);
+				parent->children.push_back(command);
 			}
 			else if (!strcmp(element->Value(), "FullscreenQuad"))
 			{
@@ -758,11 +674,45 @@ namespace render
 				command->params.push_back(material);
 				command->params.push_back(context);
 				command->resources.push_back(materialres);
-				stage->commands.push_back(command);
+				parent->children.push_back(command);
 			}
-			else if (!strcmp(element->Value(), "Sequence"))
+			else if (!strcmp(element->Value(), "Stage"))
 			{
-				// TODO
+				CommandDefinition *command = new CommandDefinition;
+				parent->children.push_back(command);
+				loadCommands(command, element);
+			}
+			else if (!strcmp(element->Value(), "ForwardLightLoop"))
+			{
+				// Get name
+				const char *name = element->Attribute("name");
+				if (!name)
+				{
+					getManager()->getLog()->error("%s: Light loop name missing.",
+					                              getName().c_str());
+					continue;
+				}
+				// Create command list
+				CommandDefinition *command = new CommandDefinition;
+				parent->children.push_back(command);
+				loadCommands(command, element);
+				addForwardLightLoop(name);
+			}
+			else if (!strcmp(element->Value(), "DeferredLightLoop"))
+			{
+				// Get name
+				const char *name = element->Attribute("name");
+				if (!name)
+				{
+					getManager()->getLog()->error("%s: Light loop name missing.",
+					                              getName().c_str());
+					continue;
+				}
+				// Create command list
+				CommandDefinition *command = new CommandDefinition;
+				parent->children.push_back(command);
+				loadCommands(command, element);
+				addForwardLightLoop(name);
 			}
 			else
 			{
@@ -771,6 +721,8 @@ namespace render
 				                              element->Value());
 			}
 		}
+		// TODO: Error handling
+		return true;
 	}
 
 	bool PipelineDefinition::waitForLoading(bool recursive, bool highpriority)
@@ -779,23 +731,156 @@ namespace render
 			return false;
 		if (!recursive)
 			return true;
+		return waitForCommand(&commands, highpriority);
+	}
+
+	bool PipelineDefinition::waitForCommand(CommandDefinition *command, bool highpriority)
+	{
 		bool success = true;
-		// Wait for all command resources
-		for (unsigned int i = 0; i < sequences.size(); i++)
+		for (unsigned int i = 0; i < command->resources.size(); i++)
+			success = success && command->resources[i]->waitForLoading(true, highpriority);
+		for (unsigned int i = 0; i < command->children.size(); i++)
+			success = success && waitForCommand(command->children[i], highpriority);
+		return success;
+	}
+
+	void PipelineDefinition::createCommands(Pipeline::Ptr pipeline,
+	                                        PipelineResources *res,
+	                                        CommandList *list,
+	                                        CommandDefinition *listsrc)
+	{
+		// Create commands
+		for (unsigned int i = 0; i < listsrc->children.size(); i++)
 		{
-			SequenceDefinition *sequence = sequences[i];
-			for (unsigned int j = 0; j < sequence->stages.size(); j++)
+			CommandDefinition *commandsrc = listsrc->children[i];
+			switch (commandsrc->type)
 			{
-				StageDefinition *stage = sequence->stages[j];
-				for (unsigned int k = 0; k < stage->commands.size(); k++)
+				case PipelineCommandType::SetTarget:
 				{
-					CommandDefinition *command = stage->commands[k];
-					for (unsigned int l = 0; l < command->resources.size(); l++)
-						success = success && command->resources[l]->waitForLoading(true, highpriority);
+					std::string target = commandsrc->params[0];
+					SetTargetCommand *cmd = new SetTargetCommand;
+					if (target != "")
+						cmd->setTarget(res->rendertargets[target]);
+					list->addCommand(cmd);
+					break;
 				}
+				case PipelineCommandType::BatchList:
+				{
+					std::string context = commandsrc->params[0];
+					BatchListCommand *cmd = new BatchListCommand;
+					cmd->setContext(context);
+					list->addCommand(cmd);
+					break;
+				}
+				case PipelineCommandType::Clear:
+				{
+					bool cleardepth = commandsrc->params[0] == "true";
+					float depth = strtof(commandsrc->params[1].c_str(), 0);
+					std::istringstream colorstr(commandsrc->params[2]);
+					float color[4];
+					char separator;
+					colorstr >> color[0] >> separator;
+					colorstr >> color[1] >> separator;
+					colorstr >> color[2] >> separator;
+					colorstr >> color[3];
+					ClearCommand *cmd = new ClearCommand;
+					cmd->clearDepth(cleardepth, depth);
+					for (unsigned int i = 3; i < commandsrc->params.size(); i++)
+					{
+						unsigned int index = atoi(commandsrc->params[i].c_str());
+						cmd->clearColor(index, true, core::Color(color[0] * 255.0,
+						                                         color[1] * 255.0,
+						                                         color[2] * 255.0,
+						                                         color[3] * 255.0));
+					}
+					list->addCommand(cmd);
+					break;
+				}
+				case PipelineCommandType::Batch:
+				{
+					std::string materialname = commandsrc->params[0];
+					std::string context = commandsrc->params[1];
+					// Get resources needed for the fs quad
+					Resource::Ptr res = getManager()->getResource("__fsquadib");
+					IndexBuffer::Ptr indices = (IndexBuffer*)res.get();
+					res = getManager()->getResource("__fsquadvb");
+					VertexBuffer::Ptr vertices = (VertexBuffer*)res.get();
+					Material::Ptr material = getManager()->getOrLoad<Material>("Material",
+					                                                           materialname);
+					// Create vertex layout
+					// TODO: We do not want to have one layout instance per quad
+					cr::render::VertexLayout::Ptr layout = new cr::render::VertexLayout(2);
+					layout->setElement(0, "pos", 0, 2, 0, cr::render::VertexElementType::Float, 16);
+					layout->setElement(1, "texcoord0", 0, 2, 8, cr::render::VertexElementType::Float, 16);
+					// Create render job
+					RenderJob *job = new RenderJob;
+					job->vertices = vertices;
+					job->indices = indices;
+					job->vertexcount = 4;
+					job->endindex = 6;
+					job->indextype = 1;
+					job->startindex = 0;
+					job->basevertex = 0;
+					job->vertexoffset = 0;
+					job->material = material;
+					job->layout = layout;
+					job->uniforms.add("targetSize") = math::Vector2F(400, 300);
+					// Create command
+					BatchCommand *cmd = new BatchCommand;
+					cmd->setJob(job, context);
+					list->addCommand(cmd);
+					break;
+				}
+				case PipelineCommandType::BindTexture:
+				{
+					std::string name = commandsrc->params[0];
+					std::string texturename = commandsrc->params[1];
+					// Find texture
+					std::map<std::string, Texture2D::Ptr>::iterator it;
+					it = res->textures.find(texturename);
+					Texture::Ptr texture = 0;
+					if (it != res->textures.end())
+						texture = it->second;
+					else
+					{
+						// TODO: Only works for 2D textures
+						texture = getManager()->getOrLoad<Texture>("Texture2D", texturename);
+					}
+					// Create command
+					BindTextureCommand *cmd = new BindTextureCommand;
+					cmd->setName(name);
+					cmd->setTexture(texture);
+					list->addCommand(cmd);
+					break;
+				}
+				case PipelineCommandType::UnbindTextures:
+				{
+					// Create command
+					UnbindTexturesCommand *cmd = new UnbindTexturesCommand;
+					list->addCommand(cmd);
+					break;
+				}
+				case PipelineCommandType::CommandList:
+				{
+					// Create command
+					CommandList *cmd = new CommandList;
+					list->addCommand(cmd);
+					if (commandsrc->params.size() > 0)
+					{
+						cmd->setName(commandsrc->params[0]);
+						// Add stage to the pipeline
+						pipeline->addStage(cmd, commandsrc->params[0]);
+					}
+					// Recursively add commands
+					createCommands(pipeline, res, cmd, commandsrc);
+					break;
+				}
+				default:
+					getManager()->getLog()->error("%s: Invalid command.",
+					                              getName().c_str());
+					break;
 			}
 		}
-		return success;
 	}
 }
 }

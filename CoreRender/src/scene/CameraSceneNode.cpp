@@ -20,7 +20,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/scene/CameraSceneNode.hpp"
-#include "CoreRender/render/PipelineSequence.hpp"
 
 namespace cr
 {
@@ -30,9 +29,18 @@ namespace scene
 		: pipeline(pipeline), projmatdirty(true),
 		projmat(math::Matrix4::Identity())
 	{
+		// Build primary configs
+		std::vector<render::BatchListCommand*> batchlists;
+		pipeline->getBatchLists(batchlists);
+		for (unsigned int i = 0; i < batchlists.size(); i++)
+			primaryconfig.addBatchList(batchlists[i]);
 	}
 	CameraSceneNode::~CameraSceneNode()
 	{
+		// Delete secondary configs
+		// TODO: This should not be done here
+		/*for (unsigned int i = 0; i < primaryconfigs.size(); i++)
+			delete primaryconfigs[i];*/
 	}
 
 	void CameraSceneNode::setOrtho(float left,
@@ -64,6 +72,31 @@ namespace scene
 		projmatdirty = true;
 	}
 
+	void CameraSceneNode::addSecondaryConfig(CameraConfig *config)
+	{
+		tbb::mutex::scoped_lock lock(configmutex);
+		secondaryconfigs.push_back(config);
+		// Set matrices
+		config->setProjection(projmat * getAbsTransMat().inverse());
+	}
+	void CameraSceneNode::removeSecondaryConfig(CameraConfig *config)
+	{
+		tbb::mutex::scoped_lock lock(configmutex);
+		for (unsigned int i = 0; i < secondaryconfigs.size(); i++)
+		{
+			if (secondaryconfigs[i] == config)
+			{
+				secondaryconfigs[i] = secondaryconfigs[secondaryconfigs.size() - 1];
+				secondaryconfigs.pop_back();
+				break;
+			}
+		}
+	}
+	const std::vector<CameraConfig*> &CameraSceneNode::getSecondaryConfigs()
+	{
+		return secondaryconfigs;
+	}
+
 	render::Pipeline::Ptr CameraSceneNode::getPipeline()
 	{
 		return pipeline;
@@ -73,11 +106,13 @@ namespace scene
 	{
 		if (abstranschanged || projmatdirty)
 		{
-			// Update projmat uniform
-			render::DefaultUniform projuniform(render::DefaultUniformName::ProjMatrix,
-			                                   projmat * getAbsTransMat().inverse());
-			pipeline->getDefaultSequence()->getDefaultUniforms().clear();
-			pipeline->getDefaultSequence()->getDefaultUniforms().push_back(projuniform);
+			// Set primary config
+			math::Matrix4 cameramat = projmat * getAbsTransMat().inverse();
+			primaryconfig.setProjection(cameramat);
+			// Set secondary configs
+			for (unsigned int i = 0; i < secondaryconfigs.size(); i++)
+				secondaryconfigs[i]->setProjection(cameramat);
+			// Reset dirty flag
 			projmatdirty = false;
 		}
 	}

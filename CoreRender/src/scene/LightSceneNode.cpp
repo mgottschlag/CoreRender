@@ -19,40 +19,56 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "CoreRender/scene/ModelSceneNode.hpp"
-#include "CoreRender/render/ModelRenderable.hpp"
-#include "CoreRender/scene/CameraConfig.hpp"
+#include "CoreRender/scene/LightSceneNode.hpp"
+#include <CoreRender/scene/Scene.hpp>
 
 namespace cr
 {
 namespace scene
 {
-	ModelSceneNode::ModelSceneNode(render::Model::Ptr model)
+	LightSceneNode::LightSceneNode(LightManager *lights,
+	                               render::Material::Ptr deferredmat,
+	                               const std::string &lightcontext,
+	                               const std::string &shadowcontext)
+		: lights(lights), deferredmat(deferredmat), lightcontext(lightcontext),
+		shadowcontext(shadowcontext), color(255, 255, 255, 255), radius(10.0f),
+		active(true)
 	{
-		this->model = new render::ModelRenderable;
-		this->model->setModel(model);
+		lights->addLight(this);
 	}
-	ModelSceneNode::~ModelSceneNode()
+	LightSceneNode::~LightSceneNode()
 	{
-		delete model;
+		if (active)
+			lights->removeLight(this);
 	}
 
-	render::Model::Ptr ModelSceneNode::getModel()
+	void LightSceneNode::setColor(core::Color color)
 	{
-		return model->getModel();
+		this->color = color;
+	}
+	core::Color LightSceneNode::getColor()
+	{
+		return color;
+	}
+	void LightSceneNode::setRadius(float radius)
+	{
+		this->radius = radius;
+	}
+	float LightSceneNode::getRadius()
+	{
+		return radius;
 	}
 
-	void ModelSceneNode::submit(CameraConfig *camera)
+	void LightSceneNode::setActive(bool active)
 	{
-		for (unsigned int i = 0; i < camera->getBatchListCount(); i++)
-		{
-			camera->getBatchList(i)->submit(model);
-		}
-	}
-	void ModelSceneNode::onUpdate(bool abstranschanged)
-	{
-		if (abstranschanged)
-			model->setTransMat(getAbsTransMat());
+		tbb::spin_mutex::scoped_lock lock(mutex);
+		if (this->active == active)
+			return;
+		if (active)
+			lights->addLight(this);
+		else
+			lights->removeLight(this);
+		this->active = active;
 	}
 }
 }

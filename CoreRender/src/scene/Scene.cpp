@@ -137,26 +137,61 @@ namespace scene
 		camera->setPerspectiveFOV(fov, aspect, near, far);
 		return camera;
 	}
-	SpotLightSceneNode::Ptr Scene::addSpotLightNode(SceneNode::Ptr parent)
+	SpotLightSceneNode::Ptr Scene::addSpotLightNode(render::Material::Ptr deferredmat,
+	                                                 const std::string &lightcontext,
+	                                                 const std::string &shadowcontext,
+	                                                 SceneNode::Ptr parent)
 	{
+		/*if (!parent)
+			parent = getRootNode();
+		SpotLightSceneNode::Ptr light = new SpotLightSceneNode(&lights,
+		                                                       deferredmat,
+		                                                       lightcontext,
+		                                                       shadowcontext);
+		light->setParent(parent);
+		return light;*/
 	}
-	PointLightSceneNode::Ptr Scene::addPointLightNode(SceneNode::Ptr parent)
+	PointLightSceneNode::Ptr Scene::addPointLightNode(render::Material::Ptr deferredmat,
+	                                                 const std::string &lightcontext,
+	                                                 const std::string &shadowcontext,
+	                                                 SceneNode::Ptr parent)
 	{
+		if (!parent)
+			parent = getRootNode();
+		PointLightSceneNode::Ptr light = new PointLightSceneNode(&lights,
+		                                                         deferredmat,
+		                                                         lightcontext,
+		                                                         shadowcontext);
+		light->setParent(parent);
+		return light;
 	}
 
 	void Scene::activateCamera(CameraSceneNode::Ptr camera,
 	                           unsigned int rendertime)
 	{
+		tbb::spin_mutex::scoped_lock lock(mutex);
 		// TODO: Sorting based on rendertime
 		activecameras.push_back(camera);
-		graphics->addPipeline(camera->getPipeline());
+		render::Pipeline::Ptr pipeline = camera->getPipeline();
+		graphics->addPipeline(pipeline);
+		// Add camera to light lists
+		for (unsigned int i = 0; i < pipeline->getForwardLightLoopCount(); i++)
+			lights.addForwardLightLoop(camera.get(), pipeline->getForwardLightLoop(i));
+		for (unsigned int i = 0; i < pipeline->getDeferredLightLoopCount(); i++)
+			lights.addDeferredLightLoop(camera.get(), pipeline->getDeferredLightLoop(i));
 	}
 	void Scene::deactivateCamera(CameraSceneNode::Ptr camera)
 	{
+		tbb::spin_mutex::scoped_lock lock(mutex);
 		for (unsigned int i = 0; i < activecameras.size(); i++)
 		{
 			if (activecameras[i] == camera)
 			{
+				render::Pipeline::Ptr pipeline = camera->getPipeline();
+				for (unsigned int j = 0; j < pipeline->getForwardLightLoopCount(); j++)
+					lights.removeForwardLightLoop(camera.get(), pipeline->getForwardLightLoop(j));
+				for (unsigned int j = 0; j < pipeline->getDeferredLightLoopCount(); j++)
+					lights.removeDeferredLightLoop(camera.get(), pipeline->getDeferredLightLoop(j));
 				graphics->removePipeline(camera->getPipeline());
 				activecameras.erase(activecameras.begin() + i);
 				break;
@@ -171,7 +206,12 @@ namespace scene
 		// Render all cameras
 		for (unsigned int i = 0; i < activecameras.size(); i++)
 		{
-			rootnode->render(activecameras[i]->getPipeline()->getDefaultSequence());
+			// Render primary camera config
+			rootnode->render(&activecameras[i]->getPrimaryConfig());
+			// Render secondary camera configs (light passes)
+			const std::vector<CameraConfig*> &configs = activecameras[i]->getSecondaryConfigs();
+			for (unsigned int j = 0; j < configs.size(); j++)
+				rootnode->render(configs[j]);
 		}
 	}
 }

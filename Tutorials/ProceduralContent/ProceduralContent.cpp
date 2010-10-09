@@ -168,18 +168,15 @@ int main(int argc, char **argv)
 	job->defaultuniforms.push_back(render::DefaultUniform(render::DefaultUniformName::TransMatrix, matrix));
 	// Setup pipeline
 	render::Pipeline::Ptr pipeline = new render::Pipeline();
-	render::PipelineSequence *sequence = pipeline->addSequence("main");
-	pipeline->setDefaultSequence(sequence);
-	render::PipelineStage *stage = sequence->addStage("scene");
 	render::ClearCommand *clear = new render::ClearCommand();
 	clear->clearDepth(true, 1.0f);
 	clear->clearColor(0, true, core::Color(60, 60, 60, 255));
-	stage->addCommand(clear);
+	pipeline->getCommands().addCommand(clear);
 	render::BatchListCommand *batchlist = new render::BatchListCommand();
 	batchlist->setContext("AMBIENT");
-	stage->addCommand(batchlist);
+	pipeline->getCommands().addCommand(batchlist);
 	graphics.addPipeline(pipeline);
-	sequence->getDefaultUniforms().push_back(render::DefaultUniform(render::DefaultUniformName::ProjMatrix,
+	pipeline->getDefaultUniforms().push_back(render::DefaultUniform(render::DefaultUniformName::ProjMatrix,
 	                                                                math::Matrix4::Identity()));
 	// Render loop
 	bool stopping = false;
@@ -214,7 +211,7 @@ int main(int argc, char **argv)
 		// Render objects
 		matrix = matrix * math::Quaternion(math::Vector3F(0.0, 0.1, 0.1)).toMatrix();
 		job->defaultuniforms[0] = render::DefaultUniform(render::DefaultUniformName::TransMatrix, matrix);
-		sequence->submit(job);
+		batchlist->submit(job);
 		// Finish and render frame
 		graphics.endFrame();
 	}

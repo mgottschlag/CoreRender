@@ -42,7 +42,7 @@ namespace render
 	class GraphicsEngine;
 	struct PipelineInfo;
 	struct RenderPassInfo;
-	struct PipelineSequenceInfo;
+	class PipelineCommandInfo;
 
 	class Renderer
 	{
@@ -92,7 +92,7 @@ namespace render
 			}
 		private:
 			void renderPipeline(PipelineInfo *info);
-			void renderSequence(PipelineSequenceInfo *info);
+			void renderCommand(PipelineCommandInfo *command);
 
 			RenderContext::Ptr primary;
 			RenderContext::Ptr secondary;

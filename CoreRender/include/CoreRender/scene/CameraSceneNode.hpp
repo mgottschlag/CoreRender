@@ -24,6 +24,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "SceneNode.hpp"
 #include "CoreRender/render/Pipeline.hpp"
+#include "CoreRender/scene/CameraConfig.hpp"
+
+#include <tbb/mutex.h>
 
 namespace cr
 {
@@ -52,6 +55,15 @@ namespace scene
 			                       float near,
 			                       float far);
 
+			CameraConfig &getPrimaryConfig()
+			{
+				return primaryconfig;
+			}
+
+			void addSecondaryConfig(CameraConfig *config);
+			void removeSecondaryConfig(CameraConfig *config);
+			const std::vector<CameraConfig*> &getSecondaryConfigs();
+
 			render::Pipeline::Ptr getPipeline();
 
 			typedef core::SharedPointer<CameraSceneNode> Ptr;
@@ -62,6 +74,10 @@ namespace scene
 
 			bool projmatdirty;
 			math::Matrix4 projmat;
+
+			CameraConfig primaryconfig;
+			std::vector<CameraConfig*> secondaryconfigs;
+			tbb::mutex configmutex;
 	};
 }
 }

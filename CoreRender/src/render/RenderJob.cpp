@@ -23,7 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/Renderer.hpp"
 #include "CoreRender/core/MemoryPool.hpp"
 #include "FrameData.hpp"
-#include "CoreRender/render/PipelineSequence.hpp"
+#include "CoreRender/render/Pipeline.hpp"
 
 #include <cstring>
 
@@ -33,7 +33,7 @@ namespace render
 {
 	RenderBatch *RenderJob::createBatch(const std::string &context,
 	                                    Renderer *renderer,
-	                                    SequenceState *sequence,
+	                                    PipelineState *pipelinestate,
 	                                    UniformData &uniforms,
 	                                    DefaultUniformValues *defuniforms,
 	                                    unsigned int flags)
@@ -56,7 +56,6 @@ namespace render
 		batch->depthwrite = shader->getDepthWrite();
 		batch->depthtest = shader->getDepthTest();
 		batch->sortkey = sortkey;
-		batch->renderflags = 0;
 		// Attribs
 		if (layout->getElementCount() > 0)
 		{
@@ -128,7 +127,7 @@ namespace render
 		// TODO: World normal matrix
 		// Textures
 		const std::vector<Material::TextureInfo> &textureinfo = material->getTextures();
-		batch->texcount = textureinfo.size() + sequence->textures.size();
+		batch->texcount = textureinfo.size() + pipelinestate->textures.size();
 		if (batch->texcount > 0)
 		{
 			// TODO: Unify this?
@@ -145,7 +144,7 @@ namespace render
 			// Sequence textures
 			std::map<std::string, Texture::Ptr>::iterator it;
 			unsigned int i = textureinfo.size();
-			for (it = sequence->textures.begin(); it != sequence->textures.end(); it++)
+			for (it = pipelinestate->textures.begin(); it != pipelinestate->textures.end(); it++)
 			{
 				textures[i].shaderhandle = shader->getTexture(it->first);
 				textures[i].textureindex = i;

@@ -265,6 +265,8 @@ namespace render
 
 			RenderStats stats;
 
+			PipelineInfo *renderdata;
+
 			// Default resources
 			IndexBuffer::Ptr fsquadib;
 			VertexBuffer::Ptr fsquadvb;

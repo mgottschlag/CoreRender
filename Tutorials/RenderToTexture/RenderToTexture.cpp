@@ -75,42 +75,36 @@ int main(int argc, char **argv)
 	}
 	// Setup first pipeline (renders the model to the texture)
 	render::Pipeline::Ptr rttpipeline = new render::Pipeline();
-	render::PipelineSequence *rttsequence = rttpipeline->addSequence("main");
-	rttpipeline->setDefaultSequence(rttsequence);
-	render::PipelineStage *stage = rttsequence->addStage("scene");
 	render::SetTargetCommand *settarget = new render::SetTargetCommand();
 	settarget->setTarget(target);
-	stage->addCommand(settarget);
+	rttpipeline->getCommands().addCommand(settarget);
 	render::ClearCommand *clear = new render::ClearCommand();
 	clear->clearDepth(true, 1.0f);
 	clear->clearColor(0, true, core::Color(255, 255, 255, 255));
-	stage->addCommand(clear);
-	render::BatchListCommand *batchlist = new render::BatchListCommand();
-	batchlist->setContext("AMBIENT");
-	stage->addCommand(batchlist);
+	rttpipeline->getCommands().addCommand(clear);
+	render::BatchListCommand *rttbatchlist = new render::BatchListCommand();
+	rttbatchlist->setContext("AMBIENT");
+	rttpipeline->getCommands().addCommand(rttbatchlist);
 	graphics.addPipeline(rttpipeline);
 	{
 		render::DefaultUniform projuniform(render::DefaultUniformName::ProjMatrix,
 		                                   math::Matrix4::Ortho(100.0f, 100.0f, -100.0f, 100.0f));
-		rttsequence->getDefaultUniforms().push_back(projuniform);
+		rttpipeline->getDefaultUniforms().push_back(projuniform);
 	}
 	// Setup second pipeline (renders the cube onto the screen)
 	render::Pipeline::Ptr pipeline = new render::Pipeline();
-	render::PipelineSequence *sequence = pipeline->addSequence("main");
-	pipeline->setDefaultSequence(sequence);
-	stage = sequence->addStage("scene");
 	clear = new render::ClearCommand();
 	clear->clearDepth(true, 1.0f);
 	clear->clearColor(0, true, core::Color(60, 60, 60, 255));
-	stage->addCommand(clear);
-	batchlist = new render::BatchListCommand();
+	pipeline->getCommands().addCommand(clear);
+	render::BatchListCommand *batchlist = new render::BatchListCommand();
 	batchlist->setContext("AMBIENT");
-	stage->addCommand(batchlist);
+	pipeline->getCommands().addCommand(batchlist);
 	graphics.addPipeline(pipeline);
 	{
 		render::DefaultUniform projuniform(render::DefaultUniformName::ProjMatrix,
 		                                   math::Matrix4::Ortho(4.0f, 4.0f, -4.0f, 4.0f));
-		sequence->getDefaultUniforms().push_back(projuniform);
+		pipeline->getDefaultUniforms().push_back(projuniform);
 	}
 	// Get material
 	// We need to change the texture of the material later
@@ -162,12 +156,12 @@ int main(int argc, char **argv)
 		if (animtime >= anim->getFrameCount() / anim->getFramesPerSecond())
 			animtime -= anim->getFrameCount() / anim->getFramesPerSecond();
 		renderable->getAnimStage(0)->time = animtime;
-		rttsequence->submit(renderable);
+		rttbatchlist->submit(renderable);
 		// Draw cube
 		rotation += 0.2f;
 		math::Quaternion quat(math::Vector3F(rotation, rotation * 0.3f, rotation * 0.5f));
 		cuberenderable->setTransMat(quat.toMatrix());
-		sequence->submit(cuberenderable);
+		batchlist->submit(cuberenderable);
 		// Finish and render frame
 		graphics.endFrame();
 		fps++;

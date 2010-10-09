@@ -21,7 +21,7 @@
 	</RenderTarget>
 
 	<!-- Actual render definition -->
-	<Sequence name="main">
+	<Commands>
 		<!-- Render the scene into a texture -->
 		<Stage name="scenepass">
 			<SetTarget name="scenetarget" />
@@ -41,5 +41,5 @@
 			<FullscreenQuad material="/materials/Blur.material.xml" context="COPY_COLOR"/>
 			<UnbindTextures />
 		</Stage>
-	</Sequence>
+	</Commands>
 </Pipeline>

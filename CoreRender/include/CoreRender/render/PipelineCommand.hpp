@@ -36,7 +36,8 @@ namespace render
 	class RenderJob;
 	struct RenderBatch;
 	struct PipelineCommandInfo;
-	class PipelineSequence;
+	class PipelineState;
+	class Renderable;
 
 	/**
 	 * Type of a rendering command.
@@ -72,9 +73,9 @@ namespace render
 			 */
 			UnbindTextures,
 			/**
-			 * Recursively renders another sequence.
+			 * Recursively renders a list of other commands.
 			 */
-			Sequence
+			CommandList
 		};
 	};
 	/**
@@ -100,15 +101,23 @@ namespace render
 			}
 
 			/**
-			 * Executes this rendering commands. This prepares the data which is
-			 * sent to the render thread.
+			 * Prepares the pipeline command for rendering.
 			 * @param renderer Renderer used for rendering.
-			 * @param sequence Sequence this command belongs to.
+			 * @param state Current pipeline state. Only valid for this single
+			 * function call, will get destroyed shortly after.
 			 * @param command Memory into which the command data is placed.
 			 */
-			virtual void apply(Renderer *renderer,
-			                   PipelineSequence *sequence,
-			                   PipelineCommandInfo *command) = 0;
+			virtual void beginFrame(Renderer *renderer,
+			                        PipelineState *state,
+			                        PipelineCommandInfo *command) = 0;
+			/**
+			 * Finishes the pipeline command and makes it ready to be sent to
+			 * the render thread if this is necessary. Only implemented for
+			 * batch lists at the moment.
+			 */
+			virtual void endFrame()
+			{
+			}
 
 			/**
 			 * Returns the type of the command.
@@ -178,9 +187,9 @@ namespace render
 				}
 			}
 
-			virtual void apply(Renderer *renderer,
-			                   PipelineSequence *sequence,
-			                   PipelineCommandInfo *command);
+			virtual void beginFrame(Renderer *renderer,
+			                        PipelineState *state,
+			                        PipelineCommandInfo *command);
 		private:
 			bool cleardepth;
 			float depth;
@@ -209,9 +218,9 @@ namespace render
 			{
 				this->target = target;
 			}
-			virtual void apply(Renderer *renderer,
-			                   PipelineSequence *sequence,
-			                   PipelineCommandInfo *command);
+			virtual void beginFrame(Renderer *renderer,
+			                        PipelineState *state,
+			                        PipelineCommandInfo *command);
 		private:
 			RenderTarget::Ptr target;
 	};
@@ -240,9 +249,9 @@ namespace render
 				this->texture = texture;
 			}
 
-			virtual void apply(Renderer *renderer,
-			                   PipelineSequence *sequence,
-			                   PipelineCommandInfo *command);
+			virtual void beginFrame(Renderer *renderer,
+			                        PipelineState *state,
+			                        PipelineCommandInfo *command);
 		private:
 			std::string name;
 			Texture::Ptr texture;
@@ -255,22 +264,9 @@ namespace render
 			{
 			}
 
-			virtual void apply(Renderer *renderer,
-			                   PipelineSequence *sequence,
-			                   PipelineCommandInfo *command);
-		private:
-	};
-	class SequenceCommand : public PipelineCommand
-	{
-		public:
-			SequenceCommand()
-				: PipelineCommand(PipelineCommandType::Sequence)
-			{
-			}
-
-			virtual void apply(Renderer *renderer,
-			                   PipelineSequence *sequence,
-			                   PipelineCommandInfo *command);
+			virtual void beginFrame(Renderer *renderer,
+			                        PipelineState *state,
+			                        PipelineCommandInfo *command);
 		private:
 	};
 	class BatchListCommand : public PipelineCommand
@@ -300,27 +296,43 @@ namespace render
 			}
 
 			/**
-			 * Submits a single batch to the batch list. Do not call this
-			 * directly, use PipelineSequence::submit() instead.
-			 * @param batch Batch to be rendered.
+			 * Submits a renderable object to the batch list and prepares
+			 * batches for rendering.
+			 * @param renderable Renderable object to be rendered.
 			 */
+			void submit(Renderable *renderable);
+			/**
+			 * Submits a single render job to be rendered and prepares batches
+			 * for rendering.
+			 * @param job Render job to be rendered.
+			 */
+			void submit(RenderJob *job);
+
+			UniformData &getUniformData()
+			{
+				return uniform;
+			}
+			std::vector<DefaultUniform> &getDefaultUniforms()
+			{
+				return defuniform;
+			}
+
+			virtual void beginFrame(Renderer *renderer,
+			                        PipelineState *state,
+			                        PipelineCommandInfo *command);
+			virtual void endFrame();
+		private:
 			void submit(RenderBatch *batch);
 
-			/**
-			 * Sorts the batches and places them in a buffer ready to be sent to
-			 * the render thread.
-			 */
-			void finish();
-
-			virtual void apply(Renderer *renderer,
-			                   PipelineSequence *sequence,
-			                   PipelineCommandInfo *command);
-		private:
 			std::string context;
+			UniformData uniform;
+			std::vector<DefaultUniform> defuniform;
 
 			std::vector<RenderBatch*> batches;
 			PipelineCommandInfo *info;
 			Renderer *renderer;
+
+			PipelineState *pipelinestate;
 	};
 	class BatchCommand : public PipelineCommand
 	{
@@ -335,12 +347,44 @@ namespace render
 			 */
 			void setJob(RenderJob *job, const std::string &context);
 
-			virtual void apply(Renderer *renderer,
-			                   PipelineSequence *sequence,
-			                   PipelineCommandInfo *command);
+			virtual void beginFrame(Renderer *renderer,
+			                        PipelineState *state,
+			                        PipelineCommandInfo *command);
 		private:
 			RenderJob *job;
 			std::string context;
+	};
+	class CommandList : public PipelineCommand
+	{
+		public:
+			CommandList();
+			virtual ~CommandList();
+
+			void setName(const std::string &name)
+			{
+				this->name = name;
+			}
+			std::string getName()
+			{
+				return name;
+			}
+
+			void setActive(bool active);
+			bool isActive();
+
+			void addCommand(PipelineCommand *command);
+			PipelineCommand *getCommand(unsigned int index);
+			void removeCommand(unsigned int index);
+			unsigned int getCommandCount();
+
+			virtual void beginFrame(Renderer *renderer,
+			                        PipelineState *state,
+			                        PipelineCommandInfo *command);
+			virtual void endFrame();
+		private:
+			bool active;
+			std::string name;
+			std::vector<PipelineCommand*> commands;
 	};
 }
 }

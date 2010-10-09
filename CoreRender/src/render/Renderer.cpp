@@ -191,10 +191,86 @@ namespace render
 
 	void Renderer::renderPipeline(PipelineInfo *info)
 	{
-		// TODO: Delete this function?
-		renderSequence(info->sequence);
+		// Reset render target
+		driver->setRenderTarget(0);
+		driver->setViewport(0,
+		                    0,
+		                    primary->getWidth(),
+		                    primary->getHeight());
+		// Render all commands
+		renderCommand(&info->commands);
+		/*// TODO: Delete this function?
+		renderSequence(info->sequence);*/
 	}
-	void Renderer::renderSequence(PipelineSequenceInfo *info)
+	void Renderer::renderCommand(PipelineCommandInfo *command)
+	{
+		switch (command->type)
+		{
+			case PipelineCommandType::Clear:
+				if (command->clear->colorbuffercount > 0)
+				{
+					// TODO: Fix clear to only use floats
+					core::Color clearcolor;
+					clearcolor.setRed(command->clear->colorbuffers[0].color[0] * 255.0f);
+					clearcolor.setGreen(command->clear->colorbuffers[0].color[1] * 255.0f);
+					clearcolor.setBlue(command->clear->colorbuffers[0].color[2] * 255.0f);
+					clearcolor.setAlpha(command->clear->colorbuffers[0].color[3] * 255.0f);
+					// TODO: Fix this for multiple color buffers
+					driver->clear(true,
+					              command->clear->depthbuffer,
+					              clearcolor,
+					              command->clear->depth);
+				}
+				else
+				{
+					driver->clear(false,
+					              command->clear->depthbuffer,
+					              core::Color(),
+					              command->clear->depth);
+				}
+				break;
+			case PipelineCommandType::SetTarget:
+				driver->setRenderTarget(command->target);
+				if (command->target)
+					driver->setViewport(0,
+					                    0,
+					                    command->target->width,
+					                    command->target->height);
+				else
+					driver->setViewport(0,
+					                    0,
+					                    primary->getWidth(),
+					                    primary->getHeight());
+				break;
+			case PipelineCommandType::BatchList:
+				for (unsigned int i = 0; i < command->batchlist->batchcount; i++)
+				{
+					driver->draw(command->batchlist->batches[i]);
+				}
+				break;
+			case PipelineCommandType::Batch:
+				if (command->batch)
+					driver->draw(command->batch);
+				break;
+			case PipelineCommandType::BindTexture:
+				// Nothing done here
+				break;
+			case PipelineCommandType::UnbindTextures:
+				// Nothing done here
+				break;
+			case PipelineCommandType::CommandList:
+				for (unsigned int i = 0; i < command->list.size; i++)
+				{
+					renderCommand(&command->list.commands[i]);
+				}
+				break;
+			default:
+				log->warning("Invalid pipeline command type: %d",
+				             command->type);
+				break;
+		}
+	}
+	/*void Renderer::renderSequence(PipelineSequenceInfo *info)
 	{
 		driver->setRenderTarget(0);
 		driver->setViewport(0,
@@ -258,16 +334,12 @@ namespace render
 				case PipelineCommandType::UnbindTextures:
 					// TODO
 					break;
-				case PipelineCommandType::Sequence:
-					renderSequence(info->commands[i].sequence);
-					// TODO: Reset target and textures?
-					break;
 				default:
 					log->warning("Invalid pipeline command type: %d",
 					             info->commands[i].type);
 					break;
 			};
 		}
-	}
+	}*/
 }
 }

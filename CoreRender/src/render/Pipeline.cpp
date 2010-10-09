@@ -21,7 +21,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "CoreRender/render/Pipeline.hpp"
 #include "FrameData.hpp"
-#include "CoreRender/render/PipelineSequence.hpp"
 
 #include <cstring>
 
@@ -30,110 +29,93 @@ namespace cr
 namespace render
 {
 	Pipeline::Pipeline()
-		: defaultsequence(0)
 	{
 	}
 	Pipeline::~Pipeline()
 	{
-		for (unsigned int i = 0; i < sequences.size(); i++)
-			delete sequences[i];
 	}
 
-	PipelineSequence *Pipeline::addSequence(const std::string &name)
+	void Pipeline::addStage(CommandList *commands, const std::string &name)
 	{
-		PipelineSequence *sequence = new PipelineSequence(name);
-		sequences.push_back(sequence);
-		return sequence;
+		stages[name] = commands;
 	}
-	int Pipeline::findSequence(const std::string &name)
+	CommandList *Pipeline::getStage(const std::string &name)
 	{
-		for (unsigned int i = 0; i < sequences.size(); i++)
-		{
-			if (sequences[i]->getName() == name)
-				return i;
-		}
-		return -1;
-	}
-	PipelineSequence *Pipeline::getSequence(const std::string &name)
-	{
-		for (unsigned int i = 0; i < sequences.size(); i++)
-		{
-			if (sequences[i]->getName() == name)
-				return sequences[i];
-		}
-		return 0;
-	}
-	PipelineSequence *Pipeline::getSequence(unsigned int index)
-	{
-		if (index >= sequences.size())
+		core::HashMap<std::string, CommandList*>::Type::iterator it;
+		it = stages.find(name);
+		if (it != stages.end())
+			return it->second;
+		else
 			return 0;
-		return sequences[index];
 	}
-	void Pipeline::removeSequence(unsigned int index)
+	void Pipeline::removeStage(const std::string &name)
 	{
-		if (index >= sequences.size())
-			return;
-		delete sequences[index];
-		sequences.erase(sequences.begin() + index);
+		core::HashMap<std::string, CommandList*>::Type::iterator it;
+		it = stages.find(name);
+		if (it != stages.end())
+			stages.erase(it);
 	}
-	unsigned int Pipeline::getSequenceCount()
+	unsigned int Pipeline::getStageCount()
 	{
-		return sequences.size();
-	}
-
-	void Pipeline::setDefaultSequence(PipelineSequence *sequence)
-	{
-		defaultsequence = sequence;
-	}
-	PipelineSequence *Pipeline::getDefaultSequence()
-	{
-		return defaultsequence;
+		return stages.size();
 	}
 
-	void Pipeline::addDeferredLightLoop(PipelineSequence *sequence)
+	void Pipeline::addDeferredLightLoop(CommandList *lightloop)
 	{
-		deferredlightloops.push_back(sequence);
+		deferredlightloops.push_back(lightloop);
 	}
 	unsigned int Pipeline::getDeferredLightLoopCount()
 	{
 		return deferredlightloops.size();
 	}
-	PipelineSequence *Pipeline::getDeferredLightLoop(unsigned int index)
+	CommandList *Pipeline::getDeferredLightLoop(unsigned int index)
 	{
 		if (index >= deferredlightloops.size())
 			return 0;
 		return deferredlightloops[index];
 	}
 
-	void Pipeline::addForwardLightLoop(PipelineSequence *sequence)
+	void Pipeline::addForwardLightLoop(CommandList *lightloop)
 	{
-		forwardlightloops.push_back(sequence);
+		forwardlightloops.push_back(lightloop);
 	}
 	unsigned int Pipeline::getForwardLightLoopCount()
 	{
 		return forwardlightloops.size();
 	}
-	PipelineSequence *Pipeline::getForwardLightLoop(unsigned int index)
+	CommandList *Pipeline::getForwardLightLoop(unsigned int index)
 	{
 		if (index >= forwardlightloops.size())
 			return 0;
 		return forwardlightloops[index];
 	}
 
-	void Pipeline::beginFrame(Renderer *renderer)
+	void Pipeline::getBatchLists(std::vector<BatchListCommand*> &lists)
 	{
-		if (!defaultsequence)
-			return;
-		defaultsequence->beginFrame(renderer);
+		getBatchLists(&commands, lists);
 	}
-	void Pipeline::prepare(PipelineInfo *info)
+
+	void Pipeline::beginFrame(Renderer *renderer, PipelineInfo *info)
 	{
-		if (!defaultsequence)
+		PipelineState state(uniforms);
+		commands.beginFrame(renderer, &state, &info->commands);
+	}
+	void Pipeline::endFrame()
+	{
+		commands.endFrame();
+	}
+
+	void Pipeline::getBatchLists(CommandList *commands,
+	                             std::vector<BatchListCommand*> &lists)
+	{
+		for (unsigned int i = 0; i < commands->getCommandCount(); i++)
 		{
-			info->sequence = 0;
-			return;
+			PipelineCommand *command = commands->getCommand(i);
+			if (command->getType() == PipelineCommandType::BatchList)
+				lists.push_back((BatchListCommand*)command);
+			else if (command->getType() == PipelineCommandType::CommandList)
+				getBatchLists((CommandList*)command, lists);
 		}
-		defaultsequence->prepare(info);
 	}
 }
 }

@@ -61,12 +61,14 @@ int main(int argc, char **argv)
 	pipelinedef->waitForLoading(true);
 	render::Pipeline::Ptr pipeline = pipelinedef->createPipeline();
 	graphics.addPipeline(pipeline);
+	std::vector<render::BatchListCommand*> batchlists;
+	pipeline->getBatchLists(batchlists);
 	// Setup camera matrix
 	math::Matrix4 projmat = math::Matrix4::PerspectiveFOV(60.0f, 4.0f/3.0f, 1.0f, 1000.0f);
 	projmat = projmat * math::Matrix4::TransMat(math::Vector3F(0, 0, -150));
 	projmat = projmat * math::Quaternion(math::Vector3F(45.0, 0.0, 0.0)).toMatrix();
 	render::DefaultUniform projuniform(render::DefaultUniformName::ProjMatrix, projmat);
-	pipeline->getDefaultSequence()->getDefaultUniforms().push_back(projuniform);
+	pipeline->getDefaultUniforms().push_back(projuniform);
 	// Wait for resources to be loaded
 	model->waitForLoading(true);
 	anim->waitForLoading(true);
@@ -108,7 +110,9 @@ int main(int argc, char **argv)
 		rotation += 0.1f;
 		math::Quaternion quat(math::Vector3F(0.0, rotation, 0.0));
 		renderable->setTransMat(quat.toMatrix());
-		pipeline->getDefaultSequence()->submit(renderable);
+		// Render model
+		for (unsigned int i = 0; i < batchlists.size(); i++)
+			batchlists[i]->submit(renderable);
 		// Finish and render frame
 		graphics.endFrame();
 		fps++;

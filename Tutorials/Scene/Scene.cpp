@@ -52,10 +52,14 @@ int main(int argc, char **argv)
 		model->setPosition(math::Vector3F(20.0, 0.0, 0.0));
 		model = scene->addModelNode("/models/dwarf.model.xml");
 		model->setPosition(math::Vector3F(-10.0, 0.0, 0.0));
+		scene::PointLightSceneNode::Ptr light;
+		light = scene->addPointLightNode(0, "POINTLIGHT", "");
+		light->setPosition(math::Vector3F(10, 10, 0));
+		light->setRadius(30.0f);
 		scene::CameraSceneNode::Ptr camera;
-		camera = scene->addCameraNodePerspective("/pipelines/Simple.pipeline.xml",
+		camera = scene->addCameraNodePerspective("/pipelines/Forward.pipeline.xml",
 		                                         90.0f, 4.0f/3.0f, 1.0f, 1000.0f);
-		camera->setPosition(math::Vector3F(0.0, 0.0, 100.0));
+		camera->setPosition(math::Vector3F(0.0, 0.0, 50.0));
 		scene->activateCamera(camera, 0);
 	}
 	// Render loop

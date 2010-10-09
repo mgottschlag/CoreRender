@@ -62,6 +62,8 @@ int main(int argc, char **argv)
 	pipelinedef->waitForLoading(true);
 	render::Pipeline::Ptr pipeline = pipelinedef->createPipeline(800, 600);
 	graphics.addPipeline(pipeline);
+	std::vector<render::BatchListCommand*> batchlists;
+	pipeline->getBatchLists(batchlists);
 	// Set target size
 	{
 		render::Material::Ptr blurmaterial = rmgr->getOrLoad<render::Material>("Material",
@@ -73,7 +75,7 @@ int main(int argc, char **argv)
 		math::Matrix4 projmat = math::Matrix4::Ortho(100.0f, 100.0f, -100.0f, 100.0f);
 		projmat = projmat * math::Matrix4::TransMat(math::Vector3F(0, -40, 0));
 		render::DefaultUniform projuniform(render::DefaultUniformName::ProjMatrix, projmat);
-		pipeline->getDefaultSequence()->getDefaultUniforms().push_back(projuniform);
+		pipeline->getDefaultUniforms().push_back(projuniform);
 	}
 	// Create renderable
 	render::ModelRenderable *renderable = new render::ModelRenderable();
@@ -116,7 +118,9 @@ int main(int argc, char **argv)
 		rotation += 0.1f;
 		math::Quaternion quat(math::Vector3F(0, rotation, 0));
 		renderable->setTransMat(quat.toMatrix());
-		pipeline->getDefaultSequence()->submit(renderable);
+		// Render model
+		for (unsigned int i = 0; i < batchlists.size(); i++)
+			batchlists[i]->submit(renderable);
 		// Finish and render frame
 		graphics.endFrame();
 		fps++;

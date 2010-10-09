@@ -137,17 +137,17 @@ namespace scene
 		for (unsigned int i = 0; i < children.size(); i++)
 			children[i]->update(abstranschanged);
 	}
-	void SceneNode::render(render::PipelineSequence *sequence)
+	void SceneNode::render(CameraConfig *camera)
 	{
 		if (!visible)
 			return;
 		// Submit this node
-		submit(sequence);
+		submit(camera);
 		// Render children
 		// TODO: Do we want to render multiple pipelines in parallel?
 		tbb::spin_mutex::scoped_lock lock(mutex);
 		for (unsigned int i = 0; i < children.size(); i++)
-			children[i]->render(sequence);
+			children[i]->render(camera);
 	}
 
 	void SceneNode::removeChild(SceneNode::Ptr child)

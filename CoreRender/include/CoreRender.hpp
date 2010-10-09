@@ -62,8 +62,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/RenderTarget.hpp"
 #include "CoreRender/render/GraphicsEngine.hpp"
 #include "CoreRender/render/ModelRenderable.hpp"
-#include "CoreRender/render/PipelineSequence.hpp"
-#include "CoreRender/render/PipelineStage.hpp"
 #include "CoreRender/render/PipelineDefinition.hpp"
 #include "CoreRender/render/DefaultUniform.hpp"
 

@@ -53,8 +53,6 @@ set(SRC
 	include/CoreRender/render/PipelineCommand.hpp
 	include/CoreRender/render/PipelineDefinition.hpp
 	include/CoreRender/render/Pipeline.hpp
-	include/CoreRender/render/PipelineSequence.hpp
-	include/CoreRender/render/PipelineStage.hpp
 	include/CoreRender/render/Renderable.hpp
 	include/CoreRender/render/RenderCaps.hpp
 	include/CoreRender/render/RenderContext.hpp
@@ -118,8 +116,6 @@ set(SRC
 	src/render/Pipeline.cpp
 	src/render/PipelineCommand.cpp
 	src/render/PipelineDefinition.cpp
-	src/render/PipelineSequence.cpp
-	src/render/PipelineStage.cpp
 	src/render/RenderContextReuseOpenGL.cpp
 	src/render/Renderer.cpp
 	src/render/RenderJob.cpp
@@ -213,14 +209,24 @@ target_link_libraries(CoreRenderUtil CoreRender)
 
 set(SRC_SCENE
 	include/CoreScene.hpp
+	include/CoreRender/scene/CameraConfig.hpp
 	include/CoreRender/scene/CameraSceneNode.hpp
+	include/CoreRender/scene/LightManager.hpp
+	include/CoreRender/scene/LightSceneNode.hpp
 	include/CoreRender/scene/ModelSceneNode.hpp
+	include/CoreRender/scene/PointLightSceneNode.hpp
 	include/CoreRender/scene/Scene.hpp
 	include/CoreRender/scene/SceneNode.hpp
+	#include/CoreRender/scene/SpotLightSceneNode.hpp
+	src/scene/CameraConfig.cpp
 	src/scene/CameraSceneNode.cpp
+	src/scene/LightManager.cpp
+	src/scene/LightSceneNode.cpp
 	src/scene/ModelSceneNode.cpp
+	src/scene/PointLightSceneNode.cpp
 	src/scene/Scene.cpp
 	src/scene/SceneNode.cpp
+	#src/scene/SpotLightSceneNode.cpp
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
