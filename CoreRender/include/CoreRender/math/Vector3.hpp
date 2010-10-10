@@ -22,6 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_MATH_VECTOR3_HPP_INCLUDED_
 #define _CORERENDER_MATH_VECTOR3_HPP_INCLUDED_
 
+#include "Math.hpp"
+
 #include <cmath>
 #include <string>
 #include <cstdlib>
@@ -86,6 +88,14 @@ namespace math
 			{
 				return sqrt(getSquaredLength());
 			}
+			/**
+			 * Scales the vector so that it has the length 1.
+			 */
+			Vector3<T> &normalize()
+			{
+				*this /= getLength();
+				return *this;
+			}
 
 			/**
 			 * Rotates the vector around the z axis.
@@ -93,7 +103,7 @@ namespace math
 			 */
 			void rotateXY(float angle)
 			{
-				angle *= 3.1415f / 180.0f;
+				angle = Math::degToRad(angle);
 				float s = sin(angle);
 				float c = cos(angle);
 				*this = Vector3<T>(c * x - s * y, s * x + c * y, z);
@@ -104,7 +114,7 @@ namespace math
 			 */
 			void rotateXZ(float angle)
 			{
-				angle *= 3.1415f / 180.0f;
+				angle = Math::degToRad(angle);
 				float s = sin(angle);
 				float c = cos(angle);
 				*this = Vector3<T>(-c * x + s * z, y, s * x + c * z);
@@ -115,7 +125,7 @@ namespace math
 			 */
 			void rotateYZ(float angle)
 			{
-				angle *= 3.1415f / 180.0f;
+				angle = Math::degToRad(angle);
 				float s = sin(angle);
 				float c = cos(angle);
 				*this = Vector3<T>(x, c * y - s * z, s * y + c * z);
@@ -154,8 +164,8 @@ namespace math
 			Vector3<float> getAngle() const
 			{
 				Vector3<float> angle;
-				angle.y = atan2(x, z) * 180.0f / 3.1415f;
-				angle.x = atan2(sqrt(x * x + z * z), y) * 180.0f / 3.1415f - 90;
+				angle.y = Math::radToDeg(atan2(x, z));
+				angle.x = Math::radToDeg(atan2(sqrt(x * x + z * z), y)) - 90;
 				if (angle.y < 0)
 					angle.y += 360;
 				if (angle.y >= 360)
