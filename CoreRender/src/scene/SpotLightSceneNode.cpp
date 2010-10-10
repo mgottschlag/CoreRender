@@ -20,7 +20,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/scene/SpotLightSceneNode.hpp"
-#include "CoreRender/render/PipelineStage.hpp"
+#include "CoreRender/scene/LightManager.hpp"
 
 namespace cr
 {
@@ -30,36 +30,95 @@ namespace scene
 	                                       render::Material::Ptr deferredmat,
 	                                       const std::string &lightcontext,
 	                                       const std::string &shadowcontext)
-		: LightSceneNode(lights, deferredmat, lightcontext, shadowcontext)
+		: LightSceneNode(lights, deferredmat, lightcontext, shadowcontext),
+		angle(90.0f)
 	{
 	}
 	SpotLightSceneNode::~SpotLightSceneNode()
 	{
 	}
 
-	void SpotLightSceneNode::addToForwardLightLoop(render::PipelineStage *stage)
+	void SpotLightSceneNode::addToForwardLightLoop(LightLoopInfo *loop)
 	{
-		render::CommandList *lightcommands = new render::CommandList;
-		stage->addCommand(lightcommands);
-		// Render shadow map
+		// Add light commands
+		render::BatchListCommand *forwardcmd = new render::BatchListCommand;
+		forwardcmd->setContext(getLightContext());
+		loop->commands->addCommand(forwardcmd);
+		setUniforms(forwardcmd);
+		// TODO: Shadows
+		// Add forward camera config
+		CameraConfig *forwardconfig = new CameraConfig;
+		forwardconfig->addBatchList(forwardcmd);
+		loop->camera->addSecondaryConfig(forwardconfig);
+		forwardconfigs.push_back(forwardconfig);
+		// TODO: Set bounding box
+		// Add shadow camera config
 		// TODO
-		// Render lit geometry
-		render::BatchListCommand *lightpass = new render::BatchListCommand();
-		lightpass->setContext(getLightContext());
-		lightcommands->addCommand(lightpass);
 	}
-	void SpotLightSceneNode::addToDeferredLightLoop(render::PipelineStage *stage)
+	void SpotLightSceneNode::removeFromForwardLightLoop(LightLoopInfo *loop,
+	                                                     unsigned int index)
 	{
-		render::CommandList *lightcommands = new render::CommandList;
-		stage->addCommand(lightcommands);
-		// Render shadow map
+		// Remove light commands
+		loop->commands->removeCommand(index);
+		// Remove forward camera config
+		// We do not need locking here as long as there is only one LightManager
+		for (unsigned int i = 0; i < forwardconfigs.size(); i++)
+		{
+			if (forwardconfigs[i] == loop->forwardconfigs[index])
+			{
+				forwardconfigs[i] = forwardconfigs[forwardconfigs.size() - 1];
+				forwardconfigs.pop_back();
+				break;
+			}
+		}
+		loop->camera->removeSecondaryConfig(loop->forwardconfigs[index]);
+		delete loop->forwardconfigs[index];
+		loop->forwardconfigs.erase(loop->forwardconfigs.begin() + index);
+		// Remove shadow camera config
 		// TODO
-		// Render light geometry
+	}
+	void SpotLightSceneNode::addToDeferredLightLoop(LightLoopInfo *loop)
+	{
+		// TODO
+	}
+	void SpotLightSceneNode::removeFromDeferredLightLoop(LightLoopInfo *loop,
+	                                                      unsigned int index)
+	{
 		// TODO
 	}
 
-	void SpotLightSceneNode::submit(render::PipelineSequence *sequence)
+	void SpotLightSceneNode::onUpdate(bool abstranschanged)
 	{
+		if (abstranschanged)
+		{
+			// Reset all uniforms
+			for (unsigned int i = 0; i < forwardconfigs.size(); i++)
+			{
+				// This assumes that every forward rendering config only has one
+				// light loop attached
+				setUniforms(forwardconfigs[i]->getBatchList(0));
+			}
+		}
+	}
+
+	void SpotLightSceneNode::setUniforms(render::BatchListCommand *batchlist)
+	{
+		if (!getParent())
+			return;
+		math::Matrix4 parentmat = getParent()->getAbsTransMat();
+		math::Vector3F abspos = parentmat.transformPoint(position);
+		batchlist->getUniformData().add("lightPos") = abspos;
+		batchlist->getUniformData().add("lightRadius") = getRadius();
+		math::Vector3F colorvec;
+		colorvec.x = (float)getColor().getRed() / 255.0f;
+		colorvec.y = (float)getColor().getGreen() / 255.0f;
+		colorvec.z = (float)getColor().getBlue() / 255.0f;
+		batchlist->getUniformData().add("lightColor") = colorvec;
+		float halfangle = getAngle() / (2.0f * 180.0f / 3.1415f);
+		batchlist->getUniformData().add("lightAngle") = halfangle;
+		math::Vector3F lightdir = getAbsTransMat().transformPoint(math::Vector3F(0, 0, 1));
+		lightdir -= getAbsTransMat().transformPoint(math::Vector3F(0, 0, 0));
+		batchlist->getUniformData().add("lightDir") = lightdir.normalize();
 	}
 }
 }

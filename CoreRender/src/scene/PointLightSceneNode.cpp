@@ -22,8 +22,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/scene/PointLightSceneNode.hpp"
 #include "CoreRender/scene/LightManager.hpp"
 
-#include <iostream>
-
 namespace cr
 {
 namespace scene
@@ -106,8 +104,12 @@ namespace scene
 	{
 		math::Vector3F abspos = getAbsTransMat().transformPoint(position);
 		batchlist->getUniformData().add("lightPos") = abspos;
-		batchlist->getUniformData().add("radius") = getRadius();
-		// TODO: Color
+		batchlist->getUniformData().add("lightRadius") = getRadius();
+		math::Vector3F colorvec;
+		colorvec.x = (float)getColor().getRed() / 255.0f;
+		colorvec.y = (float)getColor().getGreen() / 255.0f;
+		colorvec.z = (float)getColor().getBlue() / 255.0f;
+		batchlist->getUniformData().add("lightColor") = colorvec;
 	}
 }
 }

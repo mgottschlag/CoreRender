@@ -37,15 +37,29 @@ namespace scene
 			                   const std::string &shadowcontext);
 			virtual ~SpotLightSceneNode();
 
-			void setAngle(float angle);
-			float getAngle();
+			void setAngle(float angle)
+			{
+				this->angle = angle;
+			}
+			float getAngle()
+			{
+				return angle;
+			}
 
-			virtual void addToForwardLightLoop(render::PipelineStage *stage);
-			virtual void addToDeferredLightLoop(render::PipelineStage* stage);
+			virtual void addToForwardLightLoop(LightLoopInfo *loop);
+			virtual void removeFromForwardLightLoop(LightLoopInfo *loop,
+			                                        unsigned int index);
+			virtual void addToDeferredLightLoop(LightLoopInfo *loop);
+			virtual void removeFromDeferredLightLoop(LightLoopInfo *loop,
+			                                        unsigned int index);
 
 			typedef core::SharedPointer<SpotLightSceneNode> Ptr;
 		private:
-			virtual void submit(CameraConfig *camera);
+			virtual void onUpdate(bool abstranschanged);
+
+			void setUniforms(render::BatchListCommand *batchlist);
+
+			std::vector<CameraConfig*> forwardconfigs;
 
 			float angle;
 	};

@@ -46,25 +46,38 @@ int main(int argc, char **argv)
 	// Create scene
 	scene::Scene *scene = new scene::Scene(&graphics);
 	// Fill scene
+	scene::SceneNode::Ptr rotationnode = scene->addGroupNode();
 	{
 		scene::ModelSceneNode::Ptr model;
 		model = scene->addModelNode("/models/jeep.model.xml");
-		model->setPosition(math::Vector3F(20.0, 0.0, 0.0));
+		model->setPosition(math::Vector3F(5.0, 0.0, 0.0));
 		model = scene->addModelNode("/models/dwarf.model.xml");
-		model->setPosition(math::Vector3F(-10.0, 0.0, 0.0));
-		scene::PointLightSceneNode::Ptr light;
-		light = scene->addPointLightNode(0, "POINTLIGHT", "");
-		light->setPosition(math::Vector3F(10, 10, 0));
-		light->setRadius(30.0f);
+		model->setPosition(math::Vector3F(-5.0, 0.0, 0.0));
+		model->setScale(math::Vector3F(0.1, 0.1, 0.1));
+		model = scene->addModelNode("/models/plane.model.xml");
+		model->setScale(math::Vector3F(10.0, 1.0, 10.0));
+		scene::PointLightSceneNode::Ptr pointlight;
+		pointlight = scene->addPointLightNode(0, "POINTLIGHT", "");
+		pointlight->setPosition(math::Vector3F(0, 3, 0));
+		pointlight->setRadius(10.0f);
+		pointlight->setColor(core::Color(255, 0, 0, 255));
+		scene::SpotLightSceneNode::Ptr spotlight;
+		spotlight = scene->addSpotLightNode(0, "SPOTLIGHT", "", rotationnode);
+		spotlight->setPosition(math::Vector3F(0, 10, -10));
+		spotlight->setRotation(math::Vector3F(45.0, 0.0, 0.0));
+		spotlight->setRadius(25.0f);
+		spotlight->setColor(core::Color(0, 255, 0, 255));
 		scene::CameraSceneNode::Ptr camera;
 		camera = scene->addCameraNodePerspective("/pipelines/Forward.pipeline.xml",
 		                                         90.0f, 4.0f/3.0f, 1.0f, 1000.0f);
-		camera->setPosition(math::Vector3F(0.0, 0.0, 50.0));
+		camera->setPosition(math::Vector3F(0.0, 10.0, 10.0));
+		camera->setRotation(math::Vector3F(-45.0, 0.0, 0.0));
 		scene->activateCamera(camera, 0);
 	}
 	// Render loop
 	graphics.getLog()->info("Starting rendering.");
 	bool stopping = false;
+	float rotation = 0.0f;
 	while (!stopping)
 	{
 		// Process input
@@ -80,6 +93,9 @@ int main(int argc, char **argv)
 					break;
 			}
 		}
+		// Rotate light
+		rotation += 0.5f;
+		rotationnode->setRotation(math::Vector3F(0, rotation, 0));
 		// Begin frame
 		graphics.beginFrame();
 		// Render scene

@@ -217,7 +217,7 @@ set(SRC_SCENE
 	include/CoreRender/scene/PointLightSceneNode.hpp
 	include/CoreRender/scene/Scene.hpp
 	include/CoreRender/scene/SceneNode.hpp
-	#include/CoreRender/scene/SpotLightSceneNode.hpp
+	include/CoreRender/scene/SpotLightSceneNode.hpp
 	src/scene/CameraConfig.cpp
 	src/scene/CameraSceneNode.cpp
 	src/scene/LightManager.cpp
@@ -226,7 +226,7 @@ set(SRC_SCENE
 	src/scene/PointLightSceneNode.cpp
 	src/scene/Scene.cpp
 	src/scene/SceneNode.cpp
-	#src/scene/SpotLightSceneNode.cpp
+	src/scene/SpotLightSceneNode.cpp
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")

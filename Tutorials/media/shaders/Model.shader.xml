@@ -21,8 +21,8 @@
 			texcoord = texcoord0;
 			vec4 translated = transMat * vec4(pos, 1.0);
 			worldPos = translated.xyz / translated.w;
-			translated = transMat * vec4(normal, 1.0);
-			worldNormal = translated.xyz / translated.w;
+			translated = transMat * vec4(normal, 0.0);
+			worldNormal = translated.xyz;
 			#if Skinning
 			// Skinning
 			mat4 mat = mat4(0.0);
@@ -42,7 +42,6 @@
 	<![CDATA[
 		varying vec2 texcoord;
 		uniform sampler2D tex;
-		varying vec3 color;
 		void main()
 		{
 			gl_FragColor = texture2D(tex, texcoord);
@@ -53,20 +52,46 @@
 	<![CDATA[
 		varying vec2 texcoord;
 		uniform sampler2D tex;
-		varying vec3 color;
 		uniform vec3 lightPos;
-		uniform float radius;
+		uniform float lightRadius;
 		varying vec3 worldPos;
 		varying vec3 worldNormal;
+		uniform vec3 lightColor;
 		void main()
 		{
 			vec3 lightVec = lightPos - worldPos;
 			float lightDist = length(lightVec);
 			lightVec /= lightDist;
 			// Compute attenuation
-			lightDist = lightDist / radius;
-			float attenuation = max(dot(lightVec, worldNormal), 1.0) * (1.0 - lightDist * lightDist);
-			gl_FragColor = texture2D(tex, texcoord) * attenuation;
+			lightDist = lightDist / lightRadius;
+			float attenuation = max(dot(lightVec, normalize(worldNormal)), 0.0) * (1.0 - lightDist * lightDist);
+			gl_FragColor.rgb = texture2D(tex, texcoord).rgb * lightColor * attenuation;
+		}
+	]]>
+	</Text>
+	<Text name="FS_SPOTLIGHT">
+	<![CDATA[
+		varying vec2 texcoord;
+		uniform sampler2D tex;
+		uniform vec3 lightPos;
+		uniform float lightRadius;
+		varying vec3 worldPos;
+		varying vec3 worldNormal;
+		uniform vec3 lightColor;
+		uniform float lightAngle;
+		uniform vec3 lightDir;
+		void main()
+		{
+			vec3 lightVec = lightPos - worldPos;
+			float lightDist = length(lightVec);
+			lightVec /= lightDist;
+			vec3 normal = normalize(worldNormal);
+			// Compute attenuation
+			lightDist = lightDist / lightRadius;
+			float attenuation = max(dot(lightVec, normal), 0.0) * (1.0 - lightDist * lightDist);
+			float angle = dot(lightVec, -lightDir);
+			attenuation *= clamp((angle - lightAngle) * 5.0, 0.0, 1.0);
+			gl_FragColor.rgb = texture2D(tex, texcoord).rgb * lightColor * attenuation;
 		}
 	]]>
 	</Text>
@@ -80,12 +105,19 @@
 	<Uniform name="worldMat" type="mat4" />
 	<Uniform name="skinMat" count="50" type="mat4" />
 	<Uniform name="lightPos" type="float3" />
-	<Uniform name="radius" type="float1" />
+	<Uniform name="lightRadius" type="float1" />
+	<Uniform name="lightDir" type="float3" />
+	<Uniform name="lightAngle" type="float1" />
+	<Uniform name="lightColor" type="float3" />
 
 	<Texture name="tex" />
 
 	<Context name="AMBIENT" vs="VS_GENERAL" fs="FS_AMBIENT" />
 	<Context name="POINTLIGHT" vs="VS_GENERAL" fs="FS_POINTLIGHT">
+		<Depth write="false" test="LessEqual" />
+		<Blend mode="Add" />
+	</Context>
+	<Context name="SPOTLIGHT" vs="VS_GENERAL" fs="FS_SPOTLIGHT">
 		<Depth write="false" test="LessEqual" />
 		<Blend mode="Add" />
 	</Context>

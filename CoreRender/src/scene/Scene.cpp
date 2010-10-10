@@ -142,14 +142,14 @@ namespace scene
 	                                                 const std::string &shadowcontext,
 	                                                 SceneNode::Ptr parent)
 	{
-		/*if (!parent)
+		if (!parent)
 			parent = getRootNode();
 		SpotLightSceneNode::Ptr light = new SpotLightSceneNode(&lights,
 		                                                       deferredmat,
 		                                                       lightcontext,
 		                                                       shadowcontext);
 		light->setParent(parent);
-		return light;*/
+		return light;
 	}
 	PointLightSceneNode::Ptr Scene::addPointLightNode(render::Material::Ptr deferredmat,
 	                                                 const std::string &lightcontext,

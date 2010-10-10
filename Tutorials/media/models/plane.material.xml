@@ -1,0 +1,5 @@
+<Material>
+	<Shader file="/shaders/Model.shader.xml" flags="Skinning=false" />
+
+	<Texture name="tex" file="/textures/CoreRender.png" />
+</Material>
