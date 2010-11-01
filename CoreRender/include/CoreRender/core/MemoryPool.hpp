@@ -55,7 +55,7 @@ namespace core
 			 * be much larger than the objects which are going to be allocated.
 			 */
 			MemoryPool(unsigned int pagesize = 1048576)
-				: used(0)
+				: used(0), firstdestructor(0), lastdestructor(0)
 			{
 				// Round up page size to 4k pages
 				pagesize = (pagesize + 0xFFF) & ~0xFFF;
@@ -68,6 +68,9 @@ namespace core
 			 */
 			~MemoryPool()
 			{
+				// Call destructors
+				callDestructors();
+				// Free memory
 				freePage(currentmemory, pagesize);
 				for (unsigned int i = 0; i < usedmemory.size(); i++)
 					freePage(usedmemory[i], pagesize);
@@ -85,6 +88,8 @@ namespace core
 			 */
 			void reset()
 			{
+				// Call destructors
+				callDestructors();
 				// Delete unused free pages
 				for (unsigned int i = 0; i < freememory.size(); i++)
 					freePage(freememory[i], pagesize);
@@ -105,6 +110,8 @@ namespace core
 			void reset(unsigned int size)
 			{
 				unsigned int pagecount = (size + pagesize - 1) / pagesize;
+				// Call destructors
+				callDestructors();
 				// We have one page in currentmemory
 				pagecount -= 1;
 				// Allocate enough pages, reusing existing pages
@@ -150,6 +157,8 @@ namespace core
 			{
 				// Round up page size to 4k pages
 				pagesize = (pagesize + 0xFFF) & ~0xFFF;
+				// Call destructors
+				callDestructors();
 				// Free all existing pages
 				freePage(currentmemory, this->pagesize);
 				for (unsigned int i = 0; i < usedmemory.size(); i++)
@@ -205,13 +214,83 @@ namespace core
 				}
 			}
 		private:
+			struct DestructorEntry
+			{
+				void (*callDestructor)(void*);
+				DestructorEntry *next;
+			};
+			template<class T> static void callDestructor(void *ptr)
+			{
+				T *obj = (T*)ptr;
+				obj->~T();
+			}
+		public:
+			/**
+			 * Allocates memory to place a single object in. Optionally the
+			 * memory pool then will call the destructor for the object when the
+			 * memory is released. Letting the engine call the destructor comes
+			 * at slight memory costs as a separate list with the destructors
+			 * has to be maintained. The user always has to call the constructor
+			 * manually.
+			 * @param calldestructor If true, an entry in the destructor list is
+			 * created so that the destructor is called when the memory is
+			 * released.
+			 * @return Pointer to the allocated memory.
+			 */
+			template<class T> void *allocate(bool calldestructor = true)
+			{
+				// If no destructor call is wanted, just allocate the memory
+				if (!calldestructor)
+				{
+					return allocate(sizeof(T));
+				}
+				// If a destructor call is wanted, allocate an extra destructor
+				// list entry
+				void *ptr = allocate(sizeof(DestructorEntry) + sizeof(T));
+				DestructorEntry *destructor = (DestructorEntry*)ptr;
+				destructor->callDestructor = callDestructor<T>;
+				destructor->next = 0;
+				// Insert destructor into the destructor list
+				tbb::spin_mutex::scoped_lock lock(mutex);
+				if (!lastdestructor)
+				{
+					firstdestructor = destructor;
+					lastdestructor = destructor;
+				}
+				else
+				{
+					lastdestructor->next = destructor;
+					lastdestructor = destructor;
+				}
+				// Return memory
+				return (char*)ptr + sizeof(DestructorEntry);
+			}
+		private:
 			static void *allocPage(unsigned int size);
 			static void freePage(void *page, unsigned int size);
+
+			void callDestructors()
+			{
+				DestructorEntry *destructor = firstdestructor;
+				// Call all destructors
+				while (destructor)
+				{
+					void *ptr = (char*)destructor + sizeof(DestructorEntry);
+					destructor->callDestructor(ptr);
+					destructor = destructor->next;
+				}
+				// Empty destructor list
+				firstdestructor = 0;
+				lastdestructor = 0;
+			}
 
 			unsigned int pagesize;
 
 			void *currentmemory;
 			unsigned int used;
+
+			DestructorEntry *firstdestructor;
+			DestructorEntry *lastdestructor;
 
 			std::vector<void*> usedmemory;
 			std::vector<void*> freememory;
