@@ -187,66 +187,11 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 target_link_libraries(CoreRender ${LIB})
 
-
-# Utility library
-
-set(SRC_UTIL
-	include/CoreRenderUtil.hpp
-	include/CoreRender/util/FrameLimiter.hpp
-	src/util/FrameLimiter.cpp
-)
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	add_library(CoreRenderUtil STATIC ${SRC_UTIL})
-else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	add_library(CoreRenderUtil SHARED ${SRC_UTIL})
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
-target_link_libraries(CoreRenderUtil CoreRender)
-
-
-# Scene graph library
-
-set(SRC_SCENE
-	include/CoreScene.hpp
-	include/CoreRender/scene/CameraConfig.hpp
-	include/CoreRender/scene/CameraSceneNode.hpp
-	include/CoreRender/scene/LightManager.hpp
-	include/CoreRender/scene/LightSceneNode.hpp
-	include/CoreRender/scene/ModelSceneNode.hpp
-	include/CoreRender/scene/PointLightSceneNode.hpp
-	include/CoreRender/scene/Scene.hpp
-	include/CoreRender/scene/SceneNode.hpp
-	include/CoreRender/scene/SpotLightSceneNode.hpp
-	src/scene/CameraConfig.cpp
-	src/scene/CameraSceneNode.cpp
-	src/scene/LightManager.cpp
-	src/scene/LightSceneNode.cpp
-	src/scene/ModelSceneNode.cpp
-	src/scene/PointLightSceneNode.cpp
-	src/scene/Scene.cpp
-	src/scene/SceneNode.cpp
-	src/scene/SpotLightSceneNode.cpp
-)
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	add_library(CoreScene STATIC ${SRC_SCENE})
-else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-	add_library(CoreScene SHARED ${SRC_SCENE})
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
-target_link_libraries(CoreScene CoreRender)
-
-
 # Installation of files
 
 install(DIRECTORY include/CoreRender DESTINATION include/CoreRender FILES_MATCHING PATTERN *.hpp)
 install(FILES include/CoreRender.hpp DESTINATION include)
-install(FILES include/CoreRenderUtil.hpp DESTINATION include)
-install(FILES include/CoreScene.hpp DESTINATION include)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	install(TARGETS CoreRender LIBRARY DESTINATION lib)
-	install(TARGETS CoreRenderUtil LIBRARY DESTINATION lib)
-	install(TARGETS CoreScene LIBRARY DESTINATION lib)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
