@@ -171,7 +171,7 @@ namespace render
 			 * @param name Name of this resource.
 			 * @param type Type of the texture.
 			 */
-			Texture(Renderer *renderer,
+			Texture(UploadManager &uploadmgr,
 			        res::ResourceManager *rmgr,
 			        const std::string &name,
 			        TextureType::List type);

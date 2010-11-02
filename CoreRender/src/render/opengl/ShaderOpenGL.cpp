@@ -20,7 +20,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "ShaderOpenGL.hpp"
-#include "CoreRender/render/Renderer.hpp"
 
 #include <GL/glew.h>
 #include <sstream>
@@ -31,10 +30,10 @@ namespace render
 {
 namespace opengl
 {
-	ShaderOpenGL::ShaderOpenGL(Renderer *renderer,
+	ShaderOpenGL::ShaderOpenGL(UploadManager &uploadmgr,
 	                           res::ResourceManager *rmgr,
 	                           const std::string &name)
-		: Shader(renderer, rmgr, name)
+		: Shader(uploadmgr, rmgr, name)
 	{
 	}
 	ShaderOpenGL::~ShaderOpenGL()

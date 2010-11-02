@@ -25,10 +25,10 @@ namespace cr
 {
 namespace render
 {
-	FrameBuffer::FrameBuffer(Renderer *renderer,
+	FrameBuffer::FrameBuffer(UploadManager &uploadmgr,
 	                         res::ResourceManager *rmgr,
 	                         const std::string &name)
-		: RenderResource(renderer, rmgr, name), width(0), height(0),
+		: RenderResource(uploadmgr, rmgr, name), width(0), height(0),
 		depthbuffer(false)
 	{
 		config.handle = 0;

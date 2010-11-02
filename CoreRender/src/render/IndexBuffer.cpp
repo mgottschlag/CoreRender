@@ -28,10 +28,10 @@ namespace cr
 {
 namespace render
 {
-	IndexBuffer::IndexBuffer(Renderer *renderer,
-	             res::ResourceManager *rmgr,
-	             const std::string &name)
-		: RenderResource(renderer, rmgr, name), handle(0), size(0), data(0)
+	IndexBuffer::IndexBuffer(UploadManager &uploadmgr,
+	                         res::ResourceManager *rmgr,
+	                         const std::string &name)
+		: RenderResource(uploadmgr, rmgr, name), handle(0), size(0), data(0)
 	{
 	}
 	IndexBuffer::~IndexBuffer()

@@ -4,8 +4,6 @@ cmake_minimum_required(VERSION 2.6.0)
 
 # Main CoreRender library
 
-option(CORERENDER_USE_SDL "Use SDL multi-threaded OpenGL contexts." ON)
-
 set(SRC
 	include/CoreRender/core/Color.hpp
 	include/CoreRender/core/File.hpp
@@ -21,7 +19,7 @@ set(SRC
 	include/CoreRender/core/Semaphore.hpp
 	include/CoreRender/core/StandardFile.hpp
 	include/CoreRender/core/StandardFileSystem.hpp
-	include/CoreRender/core/StringTable.hpp
+	#include/CoreRender/core/StringTable.hpp
 	include/CoreRender/core/StructPacking.hpp
 	include/CoreRender/core/Thread.hpp
 	include/CoreRender/core/Time.hpp
@@ -40,37 +38,32 @@ set(SRC
 	include/CoreRender/render/Animation.hpp
 	include/CoreRender/render/BlendMode.hpp
 	include/CoreRender/render/FrameBuffer.hpp
+	include/CoreRender/render/FrameData.hpp
 	include/CoreRender/render/GeometryFile.hpp
 	include/CoreRender/render/GeometryManager.hpp
 	include/CoreRender/render/GraphicsEngine.hpp
 	include/CoreRender/render/IndexBuffer.hpp
-	include/CoreRender/render/InputEvent.hpp
-	include/CoreRender/render/KeyCode.hpp
 	include/CoreRender/render/Material.hpp
-	include/CoreRender/render/Model.hpp
-	include/CoreRender/render/ModelRenderable.hpp
+	#include/CoreRender/render/Model.hpp
+	#include/CoreRender/render/ModelRenderable.hpp
 	include/CoreRender/render/OcclusionQuery.hpp
 	include/CoreRender/render/PipelineCommand.hpp
 	include/CoreRender/render/PipelineDefinition.hpp
 	include/CoreRender/render/Pipeline.hpp
-	include/CoreRender/render/Renderable.hpp
+	#include/CoreRender/render/Renderable.hpp
 	include/CoreRender/render/RenderCaps.hpp
-	include/CoreRender/render/RenderContext.hpp
-	include/CoreRender/render/RenderContextNull.hpp
-	include/CoreRender/render/RenderContextOpenGL.hpp
-	include/CoreRender/render/RenderContextReuseOpenGL.hpp
-	include/CoreRender/render/Renderer.hpp
-	include/CoreRender/render/RenderJob.hpp
+	#include/CoreRender/render/Renderer.hpp
+	#include/CoreRender/render/RenderJob.hpp
 	include/CoreRender/render/RenderQuery.hpp
 	include/CoreRender/render/RenderResource.hpp
 	include/CoreRender/render/RenderStats.hpp
 	include/CoreRender/render/RenderTarget.hpp
 	include/CoreRender/render/RenderThread.hpp
+	include/CoreRender/render/ShaderCombination.hpp
 	include/CoreRender/render/Shader.hpp
-	include/CoreRender/render/ShaderText.hpp
 	include/CoreRender/render/ShaderVariableType.hpp
-	include/CoreRender/render/SpatialRenderable.hpp
-	include/CoreRender/render/StringTableProvider.hpp
+	#include/CoreRender/render/SpatialRenderable.hpp
+	#include/CoreRender/render/StringTableProvider.hpp
 	include/CoreRender/render/Texture1D.hpp
 	include/CoreRender/render/Texture2D.hpp
 	include/CoreRender/render/Texture3D.hpp
@@ -104,8 +97,8 @@ set(SRC
 	src/render/GraphicsEngine.cpp
 	src/render/IndexBuffer.cpp
 	src/render/Material.cpp
-	src/render/Model.cpp
-	src/render/ModelRenderable.cpp
+	#src/render/Model.cpp
+	#src/render/ModelRenderable.cpp
 	src/render/opengl/FrameBufferOpenGL.cpp
 	src/render/opengl/IndexBufferOpenGL.cpp
 	src/render/opengl/RenderCapsOpenGL.cpp
@@ -116,14 +109,12 @@ set(SRC
 	src/render/Pipeline.cpp
 	src/render/PipelineCommand.cpp
 	src/render/PipelineDefinition.cpp
-	src/render/RenderContextReuseOpenGL.cpp
-	src/render/Renderer.cpp
-	src/render/RenderJob.cpp
+	#src/render/Renderer.cpp
+	#src/render/RenderJob.cpp
 	src/render/RenderResource.cpp
 	src/render/RenderTarget.cpp
 	src/render/RenderThread.cpp
 	src/render/Shader.cpp
-	src/render/ShaderText.cpp
 	src/render/Texture2D.cpp
 	src/render/Texture.cpp
 	src/render/UniformData.cpp
@@ -157,25 +148,6 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		GLEW
 	)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-
-
-find_package(SDL)
-if(CORERENDER_USE_SDL AND SDL_FOUND)
-	include_directories(${SDL_INCLUDE_DIR})
-	set(SRC
-		${SRC}
-		src/render/opengl/RenderContextSDL.cpp
-		src/render/opengl/RenderContextSDL.hpp
-		src/render/opengl/RenderWindowSDL.cpp
-		src/render/opengl/RenderWindowSDL.hpp
-	)
-	set(LIB
-		${LIB}
-		${SDL_LIBRARY}
-	)
-	add_definitions(-DCORERENDER_USE_SDL)
-endif(CORERENDER_USE_SDL AND SDL_FOUND)
-
 
 include_directories(include)
 

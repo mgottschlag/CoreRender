@@ -26,7 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/ShaderVariableType.hpp"
 #include "CoreRender/render/FrameBuffer.hpp"
 #include "CoreRender/render/BlendMode.hpp"
-#include "CoreRender/render/PipelineCommand.hpp"
+//#include "CoreRender/render/PipelineCommand.hpp"
 #include "CoreRender/math/BoundingBox.hpp"
 
 namespace cr

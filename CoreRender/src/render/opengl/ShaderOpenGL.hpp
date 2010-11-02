@@ -33,7 +33,7 @@ namespace opengl
 	class ShaderOpenGL : public Shader
 	{
 		public:
-			ShaderOpenGL(Renderer *renderer,
+			ShaderOpenGL(UploadManager &uploadmgr,
 			             res::ResourceManager *rmgr,
 			             const std::string &name);
 			virtual ~ShaderOpenGL();

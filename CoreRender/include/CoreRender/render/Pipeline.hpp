@@ -22,145 +22,46 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_PIPELINE_HPP_INCLUDED_
 #define _CORERENDER_RENDER_PIPELINE_HPP_INCLUDED_
 
-#include "RenderJob.hpp"
-#include "PipelineCommand.hpp"
+#include "../res/Resource.hpp"
+#include "PipelineStage.hpp"
 
 namespace cr
 {
 namespace render
 {
-	struct PipelineInfo;
 	class Renderer;
-	class PipelineSequence;
-	class PipelineStage;
-
-	/**
-	 * Current pipeline state which is used to keep track of bound textures
-	 * for PipelineCommand::beginFrame().
-	 */
-	struct PipelineState
-	{
-		PipelineState(std::vector<DefaultUniform> &defuniforms)
-			: defuniforms(defuniforms)
-		{
-		}
-		std::map<std::string, Texture::Ptr> textures;
-		std::vector<DefaultUniform> &defuniforms;
-	};
 
 	/**
 	 * Class which defines the way a scene is rendered to the screen or to
-	 * a texture. The pipeline contains several sequences which each correlate
-	 * to a single camera in the screen and can hold a set of default uniforms
-	 * like the projection matrix. Each sequence is then composed of multiple
-	 * stages which hold the rendering commands.
+	 * a texture. A pipeline is composed from multiple pipeline stages which can
+	 * be enabled or disabled.
 	 */
-	class Pipeline : public core::ReferenceCounted
+	class Pipeline : public res::Resource
 	{
 		public:
 			/**
 			 * Constructor.
 			 */
-			Pipeline();
+			Pipeline(res::ResourceManager *rmgr, const std::string &name);
 			/**
 			 * Destructor.
 			 */
 			virtual ~Pipeline();
 
-			/**
-			 * Returns the command tree which is executed in the render thread
-			 * every time the pipeline is rendered.
-			 */
-			CommandList &getCommands()
-			{
-				return commands;
-			}
-
-			void addStage(CommandList *commands, const std::string &name);
-			CommandList *getStage(const std::string &name);
+			PipelineStage *addStage(const std::string &name);
+			PipelineStage *getStage(const std::string &name);
 			void removeStage(const std::string &name);
 			unsigned int getStageCount();
 
-			/**
-			 * Adds a command list to the list of deferred light loops.This list
-			 * will then hold the commands for shadow map generation and drawing
-			 * the light.
-			 * @note The list must be empty.
-			 * @param stage Command list to be used as a light loop list.
-			 */
-			void addDeferredLightLoop(CommandList *lightloop);
-			/**
-			 * Returns the number of deferred light loops in this pipeline.
-			 * @return Number of light loops.
-			 */
-			unsigned int getDeferredLightLoopCount();
-			/**
-			 * Returns a single command list which holds a deferred light loop.
-			 * @param index Index of the light loop.
-			 */
-			CommandList *getDeferredLightLoop(unsigned int index);
-
-			/**
-			 * Adds a command list to the list of deferred light loops.This list
-			 * will then hold the commands for shadow map generation and drawing
-			 * all geometry again with lighting from the light.
-			 * @note The list must be empty.
-			 * @param stage Command list to be used as a light loop list.
-			 */
-			void addForwardLightLoop(CommandList *lightloop);
-			/**
-			 * Returns the number of forward light loops in this pipeline.
-			 * @return Number of light loops.
-			 */
-			unsigned int getForwardLightLoopCount();
-			/**
-			 * Returns a single command list which holds a forward light loop.
-			 * @param index Index of the light loop.
-			 */
-			CommandList *getForwardLightLoop(unsigned int index);
-
-			void getBatchLists(std::vector<BatchListCommand*> &lists);
-
-			/**
-			 * Begins a new frame. Called by Renderer, do not call this
-			 * manually.
-			 * @param renderer Renderer which renders this frame.
-			 * @param info Pipeline render info to be passed to the render
-			 * thread.
-			 */
-			void beginFrame(Renderer *renderer, PipelineInfo *info);
-			/**
-			 * Prepares the pipeline data to be passed to the render thread and
-			 * places it in info.
-			 */
-			void endFrame();
-
-			/**
-			 * Returns the default uniform values which are set for this
-			 * pipeline. This is mostly used to set camera settings which are
-			 * valid for all jobs rendered with this pipeline. This function
-			 * returns a reference which can be used to add or modify uniform
-			 * values.
-			 * @return Reference to the default uniform values.
-			 */
-			std::vector<DefaultUniform> &getDefaultUniforms()
+			virtual const char *getType()
 			{
-				return uniforms;
+				return "Pipeline";
 			}
 
 			typedef core::SharedPointer<Pipeline> Ptr;
 		private:
-			void getBatchLists(CommandList *commands,
-			                   std::vector<BatchListCommand*> &lists);
 
-			core::HashMap<std::string, CommandList*>::Type stages;
-
-			std::vector<CommandList*> forwardlightloops;
-			std::vector<CommandList*> deferredlightloops;
-
-			CommandList commands;
-
-			std::vector<DefaultUniform> uniforms;
+			std::vector<PipelineStage> stages;
 	};
 }
 }

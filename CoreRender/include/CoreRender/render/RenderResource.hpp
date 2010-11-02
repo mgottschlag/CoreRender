@@ -28,7 +28,7 @@ namespace cr
 {
 namespace render
 {
-	class Renderer;
+	class UploadManager;
 
 	/**
 	 * Base class for all resources which are uploaded to the GPU. Those need
@@ -48,11 +48,12 @@ namespace render
 		public:
 			/**
 			 * Constructor.
-			 * @param renderer Renderer to be used for uploading/unloading.
+			 * @param uploadmgr Class which is used for uploading/deleting the
+			 * resource.
 			 * @param rmgr Resource manager for this resource.
 			 * @param name Name of this resource.
 			 */
-			RenderResource(Renderer *renderer,
+			RenderResource(UploadManager &uploadmgr,
 			               res::ResourceManager *rmgr,
 			               const std::string &name);
 			/**
@@ -88,9 +89,9 @@ namespace render
 
 			typedef core::SharedPointer<RenderResource> Ptr;
 		protected:
-			Renderer *getRenderer()
+			UploadManager &getUploadManager()
 			{
-				return renderer;
+				return uploadmgr;
 			}
 
 			void registerUpload();
@@ -98,7 +99,7 @@ namespace render
 
 			virtual void onDelete();
 		private:
-			Renderer *renderer;
+			UploadManager &uploadmgr;
 
 			tbb::spin_mutex uploadmutex;
 			bool uploading;

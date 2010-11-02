@@ -22,25 +22,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/GraphicsEngine.hpp"
 #include "CoreRender/core/StandardFileSystem.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
-#include "CoreRender/render/RenderContextNull.hpp"
-#include "CoreRender/render/Renderer.hpp"
-#include "CoreRender/render/RenderThread.hpp"
 #include "CoreRender/res/DefaultResourceFactory.hpp"
 #include "CoreRender/render/Animation.hpp"
 #include "CoreRender/render/RenderTarget.hpp"
-#include "CoreRender/render/PipelineDefinition.hpp"
-#include "FrameData.hpp"
+#include "CoreRender/render/Model.hpp"
+#include "CoreRender/render/Shader.hpp"
+#include "CoreRender/render/Pipeline.hpp"
+#include "CoreRender/render/FrameData.hpp"
 #include "CoreRender/core/MemoryPool.hpp"
 
-#if defined(CORERENDER_USE_SDL)
-	#include "opengl/RenderContextSDL.hpp"
-#elif defined(CORERENDER_USE_GLCML)
-	#include "opengl/RenderContextGLCML.hpp"
-#elif defined(CORERENDER_USE_GLFW)
-	#include "opengl/RenderContextGLFW.hpp"
-#endif
 #include "opengl/VideoDriverOpenGL.hpp"
-#include "null/VideoDriverNull.hpp"
 
 namespace cr
 {
@@ -50,9 +41,10 @@ namespace render
 	{
 		public:
 			Texture2DFactory(render::VideoDriver *driver,
-			                      render::Renderer *renderer,
-			                      res::ResourceManager *rmgr)
-				: res::ResourceFactory(rmgr), driver(driver), renderer(renderer)
+			                 UploadManager &uploadmgr,
+			                 res::ResourceManager *rmgr)
+				: res::ResourceFactory(rmgr), driver(driver),
+				uploadmgr(uploadmgr)
 			{
 			}
 			virtual ~Texture2DFactory()
@@ -61,19 +53,20 @@ namespace render
 
 			virtual res::Resource::Ptr create(const std::string &name)
 			{
-				return driver->createTexture2D(renderer, getManager(), name);
+				return driver->createTexture2D(uploadmgr, getManager(), name);
 			}
 		private:
 			render::VideoDriver *driver;
-			render::Renderer *renderer;
+			UploadManager &uploadmgr;
 	};
 	class VertexBufferFactory : public res::ResourceFactory
 	{
 		public:
 			VertexBufferFactory(render::VideoDriver *driver,
-			                      render::Renderer *renderer,
-			                      res::ResourceManager *rmgr)
-				: res::ResourceFactory(rmgr), driver(driver), renderer(renderer)
+			                    UploadManager &uploadmgr,
+			                    res::ResourceManager *rmgr)
+				: res::ResourceFactory(rmgr), driver(driver),
+				uploadmgr(uploadmgr)
 			{
 			}
 			virtual ~VertexBufferFactory()
@@ -82,19 +75,20 @@ namespace render
 
 			virtual res::Resource::Ptr create(const std::string &name)
 			{
-				return driver->createVertexBuffer(renderer, getManager(), name);
+				return driver->createVertexBuffer(uploadmgr, getManager(), name);
 			}
 		private:
 			render::VideoDriver *driver;
-			render::Renderer *renderer;
+			UploadManager &uploadmgr;
 	};
 	class IndexBufferFactory : public res::ResourceFactory
 	{
 		public:
 			IndexBufferFactory(render::VideoDriver *driver,
-			                      render::Renderer *renderer,
-			                      res::ResourceManager *rmgr)
-				: res::ResourceFactory(rmgr), driver(driver), renderer(renderer)
+			                   UploadManager &uploadmgr,
+			                   res::ResourceManager *rmgr)
+				: res::ResourceFactory(rmgr), driver(driver),
+				uploadmgr(uploadmgr)
 			{
 			}
 			virtual ~IndexBufferFactory()
@@ -103,19 +97,20 @@ namespace render
 
 			virtual res::Resource::Ptr create(const std::string &name)
 			{
-				return driver->createIndexBuffer(renderer, getManager(), name);
+				return driver->createIndexBuffer(uploadmgr, getManager(), name);
 			}
 		private:
 			render::VideoDriver *driver;
-			render::Renderer *renderer;
+			UploadManager &uploadmgr;
 	};
 	class ShaderFactory : public res::ResourceFactory
 	{
 		public:
 			ShaderFactory(render::VideoDriver *driver,
-			              render::Renderer *renderer,
+			              UploadManager &uploadmgr,
 			              res::ResourceManager *rmgr)
-				: res::ResourceFactory(rmgr), driver(driver), renderer(renderer)
+				: res::ResourceFactory(rmgr), driver(driver),
+				uploadmgr(uploadmgr)
 			{
 			}
 			virtual ~ShaderFactory()
@@ -124,19 +119,20 @@ namespace render
 
 			virtual res::Resource::Ptr create(const std::string &name)
 			{
-				return driver->createShader(renderer, getManager(), name);
+				return driver->createShader(uploadmgr, getManager(), name);
 			}
 		private:
 			render::VideoDriver *driver;
-			render::Renderer *renderer;
+			UploadManager &uploadmgr;
 	};
 	class FrameBufferFactory : public res::ResourceFactory
 	{
 		public:
 			FrameBufferFactory(render::VideoDriver *driver,
-			                   render::Renderer *renderer,
+			                   UploadManager &uploadmgr,
 			                   res::ResourceManager *rmgr)
-				: res::ResourceFactory(rmgr), driver(driver), renderer(renderer)
+				: res::ResourceFactory(rmgr), driver(driver),
+				uploadmgr(uploadmgr)
 			{
 			}
 			virtual ~FrameBufferFactory()
@@ -145,27 +141,22 @@ namespace render
 
 			virtual res::Resource::Ptr create(const std::string &name)
 			{
-				return driver->createFrameBuffer(renderer, getManager(), name);
+				return driver->createFrameBuffer(uploadmgr, getManager(), name);
 			}
 		private:
 			render::VideoDriver *driver;
-			render::Renderer *renderer;
+			UploadManager &uploadmgr;
 	};
 
 	GraphicsEngine::GraphicsEngine()
-		: rmgr(0), log(0), multithreaded(true), renderer(0), renderthread(0)
+		: rmgr(0), driver(0)
 	{
 	}
 	GraphicsEngine::~GraphicsEngine()
 	{
 	}
 
-	bool GraphicsEngine::init(VideoDriverType::List type,
-	                          unsigned int width,
-	                          unsigned int height,
-	                          bool fullscreen,
-	                          RenderContext::Ptr context,
-	                          bool multithreaded)
+	bool GraphicsEngine::init()
 	{
 		// Initialize file system
 		if (!fs)
@@ -179,33 +170,6 @@ namespace render
 			log = new core::Log(fs, "/CoreRenderLog.html");
 		log->info("CoreRender initializing.");
 		// TODO: Version information
-		// Create context of no was provided
-		if (!context)
-		{
-			context = createContext(type, width, height, fullscreen);
-		}
-		if (!context)
-		{
-			log->error("Could not create any rendering context!");
-			return false;
-		}
-		this->context = context;
-		if (multithreaded)
-		{
-			// Create second context for the rendering thread
-			RenderContext::Ptr secondcontext = context->clone();
-			if (secondcontext)
-			{
-				this->secondcontext = secondcontext;
-			}
-			else
-			{
-				log->warning("Could not clone the rendering context. "
-				             "Continuing single-threaded.");
-				multithreaded = false;
-			}
-		}
-		this->multithreaded = multithreaded;
 		// Initialize resource manager
 		rmgr = new res::ResourceManager(fs, log);
 		if (!rmgr->init())
@@ -213,41 +177,16 @@ namespace render
 			log->error("Could not initialize resource manager.");
 			delete rmgr;
 			rmgr = 0;
-			context = 0;
-			secondcontext = 0;
 			return false;
 		}
-		// Create renderer
-		context->makeCurrent();
-		driver = createDriver(type);
-		context->makeCurrent(false);
+		// Create video driver
+		driver = createDriver();
 		if (!driver)
 		{
 			log->error("Could not create video driver.");
 			delete rmgr;
 			rmgr = 0;
-			context = 0;
-			secondcontext = 0;
 			return false;
-		}
-		renderer = new Renderer(context, secondcontext, log, driver, this);
-		// Create render thread
-		if (multithreaded)
-		{
-			renderthread = new RenderThread(renderer);
-			if (!renderthread->start())
-			{
-				log->error("Could not start render thread.");
-				delete renderthread;
-				renderthread = 0;
-				delete renderer;
-				renderer = 0;
-				delete rmgr;
-				rmgr = 0;
-				context = 0;
-				secondcontext = 0;
-				return false;
-			}
 		}
 		// Register resource types
 		res::ResourceFactory::Ptr factory;
@@ -255,53 +194,32 @@ namespace render
 		rmgr->addFactory("Material", factory);
 		factory = new res::DefaultResourceFactory<Model>(rmgr);
 		rmgr->addFactory("Model", factory);
-		factory = new res::DefaultResourceFactory<ShaderText>(rmgr);
-		rmgr->addFactory("ShaderText", factory);
-		factory = new ShaderFactory(driver, renderer, rmgr);
+		factory = new res::DefaultResourceFactory<Shader>(rmgr);
 		rmgr->addFactory("Shader", factory);
-		factory = new Texture2DFactory(driver, renderer, rmgr);
+		factory = new ShaderFactory(driver, uploadmgr, rmgr);
+		rmgr->addFactory("Shader", factory);
+		factory = new Texture2DFactory(driver, uploadmgr, rmgr);
 		rmgr->addFactory("Texture2D", factory);
-		factory = new IndexBufferFactory(driver, renderer, rmgr);
+		factory = new IndexBufferFactory(driver, uploadmgr, rmgr);
 		rmgr->addFactory("IndexBuffer", factory);
-		factory = new VertexBufferFactory(driver, renderer, rmgr);
+		factory = new VertexBufferFactory(driver, uploadmgr, rmgr);
 		rmgr->addFactory("VertexBuffer", factory);
-		factory = new FrameBufferFactory(driver, renderer, rmgr);
+		factory = new FrameBufferFactory(driver, uploadmgr, rmgr);
 		rmgr->addFactory("FrameBuffer", factory);
 		factory = new res::DefaultResourceFactory<Animation>(rmgr);
 		rmgr->addFactory("Animation", factory);
 		factory = new res::DefaultResourceFactory<RenderTarget>(rmgr);
 		rmgr->addFactory("RenderTarget", factory);
-		factory = new res::DefaultResourceFactory<PipelineDefinition>(rmgr);
-		rmgr->addFactory("PipelineDefinition", factory);
+		factory = new res::DefaultResourceFactory<Pipeline>(rmgr);
+		rmgr->addFactory("Pipeline", factory);
 		// Create default resources
-		createDefaultResources();
-		return true;
-	}
-	bool GraphicsEngine::resize(unsigned int width,
-	                            unsigned int height,
-	                            bool fullscreen)
-	{
 		// TODO
-		return false;
+		return true;
 	}
 	void GraphicsEngine::shutdown()
 	{
 		// Delete default resources
-		destroyDefaultResources();
-		// Stop and destroy render thread
-		if (multithreaded)
-		{
-			renderthread->stop();
-			delete renderthread;
-			renderthread = 0;
-		}
-		// Clean up render resources
 		// TODO
-		// Delete pipelines
-		pipelines.clear();
-		// Destroy renderer
-		delete renderer;
-		renderer = 0;
 		// Delete driver
 		delete driver;
 		// Stop resource manager
@@ -312,82 +230,35 @@ namespace render
 		log = 0;
 		// Destroy file system
 		fs = 0;
-		// Delete contexts
-		secondcontext = 0;
-		context = 0;
 	}
 
-	bool GraphicsEngine::beginFrame()
+	FrameData *GraphicsEngine::beginFrame()
 	{
-		renderer->uploadNewObjects();
-		// Setup the rendering pipeline
-		core::MemoryPool *memory = renderer->getNextFrameMemory();
-		unsigned int memsize = sizeof(PipelineInfo) * pipelines.size();
-		renderdata = (PipelineInfo*)memory->allocate(memsize);
-		for (unsigned int i = 0; i < pipelines.size(); i++)
-		{
-			pipelines[i]->beginFrame(renderer, &renderdata[i]);
-		}
-		return true;
+		// TODO: Reuse memory
+		core::MemoryPool *memory = new core::MemoryPool;
+		FrameData *frame = new FrameData(memory);
+		return frame;
 	}
-	bool GraphicsEngine::endFrame()
+	void GraphicsEngine::endFrame(FrameData *frame)
 	{
-		// Finish frame data
-		for (unsigned int i = 0; i < pipelines.size(); i++)
-		{
-			pipelines[i]->endFrame();
-		}
-		// Wait for last frame to end
-		if (multithreaded)
-			renderthread->waitForFrame();
-		// Fetch statistics from the last frame
-		stats = driver->getStats();
-		driver->getStats().reset();
-		// Render
-		renderer->prepareRendering(renderdata, pipelines.size());
-		if (multithreaded)
-			renderthread->startFrame();
-		else
-		{
-			driver->getStats().setFrameBegin(core::Time::Now());
-			driver->getStats().setRenderBegin(core::Time::Now());
-			renderer->render();
-			driver->getStats().setFrameEnd(core::Time::Now());
-		}
-		// Update input in secondary context
-		// SDL needs this.
-		if (secondcontext)
-			secondcontext->update(this);
-		return true;
+		// TODO: Create lists with resources to be uploaded and deleted
+		// TODO: Render stats
 	}
-
-	void GraphicsEngine::addPipeline(Pipeline::Ptr pipeline)
+	void GraphicsEngine::render(FrameData *frame)
 	{
-		// TODO: In debug mode, check whether we are currently rendering?
-		tbb::spin_mutex::scoped_lock lock(pipelinemutex);
-		pipelines.push_back(pipeline);
+		// Upload resources which need to be uploaded
+		// TODO
+		// Render frame
+		// TODO
+		// Delete resources which need to be deleted
+		// TODO
 	}
-	void GraphicsEngine::removePipeline(Pipeline::Ptr pipeline)
+	void GraphicsEngine::discard(FrameData *frame)
 	{
-		tbb::spin_mutex::scoped_lock lock(pipelinemutex);
-		for (unsigned int i = 0; i < pipelines.size(); i++)
-		{
-			if (pipelines[i] == pipeline)
-			{
-				pipelines.erase(pipelines.begin() + i);
-				return;
-			}
-		}
-	}
-	std::vector<Pipeline::Ptr> GraphicsEngine::getPipelines()
-	{
-		tbb::spin_mutex::scoped_lock lock(pipelinemutex);
-		return pipelines;
-	}
-	unsigned int GraphicsEngine::getPipelineCount()
-	{
-		tbb::spin_mutex::scoped_lock lock(pipelinemutex);
-		return pipelines.size();
+		// Upload resources which need to be uploaded
+		// TODO
+		// Delete resources which need to be deleted
+		// TODO
 	}
 
 	void GraphicsEngine::setFileSystem(core::FileSystem::Ptr fs)
@@ -404,113 +275,16 @@ namespace render
 		this->log = log;
 	}
 
-	void GraphicsEngine::injectInput(const InputEvent &event)
+	VideoDriver *GraphicsEngine::createDriver()
 	{
-		tbb::spin_mutex::scoped_lock lock(inputmutex);
-		inputqueue.push(event);
-	}
-	bool GraphicsEngine::getInput(InputEvent *event)
-	{
-		tbb::spin_mutex::scoped_lock lock(inputmutex);
-		if (inputqueue.empty())
-			return false;
-		*event = inputqueue.front();
-		inputqueue.pop();
-		return true;
-	}
-
-	RenderContext::Ptr GraphicsEngine::createContext(VideoDriverType::List type,
-	                                                 unsigned int width,
-	                                                 unsigned int height,
-	                                                 bool fullscreen)
-	{
-		if (type == VideoDriverType::OpenGL)
+		opengl::VideoDriverOpenGL *driver;
+		driver = new opengl::VideoDriverOpenGL(log);
+		if (!driver->init())
 		{
-#if defined(CORERENDER_USE_SDL)
-			opengl::RenderContextSDL *newctx;
-			newctx = new opengl::RenderContextSDL();
-			if (!newctx->create(width, height, fullscreen))
-			{
-				delete newctx;
-				return 0;
-			}
-			return newctx;
-#elif defined(CORERENDER_USE_GLCML)
-			opengl::RenderContextGLCML *newctx;
-			newctx = new opengl::RenderContextGLCML();
-			if (!newctx->create(width, height, fullscreen))
-			{
-				delete newctx;
-				return 0;
-			}
-			return newctx;
-#elif defined(CORERENDER_USE_GLFW)
-			opengl::RenderContextGLFW *newctx;
-			newctx = new opengl::RenderContextGLFW();
-			if (!newctx->create(width, height, fullscreen))
-			{
-				delete newctx;
-				return 0;
-			}
-			return newctx;
-#else
-			return 0;
-#endif
-		}
-		else if (type == VideoDriverType::Null)
-		{
-			return new RenderContextNull();
-		}
-		else
-		{
+			delete driver;
 			return 0;
 		}
-	}
-	VideoDriver *GraphicsEngine::createDriver(VideoDriverType::List type)
-	{
-		if (type == VideoDriverType::OpenGL)
-		{
-			opengl::VideoDriverOpenGL *driver;
-			driver = new opengl::VideoDriverOpenGL(log);
-			if (!driver->init())
-			{
-				delete driver;
-				return 0;
-			}
-			return driver;
-		}
-		else if (type == VideoDriverType::Null)
-		{
-			return new null::VideoDriverNull();
-		}
-		else
-		{
-			return 0;
-		}
-	}
-
-	void GraphicsEngine::createDefaultResources()
-	{
-		// Full screen quad
-		float vertices[4 * 4] = {
-			-1.0f, -1.0f, 0.0f, 0.0f,
-			1.0f, -1.0f, 1.0f, 0.0f,
-			1.0f, 1.0f, 1.0f, 1.0f,
-			-1.0f, 1.0f, 0.0f, 1.0f
-		};
-		unsigned char indices[6] = {
-			0, 1, 2,
-			0, 2, 3
-		};
-		fsquadib = rmgr->createResource<IndexBuffer>("IndexBuffer", "__fsquadib");
-		fsquadib->set(6, indices);
-		fsquadvb = rmgr->createResource<VertexBuffer>("VertexBuffer", "__fsquadvb");
-		fsquadvb->set(4 * 4 * sizeof(float), vertices);
-	}
-	void GraphicsEngine::destroyDefaultResources()
-	{
-		fsquadib = 0;
-		fsquadvb = 0;
+		return driver;
 	}
 }
 }

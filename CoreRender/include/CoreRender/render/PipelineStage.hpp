@@ -19,47 +19,40 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_NULL_RENDERCAPSNULL_HPP_INCLUDED_
-#define _CORERENDER_RENDER_NULL_RENDERCAPSNULL_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_PIPELINESTAGE_HPP_INCLUDED_
+#define _CORERENDER_RENDER_PIPELINESTAGE_HPP_INCLUDED_
 
-#include "CoreRender/render/RenderCaps.hpp"
+#include <vector>
 
 namespace cr
 {
 namespace render
 {
-namespace null
-{
-	class RenderCapsNull : public RenderCaps
+	struct PipelineCommandType
 	{
-		public:
-			RenderCapsNull()
-			{
-				// Support a reasonable amount of features
-				flags |= 1 << Flag::TextureFloat;
-				flags |= 1 << Flag::TextureDepthStencil;
-				flags |= 1 << Flag::TextureCompression;
-				flags |= 1 << Flag::TextureDXT1;
-				flags |= 1 << Flag::VertexHalfFloat;
-				flags |= 1 << Flag::PointSprite;
-				flags |= 1 << Flag::TextureRG;
-				maxtexsize1d = 4096;
-				maxtexsize2d[0] = 4096;
-				maxtexsize2d[1] = 4096;
-				maxtexsize3d[0] = 128;
-				maxtexsize3d[1] = 128;
-				maxtexsize3d[2] = 128;
-				maxtexsizecube[0] = 4096;
-				maxtexsizecube[1] = 4096;
-				maxpointsize = 256.0f;
-				minpointsize = 0.1f;
-			}
-			virtual ~RenderCapsNull()
-			{
-			}
-		private:
+		enum List
+		{
+			ClearTarget,
+			SetTarget,
+			BindTexture,
+			UnbindTextures,
+			DrawGeometry,
+			DoForwardLightLoop,
+			DoDeferredLightLoop,
+			DrawFullscreenQuad,
+		};
 	};
-}
+	struct PipelineCommand
+	{
+		PipelineCommandType::List type;
+		
+	};
+	struct PipelineStage
+	{
+		std::string name;
+		std::vector<PipelineCommand> commands;
+		bool enabled;
+	};
 }
 }
 

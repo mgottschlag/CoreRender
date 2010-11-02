@@ -39,12 +39,11 @@ namespace render
 	{
 	}
 
-	void Material::setShader(ShaderText::Ptr shader)
+	void Material::setShader(Shader::Ptr shader)
 	{
 		this->shader = shader;
-		shader->prepareShaders(getShaderFlags());
 	}
-	ShaderText::Ptr Material::getShader()
+	Shader::Ptr Material::getShader()
 	{
 		return shader;
 	}
@@ -126,8 +125,8 @@ namespace render
 			if (flagattrib)
 				flags = flagattrib;
 			// Load shader
-			ShaderText::Ptr shader;
-			shader = getManager()->getOrLoad<ShaderText>("ShaderText", shaderfile);
+			Shader::Ptr shader;
+			shader = getManager()->getOrLoad<Shader>("Shader", shaderfile);
 			setShader(shader);
 			setShaderFlags(flags);
 		}

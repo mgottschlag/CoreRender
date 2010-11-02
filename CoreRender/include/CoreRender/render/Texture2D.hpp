@@ -44,7 +44,7 @@ namespace render
 			 * @param rmgr Resource manager for this resource.
 			 * @param name Name of this resource.
 			 */
-			Texture2D(Renderer *renderer,
+			Texture2D(UploadManager &uploadmgr,
 			          res::ResourceManager *rmgr,
 			          const std::string &name);
 			/**

@@ -30,10 +30,10 @@ namespace render
 {
 namespace opengl
 {
-	FrameBufferOpenGL::FrameBufferOpenGL(Renderer *renderer,
+	FrameBufferOpenGL::FrameBufferOpenGL(UploadManager &uploadmgr,
 	                                     res::ResourceManager *rmgr,
 	                                     const std::string &name)
-		: FrameBuffer(renderer, rmgr, name)
+		: FrameBuffer(uploadmgr, rmgr, name)
 	{
 	}
 	FrameBufferOpenGL::~FrameBufferOpenGL()

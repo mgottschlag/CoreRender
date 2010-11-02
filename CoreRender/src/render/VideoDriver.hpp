@@ -42,7 +42,7 @@ namespace render
 {
 	struct RenderBatch;
 	struct RenderTargetInfo;
-	class Renderer;
+	class UploadManager;
 
 	/**
 	 * Render system backend. This is used to create backend-specific classes
@@ -75,35 +75,35 @@ namespace render
 			 * Creates a Texture2D resource. This is usually called by the
 			 * Texture2D resource factory.
 			 */
-			virtual Texture2D::Ptr createTexture2D(Renderer *renderer,
+			virtual Texture2D::Ptr createTexture2D(UploadManager &uploadmgr,
 			                                       res::ResourceManager *rmgr,
 			                                       const std::string &name) = 0;
 			/**
 			 * Creates a IndexBuffer resource. This is usually called by the
 			 * IndexBuffer resource factory.
 			 */
-			virtual IndexBuffer::Ptr createIndexBuffer(Renderer *renderer,
+			virtual IndexBuffer::Ptr createIndexBuffer(UploadManager &uploadmgr,
 			                                           res::ResourceManager *rmgr,
 			                                           const std::string &name) = 0;
 			/**
 			 * Creates a VertexBuffer resource. This is usually called by the
 			 * VertexBuffer resource factory.
 			 */
-			virtual VertexBuffer::Ptr createVertexBuffer(Renderer *renderer,
+			virtual VertexBuffer::Ptr createVertexBuffer(UploadManager &uploadmgr,
 			                                             res::ResourceManager *rmgr,
 			                                             const std::string &name) = 0;
 			/**
 			 * Creates a Shader resource. This is usually called by the
 			 * Shader resource factory.
 			 */
-			virtual Shader::Ptr createShader(Renderer *renderer,
+			virtual Shader::Ptr createShader(UploadManager &uploadmgr,
 			                                 res::ResourceManager *rmgr,
 			                                 const std::string &name) = 0;
 			/**
 			 * Creates a frame buffer resource. This is usually called by the
 			 * FrameBuffer resource factory.
 			 */
-			virtual FrameBuffer::Ptr createFrameBuffer(Renderer *renderer,
+			virtual FrameBuffer::Ptr createFrameBuffer(UploadManager &uploadmgr,
 			                                           res::ResourceManager *rmgr,
 			                                           const std::string &name) = 0;
 

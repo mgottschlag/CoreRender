@@ -31,10 +31,10 @@ namespace render
 {
 namespace opengl
 {
-	IndexBufferOpenGL::IndexBufferOpenGL(Renderer *renderer,
+	IndexBufferOpenGL::IndexBufferOpenGL(UploadManager &uploadmgr,
 	                                     res::ResourceManager *rmgr,
 	                                     const std::string &name)
-		: IndexBuffer(renderer, rmgr, name)
+		: IndexBuffer(uploadmgr, rmgr, name)
 	{
 	}
 	IndexBufferOpenGL::~IndexBufferOpenGL()

@@ -19,50 +19,42 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_NULL_SHADERNULL_HPP_INCLUDED_
-#define _CORERENDER_RENDER_NULL_SHADERNULL_HPP_INCLUDED_
-
-#include "CoreRender/render/Shader.hpp"
+#include "CoreRender/render/UploadManager.hpp"
+#include "CoreRender/core/MemoryPool.hpp"
 
 namespace cr
 {
 namespace render
 {
-namespace null
-{
-	class ShaderNull : public Shader
+	UploadManager::UploadManager()
 	{
-		public:
-			ShaderNull(Renderer *renderer,
-			           res::ResourceManager *rmgr,
-			           const std::string &name)
-				: Shader(renderer, rmgr, name)
-			{
-			}
-			virtual ~ShaderNull()
-			{
-			}
+	}
+	UploadManager::~UploadManager()
+	{
+	}
 
-			virtual bool create()
-			{
-				return true;
-			}
-			virtual bool destroy()
-			{
-				handle = 0;
-				return true;
-			}
-			virtual bool upload()
-			{
-				return true;
-			}
-			virtual void uploadShader()
-			{
-				handle = 1;
-			}
-	};
-}
-}
-}
+	void UploadManager::registerUpload(RenderResource *resource)
+	{
+		tbb::spin_mutex::scoped_lock lock(listmutex);
+		upload.push_back(resource);
+	}
+	void UploadManager::registerDeletion(RenderResource *resource)
+	{
+		tbb::spin_mutex::scoped_lock lock(listmutex);
+		deletion.push_back(resource);
+	}
 
-#endif
+	void UploadManager::getLists(UploadLists &lists, core::MemoryPool *memory)
+	{
+		// TODO
+	}
+	void UploadManager::uploadResources(UploadLists &lists)
+	{
+		// TODO
+	}
+	void UploadManager::deleteResources(UploadLists &lists)
+	{
+		// TODO
+	}
+}
+}

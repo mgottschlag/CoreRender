@@ -33,7 +33,7 @@ namespace opengl
 	class FrameBufferOpenGL : public FrameBuffer
 	{
 		public:
-			FrameBufferOpenGL(Renderer *renderer,
+			FrameBufferOpenGL(UploadManager &uploadmgr,
 			                  res::ResourceManager *rmgr,
 			                  const std::string &name);
 			virtual ~FrameBufferOpenGL();

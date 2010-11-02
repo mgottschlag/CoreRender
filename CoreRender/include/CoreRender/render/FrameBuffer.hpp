@@ -46,7 +46,7 @@ namespace render
 			 * @param rmgr Resource manager for this resource.
 			 * @param name Name of this resource.
 			 */
-			FrameBuffer(Renderer *renderer,
+			FrameBuffer(UploadManager &uploadmgr,
 			            res::ResourceManager *rmgr,
 			            const std::string &name);
 			/**

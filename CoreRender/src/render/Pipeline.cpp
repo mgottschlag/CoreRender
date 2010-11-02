@@ -28,7 +28,8 @@ namespace cr
 {
 namespace render
 {
-	Pipeline::Pipeline()
+	Pipeline::Pipeline(res::ResourceManager *rmgr, const std::string &name)
+		: Resource(rmgr, name)
 	{
 	}
 	Pipeline::~Pipeline()

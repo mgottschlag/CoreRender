@@ -47,7 +47,7 @@ namespace render
 			 * @param rmgr Resource manager for this resource.
 			 * @param name Name of this resource.
 			 */
-			IndexBuffer(Renderer *renderer,
+			IndexBuffer(UploadManager &uploadmgr,
 			            res::ResourceManager *rmgr,
 			            const std::string &name);
 			/**

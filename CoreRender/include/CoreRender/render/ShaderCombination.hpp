@@ -19,28 +19,49 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_RENDERCONTEXTREUSEOPENGL_HPP_INCLUDED_
-#define _CORERENDER_RENDER_RENDERCONTEXTREUSEOPENGL_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_SHADERCOMBINATION_HPP_INCLUDED_
+#define _CORERENDER_RENDER_SHADERCOMBINATION_HPP_INCLUDED_
 
-#include "RenderContextOpenGL.hpp"
-
-#ifdef __unix__
-#include <GL/glx.h>
-#endif
+#include <vector>
+#include <string>
 
 namespace cr
 {
 namespace render
 {
-	class RenderContextReuseOpenGL : public RenderContextOpenGL
-	{
-		public:
-			RenderContextReuseOpenGL();
-			virtual ~RenderContextReuseOpenGL();
+	class Shader;
 
-			virtual void makeCurrent(bool current = true);
-			virtual void swapBuffers();
-		private:
+	struct UniformLocations
+	{
+		int worldmat;
+		int worldnormalmat;
+		int viewmat;
+		int viewmatinv;
+		int projmat;
+		int viewprojmat;
+		int skinmat;
+		int viewerpos;
+		int framebufsize;
+		int lightpos;
+		int lightdir;
+		int lightcolor;
+		int shadowmat;
+		int shadowbias;
+		int shadowsplitdist;
+	};
+	struct ShaderCombination
+	{
+		unsigned int compilerflags;
+		std::string vs;
+		std::string fs;
+		std::string gs;
+		std::string ts;
+		UniformLocations uniforms;
+		std::vector<int> customuniforms;
+		std::vector<int> attriblocations;
+		int samplerlocations[16];
+		Shader *shader;
+		unsigned int shaderobject;
 	};
 }
 }

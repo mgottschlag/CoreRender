@@ -22,7 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_MATERIAL_HPP_INCLUDED_
 #define _CORERENDER_RENDER_MATERIAL_HPP_INCLUDED_
 
-#include "ShaderText.hpp"
+#include "Shader.hpp"
 #include "Texture.hpp"
 #include "UniformData.hpp"
 
@@ -53,12 +53,12 @@ namespace render
 			 * Sets the shader text of the material.
 			 * @param shader New shader text resource.
 			 */
-			void setShader(ShaderText::Ptr shader);
+			void setShader(Shader::Ptr shader);
 			/**
 			 * Returns the shader text used for this material.
 			 * @return Shader text resource.
 			 */
-			ShaderText::Ptr getShader();
+			Shader::Ptr getShader();
 
 			/**
 			 * Sets a shader flag string. For the format, see
@@ -132,7 +132,7 @@ namespace render
 
 			typedef core::SharedPointer<Material> Ptr;
 		private:
-			ShaderText::Ptr shader;
+			Shader::Ptr shader;
 			std::string shaderflags;
 
 			std::vector<TextureInfo> textures;

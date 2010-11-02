@@ -33,7 +33,7 @@ namespace opengl
 	class IndexBufferOpenGL : public IndexBuffer
 	{
 		public:
-			IndexBufferOpenGL(Renderer *renderer,
+			IndexBufferOpenGL(UploadManager &uploadmgr,
 			                  res::ResourceManager *rmgr,
 			                  const std::string &name);
 			virtual ~IndexBufferOpenGL();

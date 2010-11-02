@@ -22,34 +22,39 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_SHADER_HPP_INCLUDED_
 #define _CORERENDER_RENDER_SHADER_HPP_INCLUDED_
 
-#include "RenderResource.hpp"
-#include "../core/HashMap.hpp"
-#include "DefaultUniform.hpp"
-#include "DepthTest.hpp"
+#include "../res/Resource.hpp"
 #include "BlendMode.hpp"
+#include "ShaderVariableType.hpp"
+#include "UniformData.hpp"
+#include "DepthTest.hpp"
+#include "Texture.hpp"
+
+#include <map>
 
 namespace cr
 {
 namespace render
 {
-	class ShaderText;
+	struct ShaderCombination;
 
 	/**
-	 * Resource containing a single shader instance.
+	 * Class containing shader texts and shader variable information. This class
+	 * then can produce ShaderCombination instances for certain contexts/flag
+	 * combinations.
 	 *
-	 * This class should be created via ShaderText::getShader().
+	 * @todo Explanation on how to define shaders.
+	 *
+	 * This class should be created via ResourceManager::getOrCreate().
 	 */
-	class Shader : public RenderResource
+	class Shader : public res::Resource
 	{
 		public:
 			/**
 			 * Constructor.
-			 * @param renderer Renderer to be used with this shader.
 			 * @param rmgr Resource manager for this resource.
 			 * @param name Name of this resource.
 			 */
-			Shader(Renderer *renderer,
-			       res::ResourceManager *rmgr,
+			Shader(res::ResourceManager *rmgr,
 			       const std::string &name);
 			/**
 			 * Destructor.
@@ -57,175 +62,173 @@ namespace render
 			virtual ~Shader();
 
 			/**
-			 * Sets the blend mode for this shader
+			 * Adds a raw shader text that can later be used by contexts. This
+			 * function also can recursively check for "#include" and include
+			 * the referenced shader files. Not that including other files
+			 * currently produces unusable line numbers in shader compiler
+			 * reports in the log.
+			 * @param name Name of the shader text.
+			 * @param text Content of the shader text.
+			 * @param autoinclude If true, the function acts as a preprocessor
+			 * and resolves all #include lines.
+			 * @return Returns false if the function fails, usually because an
+			 * include statement could not be resolved.
 			 */
-			void setBlendMode(BlendMode::List mode)
-			{
-				blendmode = mode;
-			}
-			/**
-			 * Get the blend mode for this shader
-			 */
-			BlendMode::List getBlendMode()
-			{
-				return blendmode;
-			}
-			/**
-			 * Sets whether z writes are enabled.
-			 */
-			void setDepthWrite(bool depthwrite)
-			{
-				this->depthwrite = depthwrite;
-			}
-			/**
-			 * Returns whether z writes are enabled.
-			 */
-			bool getDepthWrite()
-			{
-				return depthwrite;
-			}
-			/**
-			 * Sets whether and how the depth test is performed.
-			 */
-			void setDepthTest(DepthTest::List depthtest)
-			{
-				this->depthtest = depthtest;
-			}
-			/**
-			 * Returns whether and how the depth test is performed.
-			 */
-			DepthTest::List getDepthTest()
-			{
-				return depthtest;
-			}
-			
-			/**
-			 * Sets the vertex shader text for this shader.
-			 * @param vs Vertex shader content.
-			 */
-			void setVertexShader(const std::string &vs);
-			/**
-			 * Sets the fragment shader text for this shader.
-			 * @param fs Fragment shader content.
-			 */
-			void setFragmentShader(const std::string &fs);
-			/**
-			 * Sets the geometry shader text for this shader.
-			 * @param gs Geometry shader content.
-			 */
-			void setGeometryShader(const std::string &gs);
-			/**
-			 * Sets the tesselation shader text for this shader.
-			 * @param ts Tesselation shader content.
-			 */
-			void setTesselationShader(const std::string &ts);
+			bool addText(const std::string &name,
+			             const std::string &text,
+			             bool autoinclude = false);
 
 			/**
-			 * Adds an attrib name to the shader. Only attribs added like this
-			 * get valid shader handles.
-			 * @param name Attrib name.
+			 * Adds a context to the context list. The context contains several
+			 * shader texts which are then used to create shaders for this
+			 * context.
+			 * @param name Name of the context to be created.
+			 * @param vs Vertex shader text name.
+			 * @param fs Fragment (pixel) shader text name.
+			 * @param gs Geometry shader text name. Leave as "" for no geometry
+			 * shader.
+			 * @param ts Tesselation shader text name. Leave as "" for no
+			 * tesselation shader.
+			 * @param blendmode Blend mode which this context should use.
+			 * @param depthwrite If true, the material writes into the depth
+			 * buffer.
+			 * @param depthtest The depth test which should be used for this
+			 * material. This can be used to always render independent of the
+			 * contents of the depth buffer.
+			 * @return Always returns true as this function currently does not
+			 * check whether the texts actually exist.
+			 */
+			bool addContext(const std::string &name,
+			                const std::string &vs,
+			                const std::string &fs,
+			                const std::string &gs = "",
+			                const std::string &ts = "",
+			                BlendMode::List blendmode = BlendMode::Replace,
+			                bool depthwrite = true,
+			                DepthTest::List depthtest = DepthTest::Less);
+			/**
+			 * Returns whether this material has a certain context.
+			 * @param name Name of the context.
+			 * @return True if the context exists for this material.
+			 */
+			bool hasContext(const std::string &name);
+
+			/**
+			 * Adds a flag to the material. A flag can then be checked in
+			 * shaders via "#if FlagName".
+			 * @param flag Name of the flag.
+			 * @param defaultvalue Default value of the flag.
+			 */
+			void addFlag(const std::string &flag, bool defaultvalue);
+
+			/**
+			 * Adds an attrib to the shaders. Only attribs which are added like
+			 * this can be used in layouts/shaders.
+			 * @param name Name of the attrib.
 			 */
 			void addAttrib(const std::string &name);
 			/**
-			 * Returns the shader handle to an attrib.
-			 * @param name Attrib name.
-			 * @return Shader handle.
+			 * Adds a new uniform to the shaders.
+			 * @param name Name of the uniform.
+			 * @param type Type of the uniform variable.
+			 * @param defaultvalue If not 0, this data is used as the default
+			 * value of the uniform.
 			 */
-			int getAttrib(const std::string &name);
+			void addUniform(const std::string &name,
+			                ShaderVariableType::List type,
+			                float *defaultvalue = 0);
 			/**
-			 * Adds a uniform name to the shader. Only uniforms added like this
-			 * get valid shader handles.
-			 * @param name Uniform name.
-			 */
-			void addUniform(const std::string &name);
-			/**
-			 * Returns the shader handle to a uniform.
-			 * @param name Uniform name.
-			 * @return Shader handle.
-			 */
-			int getUniform(const std::string &name);
-			/**
-			 * Adds a sampler name to the shader. Only textures added like this
-			 * get valid shader handles.
-			 * @param name Sampler name.
+			 * Adds a texture sampler entry to all shaders. Only textures which
+			 * are added like this get shader handles and can be used.
 			 */
 			void addTexture(const std::string &name);
-			/**
-			 * Returns the shader handle to a texture.
-			 * @param name Sampler name.
-			 * @return Shader handle.
-			 */
-			int getTexture(const std::string &name);
 
 			/**
-			 * Updates the shader. This registers the shader for reupload.
-			 * This is called by ShaderText::getShader().
+			 * Returns the flag bitset for a string containing flag changes.
+			 * The string has to be space separated, with elements in the form
+			 * "Flagname=true|false", e.g. "Skinning=true NormalMapping=false".
+			 * If a flag is not set in the flag string, its default value is
+			 * used.
+			 * @note Do not add additional spaces!
+			 * @param flagsset Flag change string.
+			 * @return Bitset containing all flag values.
 			 */
-			void updateShader();
-
-			virtual void uploadShader()
-			{
-			}
+			unsigned int getFlags(const std::string &flagsset = "");
 
 			/**
-			 * Returns the handle to this shader. This usually is the OpenGL
-			 * program handle.
-			 * @return Handle to the shader.
+			 * Updates all existing shaders.
 			 */
-			int getHandle()
-			{
-				return handle;
-			}
+			void updateShaders();
+
+			/**
+			 * Creates all available shaders for a specific combination of
+			 * flags. This function is necessary because the shader cannot be
+			 * created directly in getShader() as this function usually is
+			 * called while already rendering, at a time where no new resources
+			 * can be added anymore.
+			 * @param flags The flag values for which shaders are generated.
+			 */
+			void prepareShaders(const std::string &flags);
+
+			/**
+			 * Returns a shader instance for a context, taking a certain flag
+			 * set into account.
+			 * @param context Shader context.
+			 * @param flags Flag bitset as returned by getFlags().
+			 * @return Shader combination or 0 if no shader could be created.
+			 * @todo This (and other functions here) needs to be made threadsafe.
+			 */
+			ShaderCombination *getCombination(unsigned int context,
+			                                  unsigned int flags);
+
 			virtual const char *getType()
 			{
 				return "Shader";
 			}
 
-			/**
-			 * Sets the shader text resource this shader belongs to. This is
-			 * called by ShaderText::getShader().
-			 * @param text Shader text resource.
-			 */
-			void setShaderText(ShaderText *text)
-			{
-				this->text = text;
-			}
-			/**
-			 * Returns the shader text this shader belongs to.
-			 * @return Shader text resource.
-			 */
-			ShaderText *getShaderText()
-			{
-				return text;
-			}
-
-			const DefaultUniformLocations &getDefaultUniformLocations()
-			{
-				return defaultuniforms;
-			}
+			virtual bool load();
 
 			typedef core::SharedPointer<Shader> Ptr;
-		protected:
-			int handle;
-			int oldhandle;
+		private:
+			bool resolveIncludes(const std::string &text,
+			                     std::string &output,
+			                     const std::string &directory);
 
-			ShaderText *text;
+			struct Sampler
+			{
+				std::string name;
+				Texture::Ptr deftexture;
+				TextureType::List type;
+				unsigned int texunit;
+				unsigned int flags;
+			};
+			struct Uniform
+			{
+				std::string name;
+				unsigned int size;
+				float defvalue[4];
+			};
+			struct Context
+			{
+				unsigned int name;
+				std::string vs;
+				std::string fs;
+				std::string gs;
+				std::string ts;
+				BlendMode::List blendmode;
+				bool depthwrite;
+				DepthTest::List depthtest;
+				std::vector<ShaderCombination*> combinations;
+			};
 
-			tbb::spin_mutex textmutex;
-			std::string vs;
-			std::string fs;
-			std::string gs;
-			std::string ts;
-			BlendMode::List blendmode;
-			bool depthwrite;
-			DepthTest::List depthtest;
+			std::map<std::string, std::string> texts;
+			std::vector<Sampler> samplers;
+			std::vector<Uniform> uniforms;
+			std::vector<Context> contexts;
 
-			typedef core::HashMap<std::string, int>::Type HandleMap;
-			HandleMap attribs;
-			HandleMap uniforms;
-			HandleMap textures;
-
-			DefaultUniformLocations defaultuniforms;
+			std::vector<std::string> compilerflags;
+			unsigned int flagdefaults;
+			std::vector<unsigned int> attribs;
 	};
 }
 }

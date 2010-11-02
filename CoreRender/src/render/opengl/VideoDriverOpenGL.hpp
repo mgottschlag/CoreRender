@@ -41,19 +41,19 @@ namespace opengl
 			virtual bool init();
 			virtual bool shutdown();
 
-			virtual Texture2D::Ptr createTexture2D(Renderer *renderer,
+			virtual Texture2D::Ptr createTexture2D(UploadManager &uploadmgr,
 			                                       res::ResourceManager *rmgr,
 			                                       const std::string &name);
-			virtual IndexBuffer::Ptr createIndexBuffer(Renderer *renderer,
+			virtual IndexBuffer::Ptr createIndexBuffer(UploadManager &uploadmgr,
 			                                           res::ResourceManager *rmgr,
 			                                           const std::string &name);
-			virtual VertexBuffer::Ptr createVertexBuffer(Renderer *renderer,
+			virtual VertexBuffer::Ptr createVertexBuffer(UploadManager &uploadmgr,
 			                                             res::ResourceManager *rmgr,
 			                                             const std::string &name);
-			virtual Shader::Ptr createShader(Renderer *renderer,
+			virtual Shader::Ptr createShader(UploadManager &uploadmgr,
 			                                 res::ResourceManager *rmgr,
 			                                 const std::string &name);
-			virtual FrameBuffer::Ptr createFrameBuffer(Renderer *renderer,
+			virtual FrameBuffer::Ptr createFrameBuffer(UploadManager &uploadmgr,
 			                                           res::ResourceManager *rmgr,
 			                                           const std::string &name);
 
