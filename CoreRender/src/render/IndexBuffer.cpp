@@ -31,13 +31,15 @@ namespace render
 	IndexBuffer::IndexBuffer(UploadManager &uploadmgr,
 	                         res::ResourceManager *rmgr,
 	                         const std::string &name)
-		: RenderResource(uploadmgr, rmgr, name), handle(0), size(0), data(0)
+		: RenderResource(uploadmgr, rmgr, name), handle(0)
 	{
+		currentdata.size = 0;
+		currentdata.data = 0;
 	}
 	IndexBuffer::~IndexBuffer()
 	{
-		if (data)
-			free(data);
+		if (currentdata.data)
+			free(currentdata.data);
 	}
 
 	void IndexBuffer::set(unsigned int size,
@@ -53,17 +55,12 @@ namespace render
 		}
 		else
 			datacopy = data;
-		void *prevdata = 0;
-		// Fill in info
-		{
-			tbb::spin_mutex::scoped_lock lock(datamutex);
-			prevdata = this->data;
-			this->size = size;
-			this->data = datacopy;
-		}
 		// Delete old data
-		if (prevdata)
-			free(prevdata);
+		if (currentdata.data)
+			free(currentdata.data);
+		// Fill in info
+		currentdata.size = size;
+		currentdata.data = datacopy;
 		// Register for uploading
 		registerUpload();
 	}
@@ -76,6 +73,14 @@ namespace render
 	void IndexBuffer::discardData()
 	{
 		// TODO
+	}
+
+	void *IndexBuffer::getUploadData()
+	{
+		BufferData *uploaddata = new BufferData(currentdata);
+		uploaddata->data = malloc(currentdata.size);
+		memcpy(uploaddata->data, currentdata.data, currentdata.size);
+		return uploaddata;
 	}
 }
 }

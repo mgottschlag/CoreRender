@@ -188,14 +188,13 @@ namespace render
 			rmgr = 0;
 			return false;
 		}
+		uploadmgr.setCaps(&driver->getCaps());
 		// Register resource types
 		res::ResourceFactory::Ptr factory;
 		factory = new res::DefaultResourceFactory<Material>(rmgr);
 		rmgr->addFactory("Material", factory);
 		factory = new res::DefaultResourceFactory<Model>(rmgr);
 		rmgr->addFactory("Model", factory);
-		factory = new res::DefaultResourceFactory<Shader>(rmgr);
-		rmgr->addFactory("Shader", factory);
 		factory = new ShaderFactory(driver, uploadmgr, rmgr);
 		rmgr->addFactory("Shader", factory);
 		factory = new Texture2DFactory(driver, uploadmgr, rmgr);

@@ -26,6 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "../core/Log.hpp"
 #include "Resource.hpp"
 #include "ResourceFactory.hpp"
+#include "NameRegistry.hpp"
 
 #include <map>
 #include <tbb/mutex.h>
@@ -256,6 +257,11 @@ namespace res
 			{
 				return log;
 			}
+
+			NameRegistry &getNameRegistry()
+			{
+				return names;
+			}
 		private:
 			typedef std::map<std::string, Resource*> ResourceMap;
 			ResourceMap resources;
@@ -272,6 +278,8 @@ namespace res
 			LoadingThread *thread;
 
 			tbb::mutex mutex;
+
+			NameRegistry names;
 	};
 }
 }

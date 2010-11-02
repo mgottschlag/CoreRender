@@ -20,6 +20,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "ShaderOpenGL.hpp"
+#include "CoreRender/res/ResourceManager.hpp"
 
 #include <GL/glew.h>
 #include <sstream>
@@ -40,67 +41,26 @@ namespace opengl
 	{
 	}
 
-	bool ShaderOpenGL::create()
+	void ShaderOpenGL::compileCombination(ShaderCombination *combination)
 	{
-		// Nothing to do here, the real work gets done in uploadShader()
-		return true;
-	}
-	bool ShaderOpenGL::destroy()
-	{
-		// Delete current shader
-		if (handle != 0)
-		{
-			for (unsigned int i = 0; i < shaders.size(); i++)
-			{
-				glDetachShader(handle, shaders[i]);
-				glDeleteShader(shaders[i]);
-			}
-			glDeleteProgram(handle);
-			shaders.clear();
-			handle = 0;
-		}
-		// Delete old shader
-		if (oldhandle != 0)
-		{
-			for (unsigned int i = 0; i < oldshaders.size(); i++)
-			{
-				glDetachShader(oldhandle, oldshaders[i]);
-				glDeleteShader(oldshaders[i]);
-			}
-			glDeleteProgram(oldhandle);
-			oldshaders.clear();
-			oldhandle = 0;
-		}
-		return true;
-	}
-	bool ShaderOpenGL::upload()
-	{
-		// Delete the old shader as it is not in use any longer
-		if (oldhandle != 0)
-		{
-			for (unsigned int i = 0; i < oldshaders.size(); i++)
-			{
-				glDetachShader(oldhandle, oldshaders[i]);
-				glDeleteShader(oldshaders[i]);
-			}
-			glDeleteProgram(oldhandle);
-			oldshaders.clear();
-			oldhandle = 0;
-		}
-		return true;
-	}
-	void ShaderOpenGL::uploadShader()
-	{
+		std::string vs = combination->uploadedtext.vs;
+		std::string fs = combination->uploadedtext.fs;
+		std::string gs = combination->uploadedtext.gs;
+		std::string ts = combination->uploadedtext.ts;
 		// Make sure no error happened before
 		int error = glGetError();
 		if (error != GL_NO_ERROR)
 		{
-			getRenderer()->getLog()->error("Error before uploadShader(): %s",
-			                               gluErrorString(error));
+			getManager()->getLog()->error("Error before uploadShader(): %s",
+			                              gluErrorString(error));
 		}
-		// Move the current shader
-		// We cannot delete it as it might be in use right now
-		// TODO
+		// Delete the old shader
+		deleteCombination(combination);
+		combination->programobject = 0;
+		combination->shaderobjects[0] = 0;
+		combination->shaderobjects[1] = 0;
+		combination->shaderobjects[2] = 0;
+		combination->shaderobjects[3] = 0;
 		// Check capabilities
 		// TODO
 		// Create vertex/fragment shaders
@@ -117,8 +77,8 @@ namespace opengl
 		{
 			glDeleteShader(vshader);
 			glDeleteShader(fshader);
-			getRenderer()->getLog()->error("Could not create shader objects: %s",
-			                               gluErrorString(error));
+			getManager()->getLog()->error("Could not create shader objects: %s",
+			                              gluErrorString(error));
 			return;
 		}
 		glCompileShader(vshader);
@@ -127,15 +87,15 @@ namespace opengl
 		{
 			glDeleteShader(vshader);
 			glDeleteShader(fshader);
-			getRenderer()->getLog()->error("Could not compile vertex shader: %s",
-			                               gluErrorString(error));
+			getManager()->getLog()->error("Could not compile vertex shader: %s",
+			                              gluErrorString(error));
 			return;
 		}
 		int status;
 		glGetShaderiv(vshader, GL_COMPILE_STATUS, &status);
 		if (status != GL_TRUE)
 		{
-			getRenderer()->getLog()->error("Could not compile vertex shader.");
+			getManager()->getLog()->error("Could not compile vertex shader.");
 			printShaderInfoLog(vshader);
 			glDeleteShader(vshader);
 			glDeleteShader(fshader);
@@ -148,14 +108,14 @@ namespace opengl
 		{
 			glDeleteShader(vshader);
 			glDeleteShader(fshader);
-			getRenderer()->getLog()->error("Could not compile fragment shader: %s",
-			                               gluErrorString(error));
+			getManager()->getLog()->error("Could not compile fragment shader: %s",
+			                              gluErrorString(error));
 			return;
 		}
 		glGetShaderiv(fshader, GL_COMPILE_STATUS, &status);
 		if (status != GL_TRUE)
 		{
-			getRenderer()->getLog()->error("Could not compile fragment shader.");
+			getManager()->getLog()->error("Could not compile fragment shader.");
 			printShaderInfoLog(fshader);
 			glDeleteShader(vshader);
 			glDeleteShader(fshader);
@@ -163,69 +123,117 @@ namespace opengl
 		}
 		printShaderInfoLog(fshader);
 		// Create new program
-		handle = glCreateProgram();
+		unsigned int program = glCreateProgram();
 		error = glGetError();
 		if (error != GL_NO_ERROR)
 		{
 			glDeleteShader(vshader);
 			glDeleteShader(fshader);
-			handle = 0;
-			getRenderer()->getLog()->error("Could not create program: %s",
+			program = 0;
+			getManager()->getLog()->error("Could not create program: %s",
 			                               gluErrorString(error));
 			return;
 		}
 		// Attach shaders and link
-		glAttachShader(handle, vshader);
-		glAttachShader(handle, fshader);
-		glLinkProgram(handle);
+		glAttachShader(program, vshader);
+		glAttachShader(program, fshader);
+		glLinkProgram(program);
 		error = glGetError();
 		if (error != GL_NO_ERROR)
 		{
 			glDeleteShader(vshader);
 			glDeleteShader(fshader);
-			glDeleteProgram(handle);
-			handle = 0;
-			getRenderer()->getLog()->error("Could not link program: %s",
+			glDeleteProgram(program);
+			program = 0;
+			getManager()->getLog()->error("Could not link program: %s",
 			                               gluErrorString(error));
 			return;
 		}
-		glGetProgramiv(handle, GL_LINK_STATUS, &status);
+		glGetProgramiv(program, GL_LINK_STATUS, &status);
 		if (status != GL_TRUE)
 		{
-			getRenderer()->getLog()->error("Could not link program.");
+			getManager()->getLog()->error("Could not link program.");
 			printShaderInfoLog(fshader);
 			glDeleteShader(vshader);
 			glDeleteShader(fshader);
-			glDeleteProgram(handle);
-			handle = 0;
+			glDeleteProgram(program);
+			program = 0;
 			return;
 		}
-		printProgramInfoLog(handle);
+		printProgramInfoLog(program);
 		// Get attrib locations
-		for (HandleMap::iterator it = attribs.begin();
-		     it != attribs.end(); it++)
+		res::NameRegistry &names = getManager()->getNameRegistry();
+		combination->attriblocations.resize(uploadedinfo.attribs.size());
+		for (unsigned int i = 0; i < uploadedinfo.attribs.size(); i++)
 		{
-			it->second = glGetAttribLocation(handle, it->first.c_str());
-		}
-		// Get uniform locations
-		for (HandleMap::iterator it = uniforms.begin();
-		     it != uniforms.end(); it++)
-		{
-			it->second = glGetUniformLocation(handle, it->first.c_str());
-		}
-		// Get texture locations
-		for (HandleMap::iterator it = textures.begin();
-		     it != textures.end(); it++)
-		{
-			it->second = glGetUniformLocation(handle, it->first.c_str());
+			std::string attribname = names.getAttrib(uploadedinfo.attribs[i]);
+			int location = glGetAttribLocation(program, attribname.c_str());
+			combination->attriblocations[i] = location;
 		}
 		// Get default uniform locations
-		for (unsigned int i = 0; i < DefaultUniformName::Count; i++)
+		combination->uniforms.worldmat = glGetUniformLocation(program,
+		                                                      "worldMat");
+		combination->uniforms.worldnormalmat = glGetUniformLocation(program,
+		                                                            "worldNormalMat");
+		combination->uniforms.viewmat = glGetUniformLocation(program,
+		                                                     "viewMat");
+		combination->uniforms.viewmatinv = glGetUniformLocation(program,
+		                                                        "viewMatInv");
+		combination->uniforms.projmat = glGetUniformLocation(program,
+		                                                     "projMat");
+		combination->uniforms.viewprojmat = glGetUniformLocation(program,
+		                                                         "viewProjMat");
+		combination->uniforms.skinmat = glGetUniformLocation(program,
+		                                                     "skinMat");
+		combination->uniforms.viewerpos = glGetUniformLocation(program,
+		                                                       "viewerPos");
+		combination->uniforms.framebufsize = glGetUniformLocation(program,
+		                                                          "frameBufSize");
+		combination->uniforms.lightpos = glGetUniformLocation(program,
+		                                                      "lightPos");
+		combination->uniforms.lightdir = glGetUniformLocation(program,
+		                                                      "lightDir");
+		combination->uniforms.lightcolor = glGetUniformLocation(program,
+		                                                      "lightColor");
+		combination->uniforms.shadowmat = glGetUniformLocation(program,
+		                                                      "shadowMat");
+		combination->uniforms.shadowbias = glGetUniformLocation(program,
+		                                                      "shadowBias");
+		combination->uniforms.shadowsplitdist = glGetUniformLocation(program,
+		                                                             "shadowSplitDist");
+		// Get uniform locations
+		combination->customuniforms.resize(uploadedinfo.uniforms.size());
+		for (unsigned int i = 0; i < uploadedinfo.uniforms.size(); i++)
 		{
-			const char *name = DefaultUniformName::getName((DefaultUniformName::List)i);
-			defaultuniforms.location[i] = glGetUniformLocation(handle,
-			                                                   name);
+			const std::string &name = uploadedinfo.uniforms[i].name;
+			combination->customuniforms[i] = glGetUniformLocation(program,
+			                                                      name.c_str());
 		}
+		// Get sampler locations
+		combination->samplerlocations.resize(uploadedinfo.samplers.size());
+		for (unsigned int i = 0; i < uploadedinfo.samplers.size(); i++)
+		{
+			const std::string &name = uploadedinfo.samplers[i].name;
+			combination->samplerlocations[i] = glGetUniformLocation(program,
+			                                                        name.c_str());
+		}
+		// Store OpenGL objects
+		combination->programobject = program;
+		combination->shaderobjects[0] = vshader;
+		combination->shaderobjects[1] = fshader;
+	}
+	void ShaderOpenGL::deleteCombination(ShaderCombination *combination)
+	{
+		for (unsigned int i = 0; i < 4; i++)
+		{
+			if (combination->shaderobjects[i] != 0)
+			{
+				glDetachShader(combination->programobject,
+				               combination->shaderobjects[i]);
+				glDeleteShader(combination->shaderobjects[i]);
+			}
+		}
+		glDeleteProgram(combination->programobject);
 	}
 
 	void ShaderOpenGL::printShaderInfoLog(unsigned int shader)
@@ -240,7 +248,7 @@ namespace opengl
 			int charswritten;
 			glGetShaderInfoLog(shader, length, &charswritten, infolog);
 			// Split into lines and print to log
-			core::Log::Ptr log = getRenderer()->getLog();
+			core::Log::Ptr log = getManager()->getLog();
 			log->warning("Shader info log:");
 			std::string line;
 			std::istringstream stream(infolog);
@@ -265,7 +273,7 @@ namespace opengl
 			int charswritten;
 			glGetProgramInfoLog(program, length, &charswritten, infolog);
 			// Split into lines and print to log
-			core::Log::Ptr log = getRenderer()->getLog();
+			core::Log::Ptr log = getManager()->getLog();
 			log->warning("Program info log:");
 			std::string line;
 			std::istringstream stream(infolog);

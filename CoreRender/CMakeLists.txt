@@ -63,7 +63,6 @@ set(SRC
 	include/CoreRender/render/Shader.hpp
 	include/CoreRender/render/ShaderVariableType.hpp
 	#include/CoreRender/render/SpatialRenderable.hpp
-	#include/CoreRender/render/StringTableProvider.hpp
 	include/CoreRender/render/Texture1D.hpp
 	include/CoreRender/render/Texture2D.hpp
 	include/CoreRender/render/Texture3D.hpp

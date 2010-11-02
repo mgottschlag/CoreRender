@@ -122,7 +122,7 @@ namespace render
 			 */
 			unsigned int getWidth()
 			{
-				return width;
+				return currentdata.width;
 			}
 			/**
 			 * Returns the height of the texture.
@@ -130,7 +130,7 @@ namespace render
 			 */
 			unsigned int getHeight()
 			{
-				return height;
+				return currentdata.height;
 			}
 
 			virtual const char *getType()
@@ -140,15 +140,24 @@ namespace render
 
 			typedef core::SharedPointer<Texture2D> Ptr;
 		protected:
+			virtual void *getUploadData();
+
 			bool discarddata;
 
-			tbb::spin_mutex imagemutex;
+			struct TextureData
+			{
+				unsigned int width;
+				unsigned int height;
+				TextureFormat::List internalformat;
+				TextureFormat::List format;
+				unsigned int datasize;
+				void *data;
+			};
 
-			unsigned int width;
-			unsigned int height;
-			TextureFormat::List internalformat;
-			TextureFormat::List format;
-			void *data;
+			tbb::spin_mutex imagemutex;
+			TextureData currentdata;
+			// TODO: We do not need to store this data
+			TextureData uploadeddata;
 	};
 }
 }

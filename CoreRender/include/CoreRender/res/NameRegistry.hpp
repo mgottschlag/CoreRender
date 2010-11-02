@@ -19,34 +19,49 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_STRINGTABLEPROVIDER_HPP_INCLUDED_
-#define _CORERENDER_RENDER_STRINGTABLEPROVIDER_HPP_INCLUDED_
+#ifndef _CORERENDER_RES_NAMEREGISTRY_HPP_INCLUDED_
+#define _CORERENDER_RES_NAMEREGISTRY_HPP_INCLUDED_
 
-#include "../core/StringTable.hpp"
+#include <vector>
+#include <string>
+#include <tbb/mutex.h>
 
 namespace cr
 {
-namespace render
+namespace res
 {
-	class StringTableProvider
+	class NameRegistry
 	{
 		public:
-			core::StringTable *getUniformNames()
+			NameRegistry()
 			{
-				return &uniform;
 			}
-			core::StringTable *getAttribNames()
+			~NameRegistry()
 			{
-				return &attrib;
 			}
-			core::StringTable *getPipelineStrings()
+
+			unsigned int getAttrib(const std::string &name)
 			{
-				return &pipeline;
+				tbb::mutex::scoped_lock lock(attribmutex);
+				// TODO: This is slow, maybe use a hash map additionally
+				for (unsigned int i = 0; i < attribnames.size(); i++)
+				{
+					if (attribnames[i] == name)
+						return i;
+				}
+				attribnames.push_back(name);
+				return attribnames.size() - 1;
+			}
+			std::string getAttrib(unsigned int name)
+			{
+				tbb::mutex::scoped_lock lock(attribmutex);
+				if (name >= attribnames.size())
+					return "";
+				return attribnames[name];
 			}
 		private:
-			core::StringTable uniform;
-			core::StringTable attrib;
-			core::StringTable pipeline;
+			tbb::mutex attribmutex;
+			std::vector<std::string> attribnames;
 	};
 }
 }

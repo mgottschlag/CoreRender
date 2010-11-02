@@ -73,7 +73,7 @@ namespace render
 			 * @param rmgr Resource manager for this resource.
 			 * @param name Name of this resource.
 			 */
-			VertexBuffer(Renderer *renderer,
+			VertexBuffer(UploadManager &uploadmgr,
 			             res::ResourceManager *rmgr,
 			             const std::string &name);
 			/**
@@ -118,7 +118,7 @@ namespace render
 			 * @return Handle of the buffer. Usually this is the OpenGL VBO
 			 * handle.
 			 */
-			int getHandle()
+			unsigned int getHandle()
 			{
 				return handle;
 			}
@@ -128,7 +128,7 @@ namespace render
 			 */
 			VertexBufferUsage::List getUsage()
 			{
-				return usage;
+				return currentdata.usage;
 			}
 
 			virtual const char *getType()
@@ -138,12 +138,18 @@ namespace render
 
 			typedef core::SharedPointer<VertexBuffer> Ptr;
 		protected:
-			unsigned int handle;
-			VertexBufferUsage::List usage;
+			virtual void *getUploadData();
 
-			tbb::spin_mutex datamutex;
-			unsigned int size;
-			void *data;
+			unsigned int handle;
+
+			struct BufferData
+			{
+				VertexBufferUsage::List usage;
+				unsigned int size;
+				void *data;
+			};
+		private:
+			BufferData currentdata;
 	};
 }
 }

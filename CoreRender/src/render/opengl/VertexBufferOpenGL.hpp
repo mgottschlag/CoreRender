@@ -33,15 +33,12 @@ namespace opengl
 	class VertexBufferOpenGL : public VertexBuffer
 	{
 		public:
-			VertexBufferOpenGL(Renderer *renderer,
+			VertexBufferOpenGL(UploadManager &uploadmgr,
 			                   res::ResourceManager *rmgr,
 			                   const std::string &name);
 			virtual ~VertexBufferOpenGL();
 
-			virtual bool create();
-			virtual bool destroy();
-			virtual bool upload();
-		private:
+			virtual void upload(void *data);
 	};
 }
 }

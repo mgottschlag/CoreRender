@@ -22,12 +22,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_SHADER_HPP_INCLUDED_
 #define _CORERENDER_RENDER_SHADER_HPP_INCLUDED_
 
-#include "../res/Resource.hpp"
+#include "RenderResource.hpp"
 #include "BlendMode.hpp"
 #include "ShaderVariableType.hpp"
 #include "UniformData.hpp"
 #include "DepthTest.hpp"
 #include "Texture.hpp"
+#include "ShaderCombination.hpp"
 
 #include <map>
 
@@ -35,8 +36,6 @@ namespace cr
 {
 namespace render
 {
-	struct ShaderCombination;
-
 	/**
 	 * Class containing shader texts and shader variable information. This class
 	 * then can produce ShaderCombination instances for certain contexts/flag
@@ -46,7 +45,7 @@ namespace render
 	 *
 	 * This class should be created via ResourceManager::getOrCreate().
 	 */
-	class Shader : public res::Resource
+	class Shader : public RenderResource
 	{
 		public:
 			/**
@@ -54,7 +53,8 @@ namespace render
 			 * @param rmgr Resource manager for this resource.
 			 * @param name Name of this resource.
 			 */
-			Shader(res::ResourceManager *rmgr,
+			Shader(UploadManager &uploadmgr,
+			       res::ResourceManager *rmgr,
 			       const std::string &name);
 			/**
 			 * Destructor.
@@ -187,8 +187,14 @@ namespace render
 			}
 
 			virtual bool load();
+			virtual void upload(void *data);
+
+			virtual void compileCombination(ShaderCombination *combination) = 0;
+			virtual void deleteCombination(ShaderCombination *combination) = 0;
 
 			typedef core::SharedPointer<Shader> Ptr;
+		protected:
+			virtual void *getUploadData();
 		private:
 			bool resolveIncludes(const std::string &text,
 			                     std::string &output,
@@ -218,17 +224,24 @@ namespace render
 				BlendMode::List blendmode;
 				bool depthwrite;
 				DepthTest::List depthtest;
-				std::vector<ShaderCombination*> combinations;
+				std::vector<ShaderCombination::Ptr> combinations;
+			};
+			struct ShaderInfo
+			{
+				std::vector<Sampler> samplers;
+				std::vector<Uniform> uniforms;
+				std::vector<unsigned int> attribs;
 			};
 
 			std::map<std::string, std::string> texts;
-			std::vector<Sampler> samplers;
-			std::vector<Uniform> uniforms;
-			std::vector<Context> contexts;
-
 			std::vector<std::string> compilerflags;
 			unsigned int flagdefaults;
-			std::vector<unsigned int> attribs;
+
+			std::vector<Context> contexts;
+
+			ShaderInfo currentinfo;
+		protected:
+			ShaderInfo uploadedinfo;
 	};
 }
 }

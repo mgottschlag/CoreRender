@@ -80,35 +80,35 @@ namespace opengl
 		return true;
 	}
 
-	Texture2D::Ptr VideoDriverOpenGL::createTexture2D(Renderer *renderer,
+	Texture2D::Ptr VideoDriverOpenGL::createTexture2D(UploadManager &uploadmgr,
 	                                                  res::ResourceManager *rmgr,
 	                                                  const std::string &name)
 	{
-		return new Texture2DOpenGL(renderer, rmgr, name);
+		return new Texture2DOpenGL(uploadmgr, rmgr, name);
 	}
-	IndexBuffer::Ptr VideoDriverOpenGL::createIndexBuffer(Renderer *renderer,
+	IndexBuffer::Ptr VideoDriverOpenGL::createIndexBuffer(UploadManager &uploadmgr,
 	                                           res::ResourceManager *rmgr,
 	                                           const std::string &name)
 	{
-		return new IndexBufferOpenGL(renderer, rmgr, name);
+		return new IndexBufferOpenGL(uploadmgr, rmgr, name);
 	}
-	VertexBuffer::Ptr VideoDriverOpenGL::createVertexBuffer(Renderer *renderer,
+	VertexBuffer::Ptr VideoDriverOpenGL::createVertexBuffer(UploadManager &uploadmgr,
 	                                             res::ResourceManager *rmgr,
 	                                             const std::string &name)
 	{
-		return new VertexBufferOpenGL(renderer, rmgr, name);
+		return new VertexBufferOpenGL(uploadmgr, rmgr, name);
 	}
-	Shader::Ptr VideoDriverOpenGL::createShader(Renderer *renderer,
+	Shader::Ptr VideoDriverOpenGL::createShader(UploadManager &uploadmgr,
 	                                            res::ResourceManager *rmgr,
 	                                            const std::string &name)
 	{
-		return new ShaderOpenGL(renderer, rmgr, name);
+		return new ShaderOpenGL(uploadmgr, rmgr, name);
 	}
-	FrameBuffer::Ptr VideoDriverOpenGL::createFrameBuffer(Renderer *renderer,
+	FrameBuffer::Ptr VideoDriverOpenGL::createFrameBuffer(UploadManager &uploadmgr,
 	                                                      res::ResourceManager *rmgr,
 	                                                      const std::string &name)
 	{
-		return new FrameBufferOpenGL(renderer, rmgr, name);
+		return new FrameBufferOpenGL(uploadmgr, rmgr, name);
 	}
 
 	void VideoDriverOpenGL::setRenderTarget(const RenderTargetInfo *target)

@@ -33,14 +33,12 @@ namespace opengl
 	class Texture2DOpenGL : public Texture2D
 	{
 		public:
-			Texture2DOpenGL(Renderer *renderer,
+			Texture2DOpenGL(UploadManager &uploadmgr,
 			                res::ResourceManager *rmgr,
 			                const std::string &name);
 			virtual ~Texture2DOpenGL();
 
-			virtual bool create();
-			virtual bool destroy();
-			virtual bool upload();
+			virtual void upload(void *data);
 		private:
 	};
 }

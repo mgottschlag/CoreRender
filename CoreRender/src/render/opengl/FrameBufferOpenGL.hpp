@@ -38,9 +38,7 @@ namespace opengl
 			                  const std::string &name);
 			virtual ~FrameBufferOpenGL();
 
-			virtual bool create();
-			virtual bool destroy();
-			virtual bool upload();
+			virtual void upload(void *data);
 	};
 }
 }

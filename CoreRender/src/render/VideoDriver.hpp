@@ -59,14 +59,14 @@ namespace render
 			}
 
 			/**
-			 * Initializes the video driver. Has to be called when the primary
-			 * render context is active.
+			 * Initializes the video driver. Has to be called when the OpenGL
+			 * context is active.
 			 * @return Returns false if initialization failed.
 			 */
 			virtual bool init() = 0;
 			/**
-			 * Terminates the video driver. Has to be called when the primary
-			 * render context is active.
+			 * Terminates the video driver. Has to be called when the OpenGL
+			 * context is active.
 			 * @return Returns false if termination failed.
 			 */
 			virtual bool shutdown() = 0;

@@ -109,12 +109,18 @@ namespace render
 
 			typedef core::SharedPointer<FrameBuffer> Ptr;
 		protected:
+			virtual void *getUploadData();
+
 			Configuration config;
+
+			struct FrameBufferData
+			{
+				unsigned int width;
+				unsigned int height;
+				bool depthbuffer;
+			};
 		private:
-			unsigned int width;
-			unsigned int height;
-			bool depthbuffer;
-			tbb::spin_mutex mutex;
+			FrameBufferData currentdata;
 	};
 }
 }

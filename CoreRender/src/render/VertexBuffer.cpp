@@ -34,11 +34,13 @@ namespace render
 		: RenderResource(renderer, rmgr, name), handle(0),
 		size(0), data(0)
 	{
+		currentdata.size = 0;
+		currentdata.data = 0;
 	}
 	VertexBuffer::~VertexBuffer()
 	{
-		if (data)
-			free(data);
+		if (currentdata.data)
+			free(currentdata.data);
 	}
 
 	void VertexBuffer::set(unsigned int size,
@@ -55,18 +57,13 @@ namespace render
 		}
 		else
 			datacopy = data;
-		void *prevdata = 0;
-		// Fill in info
-		{
-			tbb::spin_mutex::scoped_lock lock(datamutex);
-			prevdata = this->data;
-			this->size = size;
-			this->data = datacopy;
-			this->usage = usage;
-		}
 		// Delete old data
-		if (prevdata)
-			free(prevdata);
+		if (currentdata.data)
+			free(currentdata.data);
+		// Fill in info
+		currentdata.size = size;
+		currentdata.data = datacopy;
+		currentdata.usage = usage;
 		// Register for uploading
 		registerUpload();
 	}
@@ -79,6 +76,14 @@ namespace render
 	void VertexBuffer::discardData()
 	{
 		// TODO
+	}
+
+	void *VertexBuffer::getUploadData()
+	{
+		BufferData *uploaddata = new BufferData(currentdata);
+		uploaddata->data = malloc(currentdata.size);
+		memcpy(uploaddata->data, currentdata.data, currentdata.size);
+		return uploaddata;
 	}
 }
 }

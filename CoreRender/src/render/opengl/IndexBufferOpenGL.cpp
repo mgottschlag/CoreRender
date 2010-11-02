@@ -22,8 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "IndexBufferOpenGL.hpp"
 
 #include <GL/glew.h>
-
-#include <iostream>
+#include <cstdlib>
 
 namespace cr
 {
@@ -39,32 +38,25 @@ namespace opengl
 	}
 	IndexBufferOpenGL::~IndexBufferOpenGL()
 	{
+		if (handle)
+			glDeleteBuffers(1, &handle);
 	}
 
-	bool IndexBufferOpenGL::create()
+	void IndexBufferOpenGL::upload(void *data)
 	{
-		glGenBuffers(1, &handle);
-		unsigned int error = glGetError();
-		if (error != GL_NO_ERROR)
+		BufferData *uploaddata = (BufferData*)data;
+		// Create buffer object if necessary
+		if (!handle)
 		{
-			std::cout << "Could not create index buffer: " << gluErrorString(error) << std::endl;
+			glGenBuffers(1, &handle);
+			// TODO: Error checking
 		}
-		// TODO: Error checking
-		return true;
-	}
-	bool IndexBufferOpenGL::destroy()
-	{
-		glDeleteBuffers(1, &handle);
-		return true;
-	}
-	bool IndexBufferOpenGL::upload()
-	{
-		// TODO: Type
-		tbb::spin_mutex::scoped_lock lock(datamutex);
+		// Upload data
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, handle);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, uploaddata->size, uploaddata->data, GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		return true;
+		free(uploaddata->data);
+		delete uploaddata;
 	}
 }
 }

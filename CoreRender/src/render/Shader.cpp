@@ -563,6 +563,17 @@ namespace render
 		finishLoading(true);
 		return true;
 	}
+	void Shader::upload(void *data)
+	{
+		ShaderInfo *uploaddata = (ShaderInfo*)data;
+		uploadedinfo = *uploaddata;
+		delete uploaddata;
+	}
+
+	void *Shader::getUploadData()
+	{
+		return new ShaderInfo(currentinfo);
+	}
 
 	bool Shader::resolveIncludes(const std::string &text,
 	                             std::string &output,

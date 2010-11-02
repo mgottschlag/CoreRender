@@ -38,33 +38,20 @@ namespace opengl
 	}
 	FrameBufferOpenGL::~FrameBufferOpenGL()
 	{
+		if (config.defaultdepthbuffer)
+			glDeleteRenderbuffersEXT(1, &config.defaultdepthbuffer);
+		if (config.handle)
+			glDeleteFramebuffersEXT(1, &config.handle);
 	}
 
-	bool FrameBufferOpenGL::create()
+	void FrameBufferOpenGL::upload(void *data)
 	{
-		glGenFramebuffersEXT(1, &config.handle);
-		unsigned int error = glGetError();
-		if (error != GL_NO_ERROR)
+		FrameBufferData *uploaddata = (FrameBufferData*)data;
+		// Create the frame buffer if necessary
+		if (!config.handle)
 		{
-			std::cout << "Could not create index buffer: " << gluErrorString(error) << std::endl;
+			glGenFramebuffersEXT(1, &config.handle);
 		}
-		// TODO: Error checking
-		return true;
-	}
-	bool FrameBufferOpenGL::destroy()
-	{
-		if (config.defaultdepthbuffer)
-		{
-			// Destroy depth buffer
-			glDeleteRenderbuffersEXT(1, &config.defaultdepthbuffer);
-			config.defaultdepthbuffer = 0;
-		}
-		glDeleteFramebuffersEXT(1, &config.handle);
-		config.handle = 0;
-		return true;
-	}
-	bool FrameBufferOpenGL::upload()
-	{
 		if (hasDepthBuffer())
 		{
 			// Generate depth buffer if necessary
@@ -77,8 +64,8 @@ namespace opengl
 			                      config.defaultdepthbuffer);
 			glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
 			                         GL_DEPTH_COMPONENT,
-			                         getWidth(),
-			                         getHeight());
+			                         uploaddata->width,
+			                         uploaddata->height);
 			// Add depth buffer to frame buffer
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, config.handle);
 			glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
@@ -93,7 +80,6 @@ namespace opengl
 			glDeleteRenderbuffersEXT(1, &config.defaultdepthbuffer);
 			config.defaultdepthbuffer = 0;
 		}
-		return true;
 	}
 }
 }

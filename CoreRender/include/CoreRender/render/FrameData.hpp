@@ -79,6 +79,7 @@ namespace render
 		math::Matrix4 projmat;
 		math::Matrix4 viewmat;
 		math::Frustum clipping[2];
+		int viewport[4];
 		// TODO: Do we want a std::vector here?
 		Batch *batches;
 		unsigned int batchcount;

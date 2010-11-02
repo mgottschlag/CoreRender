@@ -38,16 +38,11 @@ namespace opengl
 			             const std::string &name);
 			virtual ~ShaderOpenGL();
 
-			virtual bool create();
-			virtual bool destroy();
-			virtual bool upload();
-			virtual void uploadShader();
+			virtual void compileCombination(ShaderCombination *combination);
+			virtual void deleteCombination(ShaderCombination *combination);
 		private:
 			void printShaderInfoLog(unsigned int shader);
 			void printProgramInfoLog(unsigned int program);
-
-			std::vector<unsigned int> shaders;
-			std::vector<unsigned int> oldshaders;
 	};
 }
 }

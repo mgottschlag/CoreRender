@@ -22,6 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_SHADERCOMBINATION_HPP_INCLUDED_
 #define _CORERENDER_RENDER_SHADERCOMBINATION_HPP_INCLUDED_
 
+#include "RenderObject.hpp"
+
 #include <vector>
 #include <string>
 
@@ -49,19 +51,37 @@ namespace render
 		int shadowbias;
 		int shadowsplitdist;
 	};
-	struct ShaderCombination
+	struct ShaderCombination : public RenderObject
 	{
+		ShaderCombination();
+		virtual ~ShaderCombination();
+
+		struct ShaderText
+		{
+			std::string vs;
+			std::string fs;
+			std::string gs;
+			std::string ts;
+		};
+
+		virtual void upload(void *data);
+		virtual void *getUploadData();
+
 		unsigned int compilerflags;
-		std::string vs;
-		std::string fs;
-		std::string gs;
-		std::string ts;
+		ShaderText currenttext;
+		ShaderText uploadedtext;
+
 		UniformLocations uniforms;
 		std::vector<int> customuniforms;
 		std::vector<int> attriblocations;
-		int samplerlocations[16];
+		std::vector<int> samplerlocations;
+
 		Shader *shader;
-		unsigned int shaderobject;
+
+		unsigned int programobject;
+		unsigned int shaderobjects[4];
+
+		typedef core::SharedPointer<ShaderCombination> Ptr;
 	};
 }
 }

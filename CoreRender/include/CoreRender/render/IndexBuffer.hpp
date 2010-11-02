@@ -32,7 +32,7 @@ namespace render
 {
 	/**
 	 * Resource holding index data for one or multiple meshes. This directly
-	 * translates into an OpenGL IBO. Multiple meshes oeven with different
+	 * translates into an OpenGL IBO. Multiple meshes even with different
 	 * vertex buffers can be stored within one index buffer to minimize state
 	 * switches.
 	 *
@@ -102,11 +102,17 @@ namespace render
 
 			typedef core::SharedPointer<IndexBuffer> Ptr;
 		protected:
+			virtual void *getUploadData();
+
 			unsigned int handle;
 
-			tbb::spin_mutex datamutex;
-			unsigned int size;
-			void *data;
+			struct BufferData
+			{
+				unsigned int size;
+				void *data;
+			};
+		private:
+			BufferData currentdata;
 	};
 }
 }

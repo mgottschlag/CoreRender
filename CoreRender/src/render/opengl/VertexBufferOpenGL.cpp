@@ -22,6 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "VertexBufferOpenGL.hpp"
 
 #include <GL/glew.h>
+#include <cstdlib>
 
 namespace cr
 {
@@ -29,35 +30,38 @@ namespace render
 {
 namespace opengl
 {
-	VertexBufferOpenGL::VertexBufferOpenGL(Renderer *renderer,
+	VertexBufferOpenGL::VertexBufferOpenGL(UploadManager &uploadmgr,
 	                                       res::ResourceManager *rmgr,
 	                                       const std::string &name)
-		: VertexBuffer(renderer, rmgr, name)
+		: VertexBuffer(uploadmgr, rmgr, name)
 	{
 	}
 	VertexBufferOpenGL::~VertexBufferOpenGL()
 	{
+		if (handle)
+			glDeleteBuffers(1, &handle);
 	}
 
-	bool VertexBufferOpenGL::create()
+	void VertexBufferOpenGL::upload(void *data)
 	{
-		// TODO: Error checking
-		glGenBuffers(1, &handle);
-		return true;
-	}
-	bool VertexBufferOpenGL::destroy()
-	{
-		glDeleteBuffers(1, &handle);
-		return true;
-	}
-	bool VertexBufferOpenGL::upload()
-	{
-		tbb::spin_mutex::scoped_lock lock(datamutex);
-		// TODO: Type
+		BufferData *uploaddata = (BufferData*)data;
+		// Create buffer object if necessary
+		if (!handle)
+		{
+			glGenBuffers(1, &handle);
+			// TODO: Error checking
+		}
+		// Upload data
 		glBindBuffer(GL_ARRAY_BUFFER, handle);
-		glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+		unsigned int usage = GL_STATIC_DRAW;
+		if (uploaddata->usage == VertexBufferUsage::Stream)
+			usage = GL_STREAM_DRAW;
+		else if (uploaddata->usage == VertexBufferUsage::Dynamic)
+			usage = GL_DYNAMIC_DRAW;
+		glBufferData(GL_ARRAY_BUFFER, uploaddata->size, uploaddata->data, usage);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		return true;
+		free(uploaddata->data);
+		delete uploaddata;
 	}
 }
 }

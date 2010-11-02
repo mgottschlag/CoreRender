@@ -35,6 +35,7 @@ namespace core
 namespace render
 {
 	class RenderResource;
+	class RenderCaps;
 
 	/**
 	 * Keeps track of the RenderResource objects which need to be uploaded to
@@ -56,10 +57,21 @@ namespace render
 			void getLists(UploadLists &lists, core::MemoryPool *memory);
 			void uploadResources(UploadLists &lists);
 			void deleteResources(UploadLists &lists);
+
+			void setCaps(const RenderCaps *caps)
+			{
+				this->caps = caps;
+			}
+			const RenderCaps *getCaps()
+			{
+				return caps;
+			}
 		private:
 			tbb::spin_mutex listmutex;
 			std::vector<RenderResource*> upload;
 			std::vector<RenderResource*> deletion;
+
+			const RenderCaps *caps;
 	};
 }
 }
