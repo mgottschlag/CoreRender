@@ -21,6 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "VideoDriver.hpp"
 #include "CoreRender/render/FrameData.hpp"
+#include <CoreRender/render/RenderTarget.hpp>
 
 namespace cr
 {
@@ -37,7 +38,7 @@ namespace render
 	{
 		boundtextures.clear();
 	}
-	const std::vector<TextureBinding> &VideoDriver::getBoundTextures()
+	const std::vector<VideoDriver::TextureBinding> &VideoDriver::getBoundTextures()
 	{
 		return boundtextures;
 	}

@@ -28,6 +28,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/FrameData.hpp"
 #include "CoreRender/render/VertexLayout.hpp"
 #include "CoreRender/render/Material.hpp"
+#include "CoreRender/render/RenderTarget.hpp"
 
 #include <GL/glew.h>
 

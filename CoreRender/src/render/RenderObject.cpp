@@ -19,43 +19,41 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "CoreRender/render/RenderResource.hpp"
+#include "CoreRender/render/RenderObject.hpp"
 #include "CoreRender/render/UploadManager.hpp"
 
 namespace cr
 {
 namespace render
 {
-	RenderResource::RenderResource(UploadManager &uploadmgr,
-	                               res::ResourceManager *rmgr,
-	                               const std::string &name)
-		: Resource(rmgr, name), uploadmgr(uploadmgr), uploading(false)
+	RenderObject::RenderObject(UploadManager &uploadmgr)
+		: uploadmgr(uploadmgr), uploading(false)
 	{
 	}
-	RenderResource::~RenderResource()
+	RenderObject::~RenderObject()
 	{
 	}
 
-	void *RenderResource::prepareForUpload()
+	void *RenderObject::prepareForUpload()
 	{
 		tbb::mutex::scoped_lock lock(uploadmutex);
 		void *data = getUploadData();
 		uploading = false;
 		return data;
 	}
-	bool RenderResource::isUploading()
+	bool RenderObject::isUploading()
 	{
 		tbb::mutex::scoped_lock lock(uploadmutex);
 		return uploading;
 	}
 
-	void RenderResource::registerUpload()
+	void RenderObject::registerUpload()
 	{
 		tbb::mutex::scoped_lock lock(uploadmutex);
 		uploading = true;
 		uploadmgr.registerUpload(this);
 	}
-	void RenderResource::onDelete()
+	void RenderObject::onDelete()
 	{
 		uploadmgr.registerDeletion(this);
 	}

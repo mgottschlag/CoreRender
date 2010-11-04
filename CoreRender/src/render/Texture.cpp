@@ -20,7 +20,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/render/Texture.hpp"
-#include "CoreRender/render/Renderer.hpp"
 
 namespace cr
 {
@@ -109,11 +108,11 @@ namespace render
 		}
 	}
 
-	Texture::Texture(Renderer *renderer,
+	Texture::Texture(UploadManager &uploadmgr,
 	                 res::ResourceManager *rmgr,
 	                 const std::string &name,
 	                 TextureType::List type)
-		: RenderResource(renderer, rmgr, name), handle(0), type(type)
+		: RenderResource(uploadmgr, rmgr, name), handle(0), type(type)
 	{
 	}
 	Texture::~Texture()

@@ -35,6 +35,7 @@ namespace core
 namespace render
 {
 	class RenderResource;
+	class RenderObject;
 	class RenderCaps;
 
 	/**
@@ -53,6 +54,8 @@ namespace render
 
 			void registerUpload(RenderResource *resource);
 			void registerDeletion(RenderResource *resource);
+			void registerUpload(RenderObject *object);
+			void registerDeletion(RenderObject *object);
 
 			void getLists(UploadLists &lists, core::MemoryPool *memory);
 			void uploadResources(UploadLists &lists);
@@ -68,8 +71,10 @@ namespace render
 			}
 		private:
 			tbb::spin_mutex listmutex;
-			std::vector<RenderResource*> upload;
-			std::vector<RenderResource*> deletion;
+			std::vector<RenderResource*> resupload;
+			std::vector<RenderResource*> resdeletion;
+			std::vector<RenderObject*> objupload;
+			std::vector<RenderObject*> objdeletion;
 
 			const RenderCaps *caps;
 	};

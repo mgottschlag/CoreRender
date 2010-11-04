@@ -141,7 +141,7 @@ namespace render
 			 * Adds a texture sampler entry to all shaders. Only textures which
 			 * are added like this get shader handles and can be used.
 			 */
-			void addTexture(const std::string &name);
+			void addSampler(const std::string &name);
 
 			/**
 			 * Returns the flag bitset for a string containing flag changes.
@@ -155,10 +155,6 @@ namespace render
 			 */
 			unsigned int getFlags(const std::string &flagsset = "");
 
-			/**
-			 * Updates all existing shaders.
-			 */
-			void updateShaders();
 
 			/**
 			 * Creates all available shaders for a specific combination of
@@ -178,8 +174,8 @@ namespace render
 			 * @return Shader combination or 0 if no shader could be created.
 			 * @todo This (and other functions here) needs to be made threadsafe.
 			 */
-			ShaderCombination *getCombination(unsigned int context,
-			                                  unsigned int flags);
+			ShaderCombination::Ptr getCombination(unsigned int context,
+			                                      unsigned int flags);
 
 			virtual const char *getType()
 			{
@@ -221,6 +217,10 @@ namespace render
 			bool resolveIncludes(const std::string &text,
 			                     std::string &output,
 			                     const std::string &directory);
+
+			void reupload();
+
+			tbb::mutex combinationmutex;
 
 			struct Context
 			{

@@ -121,7 +121,7 @@ namespace opengl
 
 	void Texture2DOpenGL::upload(void *data)
 	{
-		uploadeddata = *(TextureData*)data;
+		TextureData *uploaddata = (TextureData*)data;
 		// Create the texture object if necessary
 		if (handle == 0)
 		{
@@ -143,30 +143,30 @@ namespace opengl
 		unsigned int internal = 0;
 		unsigned int currentformat = 0;
 		unsigned int component = 0;
-		bool compressed = TextureFormat::isCompressed(uploadeddata.format);
-		bool intcompressed = TextureFormat::isCompressed(uploadeddata.internalformat);
+		bool compressed = TextureFormat::isCompressed(uploaddata->format);
+		bool intcompressed = TextureFormat::isCompressed(uploaddata->internalformat);
 		// Compression only works under certain circumstances
 		if (intcompressed)
 		{
-			if (compressed && uploadeddata.format != uploadeddata.internalformat)
+			if (compressed && uploaddata->format != uploaddata->internalformat)
 			{
 				core::Log::Ptr log = getManager()->getLog();
 				log->error("Cannot convert between different compressed formats.");
-				if (uploadeddata.data)
-					free(uploadeddata.data);
+				if (uploaddata->data)
+					free(uploaddata->data);
 				return;
 			}
 			if (!caps.getFlag(RenderCaps::Flag::TextureCompression))
 			{
-				if ((uploadeddata.internalformat != TextureFormat::RGB_DXT1
-				    && uploadeddata.internalformat != TextureFormat::RGBA_DXT1)
-				    || uploadeddata.internalformat != uploadeddata.format
+				if ((uploaddata->internalformat != TextureFormat::RGB_DXT1
+				    && uploaddata->internalformat != TextureFormat::RGBA_DXT1)
+				    || uploaddata->internalformat != uploaddata->format
 				    || !caps.getFlag(RenderCaps::Flag::TextureDXT1))
 				{
 					core::Log::Ptr log = getManager()->getLog();
 					log->error("Compressed texture not supported.");
-					if (uploadeddata.data)
-						free(uploadeddata.data);
+					if (uploaddata->data)
+						free(uploaddata->data);
 					return;
 				}
 			}
@@ -177,83 +177,83 @@ namespace opengl
 			{
 				core::Log::Ptr log = getManager()->getLog();
 				log->error("Cannot load compressed data into uncompressed texture.");
-				if (uploadeddata.data)
-					free(uploadeddata.data);
+				if (uploaddata->data)
+					free(uploaddata->data);
 				return;
 			}
 		}
 		// Check for float extension
-		if (TextureFormat::isFloat(uploadeddata.internalformat)
+		if (TextureFormat::isFloat(uploaddata->internalformat)
 		    && !caps.getFlag(RenderCaps::Flag::TextureFloat))
 		{
 			core::Log::Ptr log = getManager()->getLog();
 			log->error("Floating point texture not supported.");
-			if (uploadeddata.data)
-				free(uploadeddata.data);
+			if (uploaddata->data)
+				free(uploaddata->data);
 			return;
 		}
 		// Depth-stencil
-		if (uploadeddata.internalformat == TextureFormat::Depth24Stencil8
+		if (uploaddata->internalformat == TextureFormat::Depth24Stencil8
 		    && !caps.getFlag(RenderCaps::Flag::TextureDepthStencil))
 		{
 			core::Log::Ptr log = getManager()->getLog();
 			log->error("Depth-stencil texture not supported.");
-			if (uploadeddata.data)
-				free(uploadeddata.data);
+			if (uploaddata->data)
+				free(uploaddata->data);
 			return;
 		}
 		// TODO: Depth textures?
 		// Translate internal format
-		if (!translateInternalFormat(uploadeddata.internalformat, internal))
+		if (!translateInternalFormat(uploaddata->internalformat, internal))
 		{
 			core::Log::Ptr log = getManager()->getLog();
 			log->error("Error translating internal texture format.");
-			if (uploadeddata.data)
-				free(uploadeddata.data);
+			if (uploaddata->data)
+				free(uploaddata->data);
 			return;
 		}
-		if (uploadeddata.data)
+		if (uploaddata->data)
 		{
-			if (!translateFormat(uploadeddata.format, currentformat, component))
+			if (!translateFormat(uploaddata->format, currentformat, component))
 			{
 				core::Log::Ptr log = getManager()->getLog();
 				log->error("Unsupported source format.");
-				if (uploadeddata.data)
-					free(uploadeddata.data);
+				if (uploaddata->data)
+					free(uploaddata->data);
 				return;
 			}
 		}
 		// Upload texture data
 		glBindTexture(GL_TEXTURE_2D, handle);
-		if (uploadeddata.data)
+		if (uploaddata->data)
 		{
 			// TODO
 			if (compressed)
 			{
-				unsigned int size = TextureFormat::getSize(uploadeddata.format,
-				                                           uploadeddata.width * uploadeddata.height);
+				unsigned int size = TextureFormat::getSize(uploaddata->format,
+				                                           uploaddata->width * uploaddata->height);
 				glCompressedTexImage2D(GL_TEXTURE_2D,
 				                       0,
 				                       internal,
-				                       uploadeddata.width,
-				                       uploadeddata.height,
+				                       uploaddata->width,
+				                       uploaddata->height,
 				                       0,
 				                       size,
-				                       uploadeddata.data);
+				                       uploaddata->data);
 			}
 			else
 			{
 				glTexImage2D(GL_TEXTURE_2D,
 				             0,
 				             internal,
-				             uploadeddata.width,
-				             uploadeddata.height,
+				             uploaddata->width,
+				             uploaddata->height,
 				             0,
 				             currentformat,
 				             component,
-				             uploadeddata.data);
+				             uploaddata->data);
 			}
-			free(uploadeddata.data);
+			free(uploaddata->data);
 		}
 		else
 		{
@@ -263,8 +263,8 @@ namespace opengl
 				glCompressedTexImage2D(GL_TEXTURE_2D,
 				                       0,
 				                       internal,
-				                       uploadeddata.width,
-				                       uploadeddata.height,
+				                       uploaddata->width,
+				                       uploaddata->height,
 				                       0,
 				                       0,
 				                       0);
@@ -274,8 +274,8 @@ namespace opengl
 				glTexImage2D(GL_TEXTURE_2D,
 				             0,
 				             internal,
-				             uploadeddata.width,
-				             uploadeddata.height,
+				             uploaddata->width,
+				             uploaddata->height,
 				             0,
 				             GL_RGBA,
 				             GL_UNSIGNED_BYTE,

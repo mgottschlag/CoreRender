@@ -28,11 +28,10 @@ namespace cr
 {
 namespace render
 {
-	VertexBuffer::VertexBuffer(Renderer *renderer,
+	VertexBuffer::VertexBuffer(UploadManager &uploadmgr,
 	             res::ResourceManager *rmgr,
 	             const std::string &name)
-		: RenderResource(renderer, rmgr, name), handle(0),
-		size(0), data(0)
+		: RenderResource(uploadmgr, rmgr, name), handle(0)
 	{
 		currentdata.size = 0;
 		currentdata.data = 0;

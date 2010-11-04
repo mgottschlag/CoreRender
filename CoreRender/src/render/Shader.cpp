@@ -29,18 +29,19 @@ namespace cr
 {
 namespace render
 {
-	Shader::Shader(res::ResourceManager *rmgr,
+	Shader::Shader(UploadManager &uploadmgr,
+	               res::ResourceManager *rmgr,
 	               const std::string &name)
-		: Resource(rmgr, name), flagdefaults(0)
+		: RenderResource(uploadmgr, rmgr, name), flagdefaults(0)
 	{
 	}
 	Shader::~Shader()
 	{
 	}
 
-	bool Shader::add(const std::string &name,
-	                 const std::string &text,
-	                 bool autoinclude)
+	bool Shader::addText(const std::string &name,
+	                     const std::string &text,
+	                     bool autoinclude)
 	{
 		if (autoinclude)
 		{
@@ -57,6 +58,8 @@ namespace render
 		{
 			texts[name] = text;
 		}
+		// Register the resource for reuploading
+		registerUpload();
 		return true;
 	}
 
@@ -68,42 +71,68 @@ namespace render
 	                        BlendMode::List blendmode,
 	                        bool depthwrite,
 	                        DepthTest::List depthtest)
-	{	
+	{
+		unsigned int namehandle = getManager()->getNameRegistry().getContext(name);
 		Context context = {
-			vs, fs, gs, ts, blendmode, depthwrite, depthtest
+			namehandle, vs, fs, gs, ts, blendmode, depthwrite, depthtest,
+			std::vector<ShaderCombination::Ptr>()
 		};
 		// Store context info
-		contexts[name] = context;
+		contexts.push_back(context);
+		// Register the resource for reuploading
+		registerUpload();
 		return true;
 	}
 
 	void Shader::addFlag(const std::string &flag, bool defaultvalue)
 	{
-		unsigned int index = flags.size();
+		unsigned int index = compilerflags.size();
 		if (index == 32)
 		{
 			getManager()->getLog()->warning("%s: Too many flags, flag omitted.",
-			                            getName().c_str());
+			                                getName().c_str());
 			return;
 		}
-		flags.push_back(flag);
+		compilerflags.push_back(flag);
 		if (defaultvalue)
 			flagdefaults |= (1 << index);
 	}
 
 	void Shader::addAttrib(const std::string &name)
 	{
-		attribs.push_back(name);
+		unsigned int namehandle = getManager()->getNameRegistry().getAttrib(name);
+		currentinfo.attribs.push_back(namehandle);
+		// Update shader combinations
+		// TODO
+		reupload();
 	}
 	void Shader::addUniform(const std::string &name,
-	                            ShaderVariableType::List type,
-	                            float *defaultvalue)
+	                        ShaderVariableType::List type,
+	                        float *defaultvalue)
 	{
-		uniforms.add(name).set(type, defaultvalue);
+		Uniform uniform;
+		uniform.name = name;
+		uniform.size = ShaderVariableType::getSize(type);
+		memset(uniform.defvalue, 0, 16 * sizeof(float));
+		if (defaultvalue)
+			memcpy(uniform.defvalue, defaultvalue, uniform.size * sizeof(float));
+		currentinfo.uniforms.push_back(uniform);
+		// Update shader combinations
+		// TODO
+		reupload();
 	}
-	void Shader::addTexture(const std::string &name)
+	void Shader::addSampler(const std::string &name)
 	{
-		textures.push_back(name);
+		Sampler sampler;
+		sampler.name = name;
+		sampler.texunit = 0;
+		sampler.flags = 0;
+		// TODO: Correct type
+		sampler.type = TextureType::Texture2D;
+		currentinfo.samplers.push_back(sampler);
+		// Update shader combinations
+		// TODO
+		reupload();
 	}
 
 	unsigned int Shader::getFlags(const std::string &flagsset)
@@ -127,9 +156,9 @@ namespace render
 			// Get flag name
 			std::string flagname = flag.substr(0, equalsign);
 			int flagindex = -1;
-			for (unsigned int i = 0; i < flags.size(); i++)
+			for (unsigned int i = 0; i < compilerflags.size(); i++)
 			{
-				if (flags[i] == flagname)
+				if (compilerflags[i] == flagname)
 				{
 					flagindex = i;
 					break;
@@ -154,109 +183,81 @@ namespace render
 		return output;
 	}
 
-	void Shader::updateShaders()
+	ShaderCombination::Ptr Shader::getCombination(unsigned int context,
+	                                          unsigned int flags)
 	{
-		// TODO: Do we need this?
-	}
-
-	void Shader::prepareShaders(const std::string &flags)
-	{
+		// Get context
+		Context *ctx = 0;
+		for (unsigned int i = 0; i < contexts.size(); i++)
 		{
-			// Add flag combination to the list of needed shaders
-			tbb::spin_mutex::scoped_lock lock(preparationmutex);
-			preparationlist.push_back(flags);
+			if (contexts[i].name == context)
+			{
+				ctx = &contexts[i];
+				break;
+			}
 		}
-		if (!isLoading())
+		if (!ctx)
 		{
-			// We are not loading any more, so all data is ready
-			prepareAllShaders();
+			getManager()->getLog()->error("%s: Context not found.", getName().c_str());
+			return false;
 		}
-	}
-
-	ShaderCombination *Shader::getCombination(unsigned int context,
-	                                     unsigned int flags)
-	{
-		// Get shader name
-		std::ostringstream shadername;
-		shadername << "__" << getName() << "_Shader" << context << "_" << flags;
-		// Look whether the shader already exists
-		for (unsigned int i = 0; i < shaders.size(); i++)
+		tbb::mutex::scoped_lock lock(combinationmutex);
+		// Look whether the combination already exists
+		for (unsigned int i = 0; i < ctx->combinations.size(); i++)
 		{
-			if (shaders[i]->getName() == shadername.str())
-				return shaders[i];
+			if (ctx->combinations[i]->compilerflags == flags)
+				return ctx->combinations[i];
 		}
-		// Get context info
-		std::map<std::string, Context>::iterator it;
-		it = contexts.find(context);
-		if (it == contexts.end())
-			return 0;
-		Context &ctx = it->second;
 		// Create shader
 		// TODO: Do not reupload the shader if it already exists
-		Shader::Ptr shader = getManager()->getOrCreate<Shader>("Shader",
-		                                                       shadername.str());
+		ShaderCombination::Ptr combination = new ShaderCombination;
+		
 		// Set flags
 		std::string flagtext;
-		for (unsigned int i = 0; i < this->flags.size(); i++)
+		for (unsigned int i = 0; i < compilerflags.size(); i++)
 		{
-			flagtext += "#define " + this->flags[i] + " ";
+			flagtext += "#define " + compilerflags[i] + " ";
 			if ((flags && (1 << i)) != 0)
 				flagtext += "1\n";
 			else
 				flagtext += "0\n";
 		}
 		// Check whether texts exists
-		if (texts.find(ctx.vs) == texts.end())
+		if (texts.find(ctx->vs) == texts.end())
 		{
-			getManager()->getLog()->error("Text \"%s\" not found.", ctx.vs.c_str());
-			return false;
+			getManager()->getLog()->error("Text \"%s\" not found.", ctx->vs.c_str());
+			return 0;
 		}
-		if (texts.find(ctx.fs) == texts.end())
+		if (texts.find(ctx->fs) == texts.end())
 		{
-			getManager()->getLog()->error("Text \"%s\" not found.", ctx.fs.c_str());
-			return false;
+			getManager()->getLog()->error("Text \"%s\" not found.", ctx->fs.c_str());
+			return 0;
 		}
-		if (ctx.gs != "" && texts.find(ctx.gs) == texts.end())
+		if (ctx->gs != "" && texts.find(ctx->gs) == texts.end())
 		{
-			getManager()->getLog()->error("Text \"%s\" not found.", ctx.gs.c_str());
-			return false;
+			getManager()->getLog()->error("Text \"%s\" not found.", ctx->gs.c_str());
+			return 0;
 		}
-		if (ctx.ts != "" && texts.find(ctx.ts) == texts.end())
+		if (ctx->ts != "" && texts.find(ctx->ts) == texts.end())
 		{
-			getManager()->getLog()->error("Text \"%s\" not found.", ctx.ts.c_str());
-			return false;
+			getManager()->getLog()->error("Text \"%s\" not found.", ctx->ts.c_str());
+			return 0;
 		}
 		// Set shader data
-		shader->setBlendMode(ctx.blendmode);
-		shader->setDepthWrite(ctx.depthwrite);
-		shader->setDepthTest(ctx.depthtest);
-		shader->setVertexShader(flagtext + texts[ctx.vs]);
-		shader->setFragmentShader(flagtext + texts[ctx.fs]);
-		if (ctx.gs != "")
-			shader->setGeometryShader(flagtext + texts[ctx.gs]);
-		if (ctx.ts != "")
-			shader->setTesselationShader(flagtext + texts[ctx.ts]);
-		// Add attribs
-		for (unsigned int i = 0; i < attribs.size(); i++)
-			shader->addAttrib(attribs[i]);
-		// Add uniforms
-		{
-			UniformData::UniformMap::const_iterator it;
-			for (it = uniforms.getData().begin();
-			     it != uniforms.getData().end();
-			     it++)
-			{
-				shader->addUniform(it->second.getName());
-			}
-		}
-		// Add textures
-		for (unsigned int i = 0; i < textures.size(); i++)
-			shader->addTexture(textures[i]);
+		combination->currentdata.blendmode = ctx->blendmode;
+		combination->currentdata.depthwrite = ctx->depthwrite;
+		combination->currentdata.depthtest = ctx->depthtest;
+		combination->currentdata.vs = flagtext + texts[ctx->vs];
+		combination->currentdata.fs = flagtext + texts[ctx->fs];
+		if (ctx->gs != "")
+			combination->currentdata.gs = flagtext + texts[ctx->gs];
+		if (ctx->ts != "")
+			combination->currentdata.ts = flagtext + texts[ctx->ts];
 		// Finish shader
-		shader->setShaderText(this);
-		shader->updateShader();
-		shaders.push_back(shader);
-		return shader;
+		combination->shader = this;
+		combination->registerUpload();
+		ctx->combinations.push_back(combination);
+		return combination;
 	}
 
 	bool Shader::load()
@@ -531,7 +532,7 @@ namespace render
 				continue;
 			}
 			// Add texture
-			addTexture(name);
+			addSampler(name);
 		}
 		// Add flags
 		for (TiXmlNode *node = root->FirstChild("Flag");
@@ -557,8 +558,6 @@ namespace render
 			// Add flag
 			addFlag(name, defvalue);
 		}
-		// Prepare shaders which have been requested earlier
-		prepareAllShaders();
 		// Finish loading
 		finishLoading(true);
 		return true;
@@ -678,5 +677,17 @@ namespace render
 		// Clear the list
 		preparationlist.clear();
 	}*/
+	void Shader::reupload()
+	{
+		// Register everything for upload
+		registerUpload();
+		for (unsigned int i = 0; i < contexts.size(); i++)
+		{
+			for (unsigned int j = 0; j < contexts[i].combinations.size(); j++)
+			{
+				contexts[i].combinations[j]->registerUpload();
+			}
+		}
+	}
 }
 }

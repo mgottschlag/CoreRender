@@ -20,7 +20,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/render/Texture2D.hpp"
-#include "CoreRender/render/Renderer.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
 
 #include <cstring>
@@ -31,18 +30,21 @@ namespace cr
 {
 namespace render
 {
-	Texture2D::Texture2D(Renderer *renderer,
+	Texture2D::Texture2D(UploadManager &uploadmgr,
 	                 res::ResourceManager *rmgr,
 	                 const std::string &name)
-		: Texture(renderer, rmgr, name, TextureType::Texture2D), width(0),
-		height(0), internalformat(TextureFormat::Invalid),
-		format(TextureFormat::Invalid), data(0)
+		: Texture(uploadmgr, rmgr, name, TextureType::Texture2D)
 	{
+		currentdata.width = 0;
+		currentdata.height = 0;
+		currentdata.internalformat = TextureFormat::Invalid;
+		currentdata.format = TextureFormat::Invalid;
+		currentdata.data = 0;
 	}
 	Texture2D::~Texture2D()
 	{
-		if (data)
-			free(data);
+		if (currentdata.data)
+			free(currentdata.data);
 	}
 
 	bool Texture2D::set(unsigned int width,
@@ -69,12 +71,12 @@ namespace render
 		// Fill in info
 		{
 			tbb::spin_mutex::scoped_lock lock(imagemutex);
-			prevdata = this->data;
-			this->width = width;
-			this->height = height;
-			this->internalformat = internalformat;
-			this->format = format;
-			this->data = datacopy;
+			prevdata = currentdata.data;
+			currentdata.width = width;
+			currentdata.height = height;
+			currentdata.internalformat = internalformat;
+			currentdata.format = format;
+			currentdata.data = datacopy;
 		}
 		// Delete old data
 		if (prevdata)
@@ -92,7 +94,7 @@ namespace render
 		if (copy)
 		{
 			unsigned int datasize = TextureFormat::getSize(format,
-			                                               width * height);
+			                                               currentdata.width * currentdata.height);
 			datacopy = malloc(datasize);
 			memcpy(datacopy, data, datasize);
 		}
@@ -104,9 +106,9 @@ namespace render
 		// Fill in info
 		{
 			tbb::spin_mutex::scoped_lock lock(imagemutex);
-			prevdata = this->data;
-			this->format = format;
-			this->data = datacopy;
+			prevdata = currentdata.data;
+			currentdata.format = format;
+			currentdata.data = datacopy;
 		}
 		// Delete old data
 		if (prevdata)
@@ -198,12 +200,12 @@ namespace render
 			void *prevdata;
 			{
 				tbb::spin_mutex::scoped_lock lock(imagemutex);
-				prevdata = this->data;
-				width = image.getWidth();
-				height = image.getHeight();
-				internalformat = TextureFormat::RGBA8;
-				format = TextureFormat::RGBA8;
-				data = datacopy;
+				prevdata = currentdata.data;
+				currentdata.width = image.getWidth();
+				currentdata.height = image.getHeight();
+				currentdata.internalformat = TextureFormat::RGBA8;
+				currentdata.format = TextureFormat::RGBA8;
+				currentdata.data = datacopy;
 			}
 			if (prevdata)
 				free(prevdata);
@@ -218,6 +220,18 @@ namespace render
 	{
 		discardImageData();
 		return true;
+	}
+
+	void *Texture2D::getUploadData()
+	{
+		TextureData *uploaddata = new TextureData(currentdata);
+		if (currentdata.data)
+		{
+			unsigned int datasize = TextureFormat::getSize(currentdata.format,
+			                                               currentdata.width * currentdata.height);
+			uploaddata->data = malloc(datasize);
+			memcpy(uploaddata->data, currentdata.data, datasize);
+		}
 	}
 }
 }

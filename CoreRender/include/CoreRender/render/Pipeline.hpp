@@ -53,6 +53,11 @@ namespace render
 			void removeStage(const std::string &name);
 			unsigned int getStageCount();
 
+			virtual bool load();
+
+			virtual bool waitForLoading(bool recursive,
+			                            bool highpriority = false);
+
 			virtual const char *getType()
 			{
 				return "Pipeline";
@@ -61,7 +66,7 @@ namespace render
 			typedef core::SharedPointer<Pipeline> Ptr;
 		private:
 
-			std::vector<PipelineStage> stages;
+			std::vector<PipelineStage*> stages;
 	};
 }
 }

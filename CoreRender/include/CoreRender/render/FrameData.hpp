@@ -37,6 +37,7 @@ namespace core
 namespace render
 {
 	class RenderResource;
+	class RenderObject;
 	class ShaderCombination;
 	class VertexBuffer;
 	class IndexBuffer;
@@ -44,16 +45,7 @@ namespace render
 	class Texture;
 	class Material;
 	class VertexLayout;
-
-	struct RenderTargetInfo
-	{
-		unsigned int width;
-		unsigned int height;
-		FrameBuffer::Configuration *framebuffer;
-		unsigned int depthbuffer;
-		unsigned int colorbuffercount;
-		unsigned int *colorbuffers;
-	};
+	struct RenderTargetInfo;
 
 	struct Batch
 	{
@@ -100,7 +92,7 @@ namespace render
 	};
 	struct RenderQueue
 	{
-		RenderTarget *target;
+		RenderTargetInfo *target;
 		unsigned int context;
 		math::Matrix4 projmat;
 		math::Matrix4 viewmat;
@@ -201,15 +193,24 @@ namespace render
 	};
 	struct UploadLists
 	{
-		struct UploadEntry
+		struct ResourceUploadEntry
 		{
 			RenderResource *resource;
 			void *data;
 		};
-		UploadEntry *upload;
-		unsigned int uploadcount;
-		RenderResource *deletion;
-		unsigned int deletioncount;
+		ResourceUploadEntry *resupload;
+		unsigned int resuploadcount;
+		RenderResource *resdeletion;
+		unsigned int resdeletioncount;
+		struct ObjectUploadEntry
+		{
+			RenderObject *object;
+			void *data;
+		};
+		ObjectUploadEntry *objupload;
+		unsigned int objuploadcount;
+		RenderObject *objdeletion;
+		unsigned int objdeletioncount;
 	};
 	class FrameData
 	{

@@ -59,9 +59,31 @@ namespace res
 					return "";
 				return attribnames[name];
 			}
+
+			unsigned int getContext(const std::string &name)
+			{
+				tbb::mutex::scoped_lock lock(contextmutex);
+				// TODO: This is slow, maybe use a hash map additionally
+				for (unsigned int i = 0; i < contextnames.size(); i++)
+				{
+					if (contextnames[i] == name)
+						return i;
+				}
+				contextnames.push_back(name);
+				return contextnames.size() - 1;
+			}
+			std::string getContext(unsigned int name)
+			{
+				tbb::mutex::scoped_lock lock(contextmutex);
+				if (name >= contextnames.size())
+					return "";
+				return contextnames[name];
+			}
 		private:
 			tbb::mutex attribmutex;
 			std::vector<std::string> attribnames;
+			tbb::mutex contextmutex;
+			std::vector<std::string> contextnames;
 	};
 }
 }

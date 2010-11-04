@@ -30,6 +30,16 @@ namespace cr
 {
 namespace render
 {
+	struct RenderTargetInfo
+	{
+		unsigned int width;
+		unsigned int height;
+		FrameBuffer::Configuration *framebuffer;
+		unsigned int depthbuffer;
+		unsigned int colorbuffercount;
+		unsigned int *colorbuffers;
+	};
+
 	class RenderTarget : public res::Resource
 	{
 		public:
@@ -47,6 +57,8 @@ namespace render
 			Texture2D::Ptr getColorBuffer(unsigned int index);
 			void removeColorBuffer(unsigned int index);
 			unsigned int getColorBufferCount();
+
+			void getRenderTargetInfo(RenderTargetInfo &info);
 
 			virtual const char *getType()
 			{

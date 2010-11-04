@@ -20,7 +20,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/render/Pipeline.hpp"
-#include "FrameData.hpp"
 
 #include <cstring>
 
@@ -36,87 +35,37 @@ namespace render
 	{
 	}
 
-	void Pipeline::addStage(CommandList *commands, const std::string &name)
+	PipelineStage *Pipeline::addStage(const std::string &name)
 	{
-		stages[name] = commands;
+		PipelineStage *newstage = new PipelineStage;
+		newstage->name = name;
+		stages.push_back(newstage);
+		return newstage;
 	}
-	CommandList *Pipeline::getStage(const std::string &name)
+	PipelineStage *Pipeline::getStage(const std::string &name)
 	{
-		core::HashMap<std::string, CommandList*>::Type::iterator it;
-		it = stages.find(name);
-		if (it != stages.end())
-			return it->second;
-		else
-			return 0;
+		for (unsigned int i = 0; i < stages.size(); i++)
+		{
+			if (stages[i]->name == name)
+				return stages[i];
+		}
+		return 0;
 	}
 	void Pipeline::removeStage(const std::string &name)
 	{
-		core::HashMap<std::string, CommandList*>::Type::iterator it;
-		it = stages.find(name);
-		if (it != stages.end())
-			stages.erase(it);
+		for (unsigned int i = 0; i < stages.size(); i++)
+		{
+			if (stages[i]->name == name)
+			{
+				delete stages[i];
+				stages.erase(stages.begin() + i);
+				return;
+			}
+		}
 	}
 	unsigned int Pipeline::getStageCount()
 	{
 		return stages.size();
-	}
-
-	void Pipeline::addDeferredLightLoop(CommandList *lightloop)
-	{
-		deferredlightloops.push_back(lightloop);
-	}
-	unsigned int Pipeline::getDeferredLightLoopCount()
-	{
-		return deferredlightloops.size();
-	}
-	CommandList *Pipeline::getDeferredLightLoop(unsigned int index)
-	{
-		if (index >= deferredlightloops.size())
-			return 0;
-		return deferredlightloops[index];
-	}
-
-	void Pipeline::addForwardLightLoop(CommandList *lightloop)
-	{
-		forwardlightloops.push_back(lightloop);
-	}
-	unsigned int Pipeline::getForwardLightLoopCount()
-	{
-		return forwardlightloops.size();
-	}
-	CommandList *Pipeline::getForwardLightLoop(unsigned int index)
-	{
-		if (index >= forwardlightloops.size())
-			return 0;
-		return forwardlightloops[index];
-	}
-
-	void Pipeline::getBatchLists(std::vector<BatchListCommand*> &lists)
-	{
-		getBatchLists(&commands, lists);
-	}
-
-	void Pipeline::beginFrame(Renderer *renderer, PipelineInfo *info)
-	{
-		PipelineState state(uniforms);
-		commands.beginFrame(renderer, &state, &info->commands);
-	}
-	void Pipeline::endFrame()
-	{
-		commands.endFrame();
-	}
-
-	void Pipeline::getBatchLists(CommandList *commands,
-	                             std::vector<BatchListCommand*> &lists)
-	{
-		for (unsigned int i = 0; i < commands->getCommandCount(); i++)
-		{
-			PipelineCommand *command = commands->getCommand(i);
-			if (command->getType() == PipelineCommandType::BatchList)
-				lists.push_back((BatchListCommand*)command);
-			else if (command->getType() == PipelineCommandType::CommandList)
-				getBatchLists((CommandList*)command, lists);
-		}
 	}
 }
 }

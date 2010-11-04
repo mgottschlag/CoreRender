@@ -47,8 +47,8 @@ set(SRC
 	#include/CoreRender/render/Model.hpp
 	#include/CoreRender/render/ModelRenderable.hpp
 	include/CoreRender/render/OcclusionQuery.hpp
-	include/CoreRender/render/PipelineCommand.hpp
-	include/CoreRender/render/PipelineDefinition.hpp
+	#include/CoreRender/render/PipelineCommand.hpp
+	#include/CoreRender/render/PipelineDefinition.hpp
 	include/CoreRender/render/Pipeline.hpp
 	#include/CoreRender/render/Renderable.hpp
 	include/CoreRender/render/RenderCaps.hpp
@@ -58,7 +58,8 @@ set(SRC
 	include/CoreRender/render/RenderResource.hpp
 	include/CoreRender/render/RenderStats.hpp
 	include/CoreRender/render/RenderTarget.hpp
-	include/CoreRender/render/RenderThread.hpp
+	include/CoreRender/render/RenderObject.hpp
+	#include/CoreRender/render/RenderThread.hpp
 	include/CoreRender/render/ShaderCombination.hpp
 	include/CoreRender/render/Shader.hpp
 	include/CoreRender/render/ShaderVariableType.hpp
@@ -106,13 +107,14 @@ set(SRC
 	src/render/opengl/VertexBufferOpenGL.cpp
 	src/render/opengl/VideoDriverOpenGL.cpp
 	src/render/Pipeline.cpp
-	src/render/PipelineCommand.cpp
-	src/render/PipelineDefinition.cpp
+	#src/render/PipelineCommand.cpp
+	#src/render/PipelineDefinition.cpp
 	#src/render/Renderer.cpp
 	#src/render/RenderJob.cpp
 	src/render/RenderResource.cpp
+	src/render/RenderObject.cpp
 	src/render/RenderTarget.cpp
-	src/render/RenderThread.cpp
+	#src/render/RenderThread.cpp
 	src/render/Shader.cpp
 	src/render/Texture2D.cpp
 	src/render/Texture.cpp

@@ -24,10 +24,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "../core/ReferenceCounted.hpp"
 
+#include <tbb/mutex.h>
+
 namespace cr
 {
 namespace render
 {
+	class UploadManager;
+
 	/**
 	 * Class for objects which have to be uploaded to the GPU, but which are no
 	 * actual resources.
@@ -69,6 +73,14 @@ namespace render
 			 */
 			bool isUploading();
 
+			/**
+			 * Queues the object for uploading to the video driver. Shall be
+			 * called whenever the resource changes. Calling this function
+			 * multiple times within one frame causes only the first call
+			 * actually to be forwarded to the UploadManager. This sets the
+			 * value returned by isUploading() to true.
+			 */
+			void registerUpload();
 		protected:
 			UploadManager &getUploadManager()
 			{
@@ -81,14 +93,6 @@ namespace render
 			 */
 			virtual void *getUploadData() = 0;
 
-			/**
-			 * Queues the object for uploading to the video driver. Shall be
-			 * called whenever the resource changes. Calling this function
-			 * multiple times within one frame causes only the first call
-			 * actually to be forwarded to the UploadManager. This sets the
-			 * value returned by isUploading() to true.
-			 */
-			void registerUpload();
 			virtual void onDelete();
 		private:
 			UploadManager &uploadmgr;

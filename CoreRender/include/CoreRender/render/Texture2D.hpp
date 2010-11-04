@@ -156,8 +156,6 @@ namespace render
 
 			tbb::spin_mutex imagemutex;
 			TextureData currentdata;
-			// TODO: We do not need to store this data
-			TextureData uploadeddata;
 	};
 }
 }
