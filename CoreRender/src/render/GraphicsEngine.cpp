@@ -147,6 +147,25 @@ namespace render
 			render::VideoDriver *driver;
 			UploadManager &uploadmgr;
 	};
+	class MaterialFactory : public res::ResourceFactory
+	{
+		public:
+			MaterialFactory(UploadManager &uploadmgr,
+			                res::ResourceManager *rmgr)
+				: res::ResourceFactory(rmgr), uploadmgr(uploadmgr)
+			{
+			}
+			virtual ~MaterialFactory()
+			{
+			}
+
+			virtual res::Resource::Ptr create(const std::string &name)
+			{
+				return new Material(uploadmgr, getManager(), name);
+			}
+		private:
+			UploadManager &uploadmgr;
+	};
 
 	GraphicsEngine::GraphicsEngine()
 		: rmgr(0), driver(0)
@@ -191,7 +210,7 @@ namespace render
 		uploadmgr.setCaps(&driver->getCaps());
 		// Register resource types
 		res::ResourceFactory::Ptr factory;
-		factory = new res::DefaultResourceFactory<Material>(rmgr);
+		factory = new MaterialFactory(uploadmgr, rmgr);
 		rmgr->addFactory("Material", factory);
 		factory = new res::DefaultResourceFactory<Model>(rmgr);
 		rmgr->addFactory("Model", factory);
@@ -240,24 +259,37 @@ namespace render
 	}
 	void GraphicsEngine::endFrame(FrameData *frame)
 	{
-		// TODO: Create lists with resources to be uploaded and deleted
+		// Create lists with resources to be uploaded and deleted
+		uploadmgr.getLists(frame->getUploadLists(), frame->getMemory());
 		// TODO: Render stats
 	}
 	void GraphicsEngine::render(FrameData *frame)
 	{
 		// Upload resources which need to be uploaded
-		// TODO
+		uploadmgr.uploadResources(frame->getUploadLists());
 		// Render frame
-		// TODO
+		const std::vector<SceneFrameData*> &scenes = frame->getScenes();
+		for (unsigned int i = 0; i < scenes.size(); i++)
+		{
+			driver->executeCommands(scenes[i]->getFirstCommand());
+		}
 		// Delete resources which need to be deleted
-		// TODO
+		uploadmgr.deleteResources(frame->getUploadLists());
+		// Delete frame data
+		core::MemoryPool *memory = frame->getMemory();
+		delete frame;
+		delete memory;
 	}
 	void GraphicsEngine::discard(FrameData *frame)
 	{
 		// Upload resources which need to be uploaded
-		// TODO
+		uploadmgr.uploadResources(frame->getUploadLists());
 		// Delete resources which need to be deleted
-		// TODO
+		uploadmgr.deleteResources(frame->getUploadLists());
+		// Delete frame data
+		core::MemoryPool *memory = frame->getMemory();
+		delete frame;
+		delete memory;
 	}
 
 	void GraphicsEngine::setFileSystem(core::FileSystem::Ptr fs)

@@ -25,7 +25,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "VertexBufferOpenGL.hpp"
 #include "ShaderOpenGL.hpp"
 #include "FrameBufferOpenGL.hpp"
-#include "../FrameData.hpp"
+#include "CoreRender/render/FrameData.hpp"
+#include "CoreRender/render/VertexLayout.hpp"
+#include "CoreRender/render/Material.hpp"
 
 #include <GL/glew.h>
 
@@ -38,7 +40,8 @@ namespace opengl
 	VideoDriverOpenGL::VideoDriverOpenGL(core::Log::Ptr log)
 		: log(log), currentfb(0), currentshader(0), currentvertices(0),
 		currentindices(0), currentblendmode(BlendMode::Replace),
-		currentdepthwrite(true), currentdepthtest(DepthTest::Less)
+		currentdepthwrite(true), currentdepthtest(DepthTest::Less),
+		currentdrawbuffers(1)
 	{
 	}
 	VideoDriverOpenGL::~VideoDriverOpenGL()
@@ -125,6 +128,7 @@ namespace opengl
 				generateMipmaps(currentfb);
 			}
 			// Bind new framebuffer object
+			currentfb = newfb;
 			if (newfb)
 			{
 				glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, newfb->handle);
@@ -132,9 +136,8 @@ namespace opengl
 			else
 			{
 				glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-				glDrawBuffer(GL_BACK);
+				forceDrawBuffers(0x1);
 			}
-			currentfb = newfb;
 		}
 		if (!target || !newfb)
 			return;
@@ -187,13 +190,8 @@ namespace opengl
 			currentfb->depthbuffer = target->depthbuffer;
 		}
 		// Change draw buffers
-		// TODO: This should not be done unconditionally
-		std::vector<unsigned int> drawbuffers(target->colorbuffercount, 0);
-		for (unsigned int i = 0; i < drawbuffers.size(); i++)
-		{
-			drawbuffers[i] = GL_COLOR_ATTACHMENT0_EXT + i;
-		}
-		glDrawBuffers(drawbuffers.size(), &drawbuffers[0]);
+		unsigned int drawbuffers = 0xFFFFFFFF >> (32 - target->colorbuffercount);
+		forceDrawBuffers(drawbuffers);
 		// Check fbo state
 		GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
 		if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
@@ -209,133 +207,67 @@ namespace opengl
 		// Set viewport
 		glViewport(x, y, width, height);
 	}
-	void VideoDriverOpenGL::clear(bool colorbuffer,
-	                              bool zbuffer,
-	                              core::Color color,
+	void VideoDriverOpenGL::clear(unsigned int buffers,
+	                              float *color,
 	                              float depth)
 	{
-		if (!colorbuffer && !zbuffer)
+		if (buffers == 0)
 			return;
-		glClearColor((float)color.getRed() / 255.0f,
-		             (float)color.getGreen() / 255.0f,
-		             (float)color.getBlue() / 255.0f,
-		             (float)color.getAlpha() / 255.0f);
+		glClearColor(color[0], color[1], color[2], color[3]);
 		glClearDepth(depth);
-		// Reset depth mask because we unconditionally want to write depth
-		if (zbuffer && !currentdepthwrite)
-		{
-			glDepthMask(GL_TRUE);
-			currentdepthwrite = true;
-		}
+		// Enable writing to the buffers we want to write to
+		bool clearz = (buffers & 1) != 0;
+		if (clearz)
+			setDepthWrite(true);
+		buffers = buffers >> 1;
+		unsigned int currentbuffers = getDrawBuffers();
+		if (buffers != 0 && currentbuffers != buffers)
+			setDrawBuffers(buffers);
 		// Clear buffers
-		if (colorbuffer && zbuffer)
+		if (buffers && clearz)
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		else if (colorbuffer)
+		else if (buffers)
 			glClear(GL_COLOR_BUFFER_BIT);
-		else if (zbuffer)
+		else
 			glClear(GL_DEPTH_BUFFER_BIT);
+		// Reset draw buffers again
+		// Note that we do not have to reset depth writes as this is a per-batch
+		// setting and is reset anyways if necessary
+		if (buffers != 0 && currentbuffers != buffers)
+			setDrawBuffers(currentbuffers);
 	}
 
-	void VideoDriverOpenGL::draw(RenderBatch *batch)
+	void VideoDriverOpenGL::draw(Batch *batch)
 	{
-		// TODO: Keep track of state changes, do not change too much
+		// Change blend mode if necessary
+		setBlendMode(batch->shader->uploadeddata.blendmode);
+		// Change depth test
+		setDepthTest(batch->shader->uploadeddata.depthtest);
+		// Change depth write
+		setDepthWrite(batch->shader->uploadeddata.depthwrite);
+		// Change vertex/index buffer
+		setVertexBuffer(batch->vertices);
+		setIndexBuffer(batch->indices);
 		// Bind buffers/shader
 		// TODO: Error checking
 		if (currentshader != batch->shader)
 		{
-			glUseProgram(batch->shader);
+			glUseProgram(batch->shader->programobject);
 			currentshader = batch->shader;
 		}
-		// Change blend mode if necessary
-		if (batch->blendmode != currentblendmode)
-		{
-			// Enable blending if we previously rendered solid geometry
-			if (currentblendmode == BlendMode::Replace)
-				glEnable(GL_BLEND);
-			// Switch between blending equations
-			if (batch->blendmode == BlendMode::Minimum)
-				glBlendEquation(GL_MIN);
-			else if (batch->blendmode == BlendMode::Minimum)
-				glBlendEquation(GL_MAX);
-			else if (currentblendmode == BlendMode::Minimum
-			         || currentblendmode == BlendMode::Maximum)
-				glBlendEquation(GL_FUNC_ADD);
-			// Set blend function
-			currentblendmode = batch->blendmode;
-			switch (currentblendmode)
-			{
-				case BlendMode::Replace:
-					glDisable(GL_BLEND);
-					break;
-				case BlendMode::Add:
-				case BlendMode::Minimum:
-				case BlendMode::Maximum:
-					glBlendFunc(GL_ONE, GL_ONE);
-					break;
-				case BlendMode::AddBlended:
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-					break;
-				case BlendMode::Blend:
-					glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
-					break;
-				case BlendMode::Multiply:
-					glBlendFunc(GL_DST_COLOR, GL_ZERO);
-					break;
-			}
-		}
-		// Change depth test
-		if (batch->depthtest != currentdepthtest)
-		{
-			switch (batch->depthtest)
-			{
-				case DepthTest::Always:
-					glDepthFunc(GL_ALWAYS);
-					break;
-				case DepthTest::Equal:
-					glDepthFunc(GL_EQUAL);
-					break;
-				case DepthTest::Less:
-					glDepthFunc(GL_LESS);
-					break;
-				case DepthTest::LessEqual:
-					glDepthFunc(GL_LEQUAL);
-					break;
-				case DepthTest::Greater:
-					glDepthFunc(GL_GREATER);
-					break;
-				case DepthTest::GreaterEqual:
-					glDepthFunc(GL_GEQUAL);
-					break;
-			}
-			currentdepthtest = batch->depthtest;
-		}
-		// Change depth write
-		if (batch->depthwrite != currentdepthwrite)
-		{
-			if (batch->depthwrite)
-				glDepthMask(GL_TRUE);
-			else
-				glDepthMask(GL_FALSE);
-			currentdepthwrite = batch->depthwrite;
-		}
-		// Change vertex/index buffer
-		if (batch->vertices != currentvertices)
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, batch->vertices);
-			currentvertices = batch->vertices;
-		}
-		if (batch->indices != currentindices)
-		{
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, batch->indices);
-			currentindices = batch->indices;
-		}
+		Shader::ShaderInfo *shaderinfo = batch->shader->shader->getUploadedData();
 		// Apply attribs
-		for (unsigned int i = 0; i < batch->attribcount; i++)
+		for (unsigned int i = 0; i < shaderinfo->attribs.size(); i++)
 		{
-			if (batch->attribs[i].shaderhandle == -1)
+			int attribhandle = batch->shader->attriblocations[i];
+			if (attribhandle == -1)
+				continue;
+			unsigned int name = shaderinfo->attribs[i];
+			VertexLayoutElement *layoutelem = batch->layout->getElementByName(name);
+			if (!layoutelem)
 				continue;
 			unsigned int opengltype = GL_FLOAT;
-			switch (batch->attribs[i].type)
+			switch (layoutelem->type)
 			{
 				case VertexElementType::Float:
 					opengltype = GL_FLOAT;
@@ -357,97 +289,112 @@ namespace opengl
 					opengltype = GL_BYTE;
 					break;
 			}
-			glEnableVertexAttribArray(batch->attribs[i].shaderhandle);
-			glVertexAttribPointer(batch->attribs[i].shaderhandle,
-			                      batch->attribs[i].components,
+			glEnableVertexAttribArray(attribhandle);
+			glVertexAttribPointer(attribhandle,
+			                      layoutelem->components,
 			                      opengltype,
 			                      GL_FALSE,
-			                      batch->attribs[i].stride,
-			                      (void*)(batch->attribs[i].address + batch->vertexoffset));
+			                      layoutelem->stride,
+			                      (void*)(layoutelem->offset + batch->vertexoffset));
 		}
-		// Apply uniforms
-		for (unsigned int i = 0; i < batch->uniformcount; i++)
+		// Custom uniforms
+		for (unsigned int i = 0; i < shaderinfo->uniforms.size(); i++)
 		{
-			if (batch->uniforms[i].shaderhandle == -1)
+			// Get uniform shader handle
+			int uniformhandle = batch->shader->customuniforms[i];
+			if (uniformhandle == -1)
 				continue;
-			switch (batch->uniforms[i].type)
+			// Get uniform data
+			unsigned int size = 0;
+			float *data = 0;
+			for (unsigned int j = 0; j < batch->customuniformcount; j++)
 			{
-				case ShaderVariableType::Float:
-					glUniform1f(batch->uniforms[i].shaderhandle,
-					            batch->uniforms[i].data[0]);
+				if (shaderinfo->uniforms[i].name == batch->customuniforms[j].name)
+				{
+					size = batch->customuniforms[j].size;
+					data = batch->customuniforms[j].data;
 					break;
-				case ShaderVariableType::Float2:
-					glUniform2f(batch->uniforms[i].shaderhandle,
-					            batch->uniforms[i].data[0],
-					            batch->uniforms[i].data[1]);
+				}
+			}
+			if (!data)
+			{
+				size = shaderinfo->uniforms[i].size;
+				data = shaderinfo->uniforms[i].defvalue;
+			}
+			// Disallow uploading of more than 4x4 matrices
+			if (size > 16)
+				size = 16;
+			// Upload uniform value
+			// TODO: Integer uniforms?
+			switch (size)
+			{
+				case 1:
+					glUniform1f(uniformhandle, data[0]);
 					break;
-				case ShaderVariableType::Float3:
-					glUniform3f(batch->uniforms[i].shaderhandle,
-					            batch->uniforms[i].data[0],
-					            batch->uniforms[i].data[1],
-					            batch->uniforms[i].data[2]);
+				case 2:
+					glUniform2f(uniformhandle, data[0], data[1]);
 					break;
-				case ShaderVariableType::Float4:
-					glUniform4f(batch->uniforms[i].shaderhandle,
-					            batch->uniforms[i].data[0],
-					            batch->uniforms[i].data[1],
-					            batch->uniforms[i].data[2],
-					            batch->uniforms[i].data[3]);
+				case 3:
+					glUniform3f(uniformhandle, data[0], data[1], data[2]);
 					break;
-				case ShaderVariableType::Float4x4:
-					glUniformMatrix4fv(batch->uniforms[i].shaderhandle,
-					                   1,
-					                   GL_FALSE,
-					                   batch->uniforms[i].data);
+				case 4:
+					glUniform4f(uniformhandle, data[0], data[1], data[2], data[3]);
 					break;
-				case ShaderVariableType::Float3x3:
-					glUniformMatrix3fv(batch->uniforms[i].shaderhandle,
-					                   1,
-					                   GL_FALSE,
-					                   batch->uniforms[i].data);
+				case 9:
+					glUniformMatrix3fv(uniformhandle, 1, GL_FALSE, data);
 					break;
-				case ShaderVariableType::Float4x3:
-					glUniformMatrix4x3fv(batch->uniforms[i].shaderhandle,
-					                     1,
-					                     GL_FALSE,
-					                     batch->uniforms[i].data);
+				case 12:
+					glUniformMatrix4x3fv(uniformhandle, 1, GL_FALSE, data);
 					break;
-				case ShaderVariableType::Float3x4:
-					glUniformMatrix3x4fv(batch->uniforms[i].shaderhandle,
-					                     1,
-					                     GL_FALSE,
-					                     batch->uniforms[i].data);
-					break;
-				default:
+				case 16:
+					glUniformMatrix4fv(uniformhandle, 1, GL_FALSE, data);
 					break;
 			}
 		}
 		// Default uniforms
 		{
-			const int *locations = batch->defuniformlocations->location;
-			float (*values)[16] = batch->defuniforms->uniforms;
-			for (unsigned int i = DefaultUniformName::TransMatrix;
-			     i <= DefaultUniformName::WorldNormalMatrixInv; i++)
+			UniformLocations &locations = batch->shader->uniforms;
+			if (locations.projmat != -1)
+				glUniformMatrix4fv(locations.projmat, 1, GL_FALSE, projmat.m);
+			if (locations.viewmat != -1)
+				glUniformMatrix4fv(locations.viewmat, 1, GL_FALSE, viewmat.m);
+			if (locations.viewmatinv != -1)
+				glUniformMatrix4fv(locations.viewmatinv, 1, GL_FALSE, viewmatinv.m);
+			if (locations.viewprojmat != -1)
+				glUniformMatrix4fv(locations.viewprojmat, 1, GL_FALSE, viewprojmat.m);
+			math::Matrix4 worldmat = viewprojmat * batch->transmat;
+			if (locations.worldmat != -1)
+				glUniformMatrix4fv(locations.worldmat, 1, GL_FALSE, worldmat.m);
+			if (locations.worldnormalmat != -1)
 			{
-				if (locations[i] == -1)
-					continue;
-				// TODO: Normal matrices have a different size
-				glUniformMatrix4fv(locations[i], 1, GL_FALSE, values[i]);
+				// TODO: Is this correct?
+				math::Matrix4 worldnormalmat = worldmat.inverse().transposed();
+				glUniformMatrix4fv(locations.worldnormalmat, 1, GL_FALSE, worldnormalmat.m);
 			}
-			if (locations[DefaultUniformName::ViewPosition] != -1)
-				glUniform3fv(locations[DefaultUniformName::ViewPosition],
-				             1,
-				             values[DefaultUniformName::ViewPosition]);
+			// TODO: Other uniforms
 		}
 		// Apply textures
-		for (unsigned int i = 0; i < batch->texcount; i++)
+		for (unsigned int i = 0; i < shaderinfo->samplers.size(); i++)
 		{
-			if (batch->textures[i].shaderhandle == -1)
+			int samplerhandle = batch->shader->samplerlocations[i];
+			if (samplerhandle == -1)
 				continue;
-			if (batch->textures[i].texhandle == -1)
+			Material::TextureInfo *textureinfo = 0;
+			Material::TextureList *texturelist = batch->material->getUploadedTextures();
+			if (!texturelist)
+				continue;
+			for (unsigned int j = 0; j < texturelist->texturecount; j++)
+			{
+				if (texturelist->textures[j].name == shaderinfo->samplers[i].name)
+				{
+					textureinfo = &texturelist->textures[j];
+					break;
+				}
+			}
+			if (!textureinfo)
 				continue;
 			int opengltype = GL_TEXTURE_2D;
-			switch (batch->textures[i].type)
+			switch (textureinfo->texture->getTextureType())
 			{
 				case TextureType::Texture1D:
 					opengltype = GL_TEXTURE_1D;
@@ -462,10 +409,11 @@ namespace opengl
 					opengltype = GL_TEXTURE_CUBE_MAP;
 					break;
 			}
-			glActiveTexture(GL_TEXTURE0 + batch->textures[i].textureindex);
-			glBindTexture(opengltype, batch->textures[i].texhandle);
-			glUniform1i(batch->textures[i].shaderhandle,
-			            batch->textures[i].textureindex);
+			// TODO: Better manage texture units
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(opengltype, textureinfo->texture->getHandle());
+			glUniform1i(samplerhandle, i);
+			// TODO: Additionally bound textures (getBoundTextures())
 		}
 		// Render triangles
 		unsigned int indexcount = batch->endindex - batch->startindex;
@@ -494,11 +442,11 @@ namespace opengl
 		getStats().increaseBatchCount(1);
 		getStats().increasePolygonCount(indexcount / 3);
 		// Clean up attribs
-		for (unsigned int i = 0; i < batch->attribcount; i++)
+		for (unsigned int i = 0; i < batch->shader->attriblocations.size(); i++)
 		{
-			if (batch->attribs[i].shaderhandle == -1)
+			if (batch->shader->attriblocations[i] == -1)
 				continue;
-			glDisableVertexAttribArray(batch->attribs[i].shaderhandle);
+			glDisableVertexAttribArray(batch->shader->attriblocations[i]);
 		}
 	}
 
@@ -518,6 +466,18 @@ namespace opengl
 		currentvertices = 0;
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		currentindices = 0;
+		// Unbind currently used textures
+		unbindTextures();
+	}
+
+	void VideoDriverOpenGL::setMatrices(math::Matrix4 projmat,
+	                                    math::Matrix4 viewmat)
+	{
+		this->projmat = projmat;
+		this->viewmat = viewmat;
+		viewmatinv = viewmat.inverse();
+		viewprojmat = projmat * viewmat;
+		// TODO: These should not only updated in the shader when necessary
 	}
 
 	void VideoDriverOpenGL::generateMipmaps(FrameBuffer::Configuration *fb)
@@ -528,6 +488,131 @@ namespace opengl
 			glGenerateMipmapEXT(GL_TEXTURE_2D);
 		}
 		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+
+	void VideoDriverOpenGL::setDepthWrite(bool depthwrite)
+	{
+		if (currentdepthwrite == depthwrite)
+			return;
+		if (depthwrite)
+			glDepthMask(GL_TRUE);
+		else
+			glDepthMask(GL_FALSE);
+		currentdepthwrite = depthwrite;
+	}
+	void VideoDriverOpenGL::setDepthTest(DepthTest::List test)
+	{
+		if (test == currentdepthtest)
+			return;
+		switch (test)
+		{
+			case DepthTest::Always:
+				glDepthFunc(GL_ALWAYS);
+				break;
+			case DepthTest::Equal:
+				glDepthFunc(GL_EQUAL);
+				break;
+			case DepthTest::Less:
+				glDepthFunc(GL_LESS);
+				break;
+			case DepthTest::LessEqual:
+				glDepthFunc(GL_LEQUAL);
+				break;
+			case DepthTest::Greater:
+				glDepthFunc(GL_GREATER);
+				break;
+			case DepthTest::GreaterEqual:
+				glDepthFunc(GL_GEQUAL);
+				break;
+		}
+		currentdepthtest = test;
+	}
+	void VideoDriverOpenGL::setDrawBuffers(unsigned int buffers)
+	{
+		if (buffers == currentdrawbuffers)
+			return;
+		forceDrawBuffers(buffers);
+	}
+	void VideoDriverOpenGL::forceDrawBuffers(unsigned int buffers)
+	{
+		if (!currentfb)
+		{
+			if (buffers & 1)
+				glDrawBuffer(GL_BACK);
+			else
+				glDrawBuffer(GL_NONE);
+		}
+		else
+		{
+			unsigned int drawbuffers[16];
+			unsigned int buffercount = 0;
+			unsigned int bufferindex = 0;
+			while (buffers != 0)
+			{
+				if (buffers & 1)
+				{
+					drawbuffers[buffercount] = GL_COLOR_ATTACHMENT0_EXT + bufferindex;
+					buffercount++;
+				}
+				bufferindex++;
+			}
+			glDrawBuffers(buffercount, drawbuffers);
+		}
+		currentdrawbuffers = buffers;
+	}
+	void VideoDriverOpenGL::setBlendMode(BlendMode::List mode)
+	{
+		if (mode == currentblendmode)
+			return;
+		// Enable blending if we previously rendered solid geometry
+		if (currentblendmode == BlendMode::Replace)
+			glEnable(GL_BLEND);
+		// Switch between blending equations
+		if (mode == BlendMode::Minimum)
+			glBlendEquation(GL_MIN);
+		else if (mode == BlendMode::Maximum)
+			glBlendEquation(GL_MAX);
+		else if (currentblendmode == BlendMode::Minimum
+		         || currentblendmode == BlendMode::Maximum)
+			glBlendEquation(GL_FUNC_ADD);
+		// Set blend function
+		switch (mode)
+		{
+			case BlendMode::Replace:
+				glDisable(GL_BLEND);
+				break;
+			case BlendMode::Add:
+			case BlendMode::Minimum:
+			case BlendMode::Maximum:
+				glBlendFunc(GL_ONE, GL_ONE);
+				break;
+			case BlendMode::AddBlended:
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+				break;
+			case BlendMode::Blend:
+				glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+				break;
+			case BlendMode::Multiply:
+				glBlendFunc(GL_DST_COLOR, GL_ZERO);
+				break;
+		}
+		currentblendmode = mode;
+	}
+	void VideoDriverOpenGL::setVertexBuffer(VertexBuffer *vertices)
+	{
+		if (vertices != currentvertices)
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, vertices->getHandle());
+			currentvertices = vertices;
+		}
+	}
+	void VideoDriverOpenGL::setIndexBuffer(IndexBuffer *indices)
+	{
+		if (indices != currentindices)
+		{
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices->getHandle());
+			currentindices = indices;
+		}
 	}
 }
 }

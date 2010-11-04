@@ -62,14 +62,16 @@ namespace opengl
 			                         unsigned int y,
 			                         unsigned int width,
 			                         unsigned int height);
-			virtual void clear(bool colorbuffer,
-			                   bool zbuffer,
-			                   core::Color color = core::Color(0, 0, 0, 0),
-			                   float depth = 1.0f);
+			virtual void clear(unsigned int buffers,
+			                   float *color,
+			                   float depth);
 
-			virtual void draw(RenderBatch *batch);
+			virtual void draw(Batch *batch);
 
 			virtual void endFrame();
+
+			virtual void setMatrices(math::Matrix4 projmat,
+			                         math::Matrix4 viewmat);
 
 			virtual VideoDriverType::List getType()
 			{
@@ -82,18 +84,36 @@ namespace opengl
 		private:
 			void generateMipmaps(FrameBuffer::Configuration *fb);
 
+			void setDepthWrite(bool depthwrite);
+			void setDepthTest(DepthTest::List test);
+			void setDrawBuffers(unsigned int buffers);
+			void forceDrawBuffers(unsigned int buffers);
+			unsigned int getDrawBuffers()
+			{
+				return currentdrawbuffers;
+			}
+			void setBlendMode(BlendMode::List mode);
+			void setVertexBuffer(VertexBuffer *vertices);
+			void setIndexBuffer(IndexBuffer *indices);
+
 			RenderCapsOpenGL caps;
 
 			core::Log::Ptr log;
 
 			FrameBuffer::Configuration *currentfb;
-			unsigned int currentshader;
-			unsigned int currentvertices;
-			unsigned int currentindices;
+			ShaderCombination *currentshader;
+			VertexBuffer *currentvertices;
+			IndexBuffer *currentindices;
 			
 			BlendMode::List currentblendmode;
 			bool currentdepthwrite;
 			DepthTest::List currentdepthtest;
+			unsigned int currentdrawbuffers;
+
+			math::Matrix4 projmat;
+			math::Matrix4 viewmat;
+			math::Matrix4 viewmatinv;
+			math::Matrix4 viewprojmat;
 	};
 
 }

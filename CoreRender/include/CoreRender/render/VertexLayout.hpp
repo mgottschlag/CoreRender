@@ -54,7 +54,7 @@ namespace cr
 			/**
 			 * Name of the attrib in shaders.
 			 */
-			std::string name;
+			unsigned int name;
 			/**
 			 * Vertex buffer slot of this element.
 			 */
@@ -138,7 +138,7 @@ namespace cr
 				 * @param stride Stride of one vertex in this slot.
 				 */
 				void setElement(unsigned int element,
-				                const std::string &name,
+				                unsigned int name,
 				                unsigned int vbslot,
 				                unsigned int components,
 				                unsigned int offset,
@@ -167,7 +167,7 @@ namespace cr
 				 * @param name Element name.
 				 * @return Element with the given name.
 				 */
-				VertexLayoutElement *getElement(const std::string &name)
+				VertexLayoutElement *getElementByName(unsigned int name)
 				{
 					for (unsigned int i = 0; i < elemcount; i++)
 					{

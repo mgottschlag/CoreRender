@@ -30,9 +30,10 @@ namespace cr
 {
 namespace render
 {
-	Material::Material(res::ResourceManager *rmgr,
+	Material::Material(UploadManager &uploadmgr,
+	                   res::ResourceManager *rmgr,
 	                   const std::string &name)
-		: Resource(rmgr, name)
+		: RenderResource(uploadmgr, rmgr, name)
 	{
 	}
 	Material::~Material()
@@ -262,6 +263,22 @@ namespace render
 			                                                       highpriority);
 		}
 		return result;
+	}
+
+	void Material::upload(void *data)
+	{
+		delete[] uploadeddata->textures;
+		delete uploadeddata;
+		uploadeddata = (TextureList*)data;
+	}
+	void *Material::getUploadData()
+	{
+		TextureList *list = new TextureList;
+		list->texturecount = textures.size();
+		list->textures = new TextureInfo[list->texturecount];
+		for (unsigned int i = 0; i < list->texturecount; i++)
+			list->textures[i] = textures[i];
+		return list;
 	}
 }
 }

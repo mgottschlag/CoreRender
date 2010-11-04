@@ -34,7 +34,7 @@ namespace render
 	 * Material definition which contains a shader text, flags, uniform values
 	 * and textures.
 	 */
-	class Material : public res::Resource
+	class Material : public RenderResource
 	{
 		public:
 			/**
@@ -42,7 +42,8 @@ namespace render
 			 * @param rmgr Resource manager for this resource.
 			 * @param name Name of this resource.
 			 */
-			Material(res::ResourceManager *rmgr,
+			Material(UploadManager &uploadmgr,
+			         res::ResourceManager *rmgr,
 			         const std::string &name);
 			/**
 			 * Destructor.
@@ -85,6 +86,7 @@ namespace render
 			{
 				/**
 				 * Texture to be used for the sampler.
+				 * @todo Should use NameRegistry.
 				 */
 				Texture::Ptr texture;
 				/**
@@ -130,12 +132,27 @@ namespace render
 				return "Material";
 			}
 
+			struct TextureList
+			{
+				TextureInfo *textures;
+				unsigned int texturecount;
+			};
+			TextureList *getUploadedTextures()
+			{
+				return uploadeddata;
+			}
+			virtual void upload(void *data);
+
+
 			typedef core::SharedPointer<Material> Ptr;
+		protected:
+			virtual void *getUploadData();
 		private:
 			Shader::Ptr shader;
 			std::string shaderflags;
 
 			std::vector<TextureInfo> textures;
+			TextureList *uploadeddata;
 
 			UniformData uniforms;
 	};

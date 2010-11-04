@@ -118,6 +118,8 @@ set(SRC
 	src/render/Texture.cpp
 	src/render/UniformData.cpp
 	src/render/VertexBuffer.cpp
+	src/render/VideoDriver.cpp
+	src/render/VideoDriver.hpp
 	src/res/LoadingThread.cpp
 	src/res/Resource.cpp
 	src/res/ResourceManager.cpp

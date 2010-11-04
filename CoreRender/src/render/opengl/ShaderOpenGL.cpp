@@ -43,10 +43,10 @@ namespace opengl
 
 	void ShaderOpenGL::compileCombination(ShaderCombination *combination)
 	{
-		std::string vs = combination->uploadedtext.vs;
-		std::string fs = combination->uploadedtext.fs;
-		std::string gs = combination->uploadedtext.gs;
-		std::string ts = combination->uploadedtext.ts;
+		std::string vs = combination->uploadeddata.vs;
+		std::string fs = combination->uploadeddata.fs;
+		std::string gs = combination->uploadeddata.gs;
+		std::string ts = combination->uploadeddata.ts;
 		// Make sure no error happened before
 		int error = glGetError();
 		if (error != GL_NO_ERROR)

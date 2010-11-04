@@ -56,20 +56,24 @@ namespace render
 		ShaderCombination();
 		virtual ~ShaderCombination();
 
-		struct ShaderText
+		struct ShaderCombinationData
 		{
 			std::string vs;
 			std::string fs;
 			std::string gs;
 			std::string ts;
+
+			BlendMode::List blendmode;
+			bool depthwrite;
+			DepthTest::List depthtest;
 		};
 
 		virtual void upload(void *data);
 		virtual void *getUploadData();
 
 		unsigned int compilerflags;
-		ShaderText currenttext;
-		ShaderText uploadedtext;
+		ShaderCombinationData currentdata;
+		ShaderCombinationData uploadeddata;
 
 		UniformLocations uniforms;
 		std::vector<int> customuniforms;

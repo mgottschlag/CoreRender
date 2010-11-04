@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "../math/Matrix4.hpp"
 #include "../math/Frustum.hpp"
+#include "FrameBuffer.hpp"
 
 #include <tbb/spin_mutex.h>
 
@@ -42,28 +43,53 @@ namespace render
 	class RenderTarget;
 	class Texture;
 	class Material;
+	class VertexLayout;
+
+	struct RenderTargetInfo
+	{
+		unsigned int width;
+		unsigned int height;
+		FrameBuffer::Configuration *framebuffer;
+		unsigned int depthbuffer;
+		unsigned int colorbuffercount;
+		unsigned int *colorbuffers;
+	};
 
 	struct Batch
 	{
 		VertexBuffer *vertices;
 		IndexBuffer *indices;
+		VertexLayout *layout;
+
 		ShaderCombination *shader;
 		// TODO: Do we want the whole material here?
 		Material *material;
 		math::Matrix4 transmat;
-		// TODO: Custom uniforms
+
+		struct CustomUniform
+		{
+			const char *name;
+			unsigned int size;
+			float *data;
+		};
+		unsigned int customuniformcount;
+		CustomUniform *customuniforms;
+
 		float sortkey;
+
 		unsigned int startindex;
 		unsigned int endindex;
 		unsigned int basevertex;
 		unsigned int vertexoffset;
 		unsigned int indextype;
+		// Instancing
+		unsigned int transmatcount;
+		math::Matrix4 *transmatlist;
 	};
 	struct RenderCommandType
 	{
 		enum List
 		{
-			// TODO
 			ClearTarget,
 			SetTarget,
 			RenderQueue,
@@ -92,6 +118,7 @@ namespace render
 		 * everywhere where we use this.
 		 */
 		core::MemoryPool *memory;
+		// TODO: Light uniforms
 	};
 	struct RenderCommand
 	{
@@ -102,10 +129,11 @@ namespace render
 			{
 				unsigned int buffers;
 				float color[4];
+				float depth;
 			} cleartarget;
 			struct
 			{
-				RenderTarget *target;
+				RenderTargetInfo *target;
 			} settarget;
 			struct
 			{
@@ -152,6 +180,11 @@ namespace render
 				}
 			}
 
+			RenderCommand *getFirstCommand()
+			{
+				return firstcommand;
+			}
+
 			RenderQueue *getRenderQueue(unsigned int index)
 			{
 				return &renderqueues[index];
@@ -191,9 +224,23 @@ namespace render
 			 */
 			void optimize();
 
+			void addScene(SceneFrameData *scene)
+			{
+				tbb::spin_mutex::scoped_lock lock(scenemutex);
+				scenes.push_back(scene);
+			}
+			const std::vector<SceneFrameData*> &getScenes()
+			{
+				return scenes;
+			}
+
 			UploadLists &getUploadLists()
 			{
 				return upload;
+			}
+			core::MemoryPool *getMemory()
+			{
+				return memory;
 			}
 		private:
 			core::MemoryPool *memory;

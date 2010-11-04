@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Vector3.hpp"
 #include "Vector4.hpp"
+#include "Matrix4.hpp"
 
 namespace cr
 {

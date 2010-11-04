@@ -192,14 +192,6 @@ namespace render
 			virtual void compileCombination(ShaderCombination *combination) = 0;
 			virtual void deleteCombination(ShaderCombination *combination) = 0;
 
-			typedef core::SharedPointer<Shader> Ptr;
-		protected:
-			virtual void *getUploadData();
-		private:
-			bool resolveIncludes(const std::string &text,
-			                     std::string &output,
-			                     const std::string &directory);
-
 			struct Sampler
 			{
 				std::string name;
@@ -212,8 +204,24 @@ namespace render
 			{
 				std::string name;
 				unsigned int size;
-				float defvalue[4];
+				float defvalue[16];
 			};
+			struct ShaderInfo
+			{
+				std::vector<Sampler> samplers;
+				std::vector<Uniform> uniforms;
+				std::vector<unsigned int> attribs;
+			};
+			ShaderInfo *getUploadedData();
+
+			typedef core::SharedPointer<Shader> Ptr;
+		protected:
+			virtual void *getUploadData();
+		private:
+			bool resolveIncludes(const std::string &text,
+			                     std::string &output,
+			                     const std::string &directory);
+
 			struct Context
 			{
 				unsigned int name;
@@ -225,12 +233,6 @@ namespace render
 				bool depthwrite;
 				DepthTest::List depthtest;
 				std::vector<ShaderCombination::Ptr> combinations;
-			};
-			struct ShaderInfo
-			{
-				std::vector<Sampler> samplers;
-				std::vector<Uniform> uniforms;
-				std::vector<unsigned int> attribs;
 			};
 
 			std::map<std::string, std::string> texts;

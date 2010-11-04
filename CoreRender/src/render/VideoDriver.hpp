@@ -40,9 +40,11 @@ namespace res
 }
 namespace render
 {
-	struct RenderBatch;
+	struct RenderCommand;
 	struct RenderTargetInfo;
 	class UploadManager;
+	struct RenderQueue;
+	struct Batch;
 
 	/**
 	 * Render system backend. This is used to create backend-specific classes
@@ -128,27 +130,39 @@ namespace render
 			                         unsigned int height) = 0;
 			/**
 			 * Clears the current render target.
-			 * @param colorbuffer If true, clears the color buffer.
-			 * @param zbuffer If true, clears the depth buffer.
-			 * @param color Color to set the color buffer to.
+			 * @param buffers Bitset containing the buffers which need to be
+			 * cleared, with 0x1 being the back buffer, 0x2 the first color
+			 * buffer, 0x4 the second etc.
+			 * @param color Color to set the color buffers to.
 			 * @param depth Depth to set the depth buffer to.
 			 */
-			virtual void clear(bool colorbuffer,
-			                   bool zbuffer,
-			                   core::Color color = core::Color(0, 0, 0, 0),
-			                   float depth = 1.0f) = 0;
+			virtual void clear(unsigned int buffers,
+			                   float *color,
+			                   float depth) = 0;
 
 			/**
 			 * Draws a single batch.
 			 * @param batch Batch to be drawn.
 			 */
-			virtual void draw(RenderBatch *batch) = 0;
+			virtual void draw(Batch *batch) = 0;
 
 			/**
 			 * Called at the end of the frame. This cleans up currently bound
 			 * resources.
 			 */
 			virtual void endFrame() = 0;
+
+			virtual void setMatrices(math::Matrix4 projmat,
+			                         math::Matrix4 viewmat) = 0;
+
+			struct TextureBinding
+			{
+				const char *sampler;
+				Texture *texture;
+			};
+			void bindTexture(const char *sampler, Texture *texture);
+			void unbindTextures();
+			const std::vector<TextureBinding> &getBoundTextures();
 
 			/**
 			 * Returns the type of this video driver.
@@ -161,6 +175,15 @@ namespace render
 			virtual const RenderCaps &getCaps() = 0;
 
 			/**
+			 * Renders a chain of render commands.
+			 */
+			void executeCommands(RenderCommand *command);
+			/**
+			 * Executes a single render command.
+			 */
+			void executeCommand(RenderCommand *command);
+
+			/**
 			 * Returns the render stats of the running frame.
 			 */
 			RenderStats &getStats()
@@ -168,7 +191,11 @@ namespace render
 				return stats;
 			}
 		private:
+			void renderQueue(RenderQueue *queue);
+
 			RenderStats stats;
+
+			std::vector<TextureBinding> boundtextures;
 	};
 }
 }
