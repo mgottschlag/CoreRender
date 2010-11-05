@@ -19,7 +19,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "CoreRender/render/GraphicsEngine.hpp"
+#include "CoreRender/GraphicsEngine.hpp"
 #include "CoreRender/core/StandardFileSystem.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
 #include "CoreRender/res/DefaultResourceFactory.hpp"
@@ -31,17 +31,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/FrameData.hpp"
 #include "CoreRender/core/MemoryPool.hpp"
 
-#include "opengl/VideoDriverOpenGL.hpp"
+#include "render/opengl/VideoDriverOpenGL.hpp"
 
 namespace cr
-{
-namespace render
 {
 	class Texture2DFactory : public res::ResourceFactory
 	{
 		public:
 			Texture2DFactory(render::VideoDriver *driver,
-			                 UploadManager &uploadmgr,
+			                 render::UploadManager &uploadmgr,
 			                 res::ResourceManager *rmgr)
 				: res::ResourceFactory(rmgr), driver(driver),
 				uploadmgr(uploadmgr)
@@ -57,13 +55,13 @@ namespace render
 			}
 		private:
 			render::VideoDriver *driver;
-			UploadManager &uploadmgr;
+			render::UploadManager &uploadmgr;
 	};
 	class VertexBufferFactory : public res::ResourceFactory
 	{
 		public:
 			VertexBufferFactory(render::VideoDriver *driver,
-			                    UploadManager &uploadmgr,
+			                    render::UploadManager &uploadmgr,
 			                    res::ResourceManager *rmgr)
 				: res::ResourceFactory(rmgr), driver(driver),
 				uploadmgr(uploadmgr)
@@ -79,13 +77,13 @@ namespace render
 			}
 		private:
 			render::VideoDriver *driver;
-			UploadManager &uploadmgr;
+			render::UploadManager &uploadmgr;
 	};
 	class IndexBufferFactory : public res::ResourceFactory
 	{
 		public:
 			IndexBufferFactory(render::VideoDriver *driver,
-			                   UploadManager &uploadmgr,
+			                   render::UploadManager &uploadmgr,
 			                   res::ResourceManager *rmgr)
 				: res::ResourceFactory(rmgr), driver(driver),
 				uploadmgr(uploadmgr)
@@ -101,13 +99,13 @@ namespace render
 			}
 		private:
 			render::VideoDriver *driver;
-			UploadManager &uploadmgr;
+			render::UploadManager &uploadmgr;
 	};
 	class ShaderFactory : public res::ResourceFactory
 	{
 		public:
 			ShaderFactory(render::VideoDriver *driver,
-			              UploadManager &uploadmgr,
+			              render::UploadManager &uploadmgr,
 			              res::ResourceManager *rmgr)
 				: res::ResourceFactory(rmgr), driver(driver),
 				uploadmgr(uploadmgr)
@@ -123,13 +121,13 @@ namespace render
 			}
 		private:
 			render::VideoDriver *driver;
-			UploadManager &uploadmgr;
+			render::UploadManager &uploadmgr;
 	};
 	class FrameBufferFactory : public res::ResourceFactory
 	{
 		public:
 			FrameBufferFactory(render::VideoDriver *driver,
-			                   UploadManager &uploadmgr,
+			                   render::UploadManager &uploadmgr,
 			                   res::ResourceManager *rmgr)
 				: res::ResourceFactory(rmgr), driver(driver),
 				uploadmgr(uploadmgr)
@@ -145,12 +143,12 @@ namespace render
 			}
 		private:
 			render::VideoDriver *driver;
-			UploadManager &uploadmgr;
+			render::UploadManager &uploadmgr;
 	};
 	class MaterialFactory : public res::ResourceFactory
 	{
 		public:
-			MaterialFactory(UploadManager &uploadmgr,
+			MaterialFactory(render::UploadManager &uploadmgr,
 			                res::ResourceManager *rmgr)
 				: res::ResourceFactory(rmgr), uploadmgr(uploadmgr)
 			{
@@ -161,10 +159,10 @@ namespace render
 
 			virtual res::Resource::Ptr create(const std::string &name)
 			{
-				return new Material(uploadmgr, getManager(), name);
+				return new render::Material(uploadmgr, getManager(), name);
 			}
 		private:
-			UploadManager &uploadmgr;
+			render::UploadManager &uploadmgr;
 	};
 
 	GraphicsEngine::GraphicsEngine()
@@ -212,7 +210,7 @@ namespace render
 		res::ResourceFactory::Ptr factory;
 		factory = new MaterialFactory(uploadmgr, rmgr);
 		rmgr->addFactory("Material", factory);
-		factory = new res::DefaultResourceFactory<Model>(rmgr);
+		factory = new res::DefaultResourceFactory<render::Model>(rmgr);
 		rmgr->addFactory("Model", factory);
 		factory = new ShaderFactory(driver, uploadmgr, rmgr);
 		rmgr->addFactory("Shader", factory);
@@ -224,11 +222,11 @@ namespace render
 		rmgr->addFactory("VertexBuffer", factory);
 		factory = new FrameBufferFactory(driver, uploadmgr, rmgr);
 		rmgr->addFactory("FrameBuffer", factory);
-		factory = new res::DefaultResourceFactory<Animation>(rmgr);
+		factory = new res::DefaultResourceFactory<render::Animation>(rmgr);
 		rmgr->addFactory("Animation", factory);
-		factory = new res::DefaultResourceFactory<RenderTarget>(rmgr);
+		factory = new res::DefaultResourceFactory<render::RenderTarget>(rmgr);
 		rmgr->addFactory("RenderTarget", factory);
-		factory = new res::DefaultResourceFactory<Pipeline>(rmgr);
+		factory = new res::DefaultResourceFactory<render::Pipeline>(rmgr);
 		rmgr->addFactory("Pipeline", factory);
 		// Create default resources
 		// TODO
@@ -250,25 +248,25 @@ namespace render
 		fs = 0;
 	}
 
-	FrameData *GraphicsEngine::beginFrame()
+	render::FrameData *GraphicsEngine::beginFrame()
 	{
 		// TODO: Reuse memory
 		core::MemoryPool *memory = new core::MemoryPool;
-		FrameData *frame = new FrameData(memory);
+		render::FrameData *frame = new render::FrameData(memory);
 		return frame;
 	}
-	void GraphicsEngine::endFrame(FrameData *frame)
+	void GraphicsEngine::endFrame(render::FrameData *frame)
 	{
 		// Create lists with resources to be uploaded and deleted
 		uploadmgr.getLists(frame->getUploadLists(), frame->getMemory());
 		// TODO: Render stats
 	}
-	void GraphicsEngine::render(FrameData *frame)
+	void GraphicsEngine::render(render::FrameData *frame)
 	{
 		// Upload resources which need to be uploaded
 		uploadmgr.uploadResources(frame->getUploadLists());
 		// Render frame
-		const std::vector<SceneFrameData*> &scenes = frame->getScenes();
+		const std::vector<render::SceneFrameData*> &scenes = frame->getScenes();
 		for (unsigned int i = 0; i < scenes.size(); i++)
 		{
 			driver->executeCommands(scenes[i]->getFirstCommand());
@@ -280,7 +278,7 @@ namespace render
 		delete frame;
 		delete memory;
 	}
-	void GraphicsEngine::discard(FrameData *frame)
+	void GraphicsEngine::discard(render::FrameData *frame)
 	{
 		// Upload resources which need to be uploaded
 		uploadmgr.uploadResources(frame->getUploadLists());
@@ -290,6 +288,22 @@ namespace render
 		core::MemoryPool *memory = frame->getMemory();
 		delete frame;
 		delete memory;
+	}
+
+	scene::Mesh::Ptr GraphicsEngine::getMesh(const std::string name)
+	{
+		res::Resource::Ptr res = rmgr->getOrLoad("Mesh", name);
+		return scene::Mesh::Ptr((scene::Mesh*)res.get());
+	}
+	scene::Animation::Ptr GraphicsEngine::getAnimation(const std::string name)
+	{
+		res::Resource::Ptr res = rmgr->getOrLoad("Animation", name);
+		return scene::Animation::Ptr((scene::Animation*)res.get());
+	}
+	render::Pipeline::Ptr GraphicsEngine::getPipeline(const std::string name)
+	{
+		res::Resource::Ptr res = rmgr->getOrLoad("Pipeline", name);
+		return render::Pipeline::Ptr((render::Pipeline*)res.get());
 	}
 
 	void GraphicsEngine::setFileSystem(core::FileSystem::Ptr fs)
@@ -306,10 +320,10 @@ namespace render
 		this->log = log;
 	}
 
-	VideoDriver *GraphicsEngine::createDriver()
+	render::VideoDriver *GraphicsEngine::createDriver()
 	{
-		opengl::VideoDriverOpenGL *driver;
-		driver = new opengl::VideoDriverOpenGL(log);
+		render::opengl::VideoDriverOpenGL *driver;
+		driver = new render::opengl::VideoDriverOpenGL(log);
 		if (!driver->init())
 		{
 			delete driver;
@@ -317,5 +331,4 @@ namespace render
 		}
 		return driver;
 	}
-}
 }

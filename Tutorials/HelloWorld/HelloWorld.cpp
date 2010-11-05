@@ -21,120 +21,87 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "CoreRender.hpp"
 
-#include <iostream>
-
 using namespace cr;
 
 int main(int argc, char **argv)
 {
-	render::GraphicsEngine graphics;
+	// Create render window
+	// TODO
 	// Initialize file system
+	GraphicsEngine graphics;
 	{
 		core::StandardFileSystem::Ptr filesystem;
 		filesystem = new core::StandardFileSystem();
 		filesystem->mount("Tutorials/media/", "/", core::FileAccess::Read);
-		// The following lines do not work with out-of-tree builds
-		//std::string rootdir = core::FileSystem::getDirectory(argv[0]);
-		//filesystem->mount(rootdir + "/../media/", "/", core::FileAccess::Read);
 		// Writes (e.g. log) shall go into the working directory
 		filesystem->mount("", "/", core::FileAccess::Write);
 		graphics.setFileSystem(filesystem);
 	}
-	// Initialize CoreRender
-	if (!graphics.init(render::VideoDriverType::OpenGL, 800, 600, false, 0, true))
+	// Initialize graphics engine
+	if (!graphics.init())
 	{
 		std::cerr << "Graphics engine failed to initialize!" << std::endl;
 		return -1;
 	}
 	graphics.getLog()->setConsoleLevel(core::LogLevel::Debug);
-	res::ResourceManager *rmgr = graphics.getResourceManager();
-
-	// Load some resources
-	render::Model::Ptr model = rmgr->getOrLoad<render::Model>("Model",
-	                                                          "/models/dwarf.model.xml");
-	render::Animation::Ptr anim = rmgr->getOrLoad<render::Animation>("Animation",
-	                                                                 "/models/dwarf.anim");
-	// Load pipeline
-	render::PipelineDefinition::Ptr pipelinedef;
-	pipelinedef = rmgr->getOrLoad<render::PipelineDefinition>("PipelineDefinition",
-	                                                          "/pipelines/Simple.pipeline.xml");
-	pipelinedef->waitForLoading(true);
-	render::Pipeline::Ptr pipeline = pipelinedef->createPipeline();
-	graphics.addPipeline(pipeline);
-	std::vector<render::BatchListCommand*> batchlists;
-	pipeline->getBatchLists(batchlists);
-	// Setup camera matrix
-	math::Matrix4 projmat = math::Matrix4::PerspectiveFOV(60.0f, 4.0f/3.0f, 1.0f, 1000.0f);
-	projmat = projmat * math::Matrix4::TransMat(math::Vector3F(0, 0, -150));
-	projmat = projmat * math::Quaternion(math::Vector3F(45.0, 0.0, 0.0)).toMatrix();
-	render::DefaultUniform projuniform(render::DefaultUniformName::ProjMatrix, projmat);
-	pipeline->getDefaultUniforms().push_back(projuniform);
-	// Wait for resources to be loaded
-	model->waitForLoading(true);
-	anim->waitForLoading(true);
-	// Create renderable
-	render::ModelRenderable *renderable = new render::ModelRenderable();
-	renderable->setModel(model);
-	renderable->setTransMat(math::Quaternion(math::Vector3F(0.0, 45.0, 0.0)).toMatrix());
-	renderable->addAnimStage(anim, 1.0);
-	// Finished loading
-	graphics.getLog()->info("Starting rendering.");
+	// Create scene
+	scene::Scene scene(&graphics);
+	// Add some models
+	scene::Mesh::Ptr jeep = graphics.getMesh("/models/jeep.mesh.xml");
+	scene::Mesh::Ptr dwarf = graphics.getMesh("/models/dwarf.mesh.xml");
+	scene::AnimatedMesh::Ptr dwarf2 = new scene::AnimatedMesh(dwarf);
+	scene::Animation::Ptr dwarfanim = graphics.getAnimation("/models/dwarf.anim.xml");
+	dwarf2->addAnimation(dwarfanim, 1.0f);
+	math::Matrix4 dwarf2positions[1024];
+	for (unsigned int i = 0; i < 1024; i++)
+	{
+		float x = (float)(i % 32) * 10.0f;
+		float z = (float)(i / 32) * 10.0f;
+		dwarf2positions[i] = math::Matrix4::TransMat(x, 0.0f, z);
+	}
+	// Add a terrain
+	// TODO
+	// Add some lights
+	scene::SpotLight::Ptr spotlight = new scene::SpotLight(0, "SPOTLIGHT", "SHADOWMAP");
+	spotlight->setRadius(10.0f);
+	spotlight->setColor(core::Color(1.0f, 0.0f, 0.0f, 1.0f));
+	scene::PointLight::Ptr pointlight = new scene::PointLight(0, "POINTLIGHT", "");
+	spotlight->setRadius(10.0f);
+	spotlight->setColor(core::Color(0.0f, 1.0f, 0.0f, 1.0f));
+	// Add a camera
+	scene::Camera::Ptr camera = new scene::Camera;
+	camera->setPipeline(graphics.getPipeline("/pipelines/Forward.pipeline.xml"));
+	camera->setViewport(0, 0, 800, 600);
+	// Add the camera and the lights to the scene
+	scene.addCamera(camera);
+	scene.addLight(spotlight);
+	scene.addLight(pointlight);
 	// Render loop
 	bool stopping = false;
-	core::Time fpstime = core::Time::Now();
-	int fps = 0;
-	float rotation = 0.0f;
 	float animtime = 0.0f;
 	while (!stopping)
 	{
 		// Process input
-		render::InputEvent input;
-		while (graphics.getInput(&input))
-		{
-			switch (input.type)
-			{
-				case render::InputEventType::WindowClosed:
-					stopping = true;
-					break;
-				default:
-					break;
-			}
-		}
-		// Begin frame
-		graphics.beginFrame();
+		// TODO
+		// Set animations
+		animtime = animtime + 0.01f;
+		dwarf2->setAnimation(0, animtime);
 		// Render objects
-		animtime += 0.001f;
-		if (animtime >= anim->getFrameCount() / anim->getFramesPerSecond())
-			animtime -= anim->getFrameCount() / anim->getFramesPerSecond();
-		renderable->getAnimStage(0)->time = animtime;
-		rotation += 0.1f;
-		math::Quaternion quat(math::Vector3F(0.0, rotation, 0.0));
-		renderable->setTransMat(quat.toMatrix());
-		// Render model
-		for (unsigned int i = 0; i < batchlists.size(); i++)
-			batchlists[i]->submit(renderable);
-		// Finish and render frame
-		graphics.endFrame();
-		fps++;
-		core::Time currenttime = core::Time::Now();
-		if (currenttime - fpstime >= core::Duration::Seconds(1))
+		render::FrameData *frame = graphics.beginFrame();
+		render::SceneFrameData *scenedata = scene.beginFrame(frame);
+		render::RenderQueue *renderqueues = scenedata->getRenderQueues();
+		unsigned int queuecount = scenedata->getRenderQueueCount();
+		for (unsigned int i = 0; i < queuecount; i++)
 		{
-			std::cout << "FPS: " << fps << std::endl;
-			const render::RenderStats &stats = graphics.getRenderStats();
-			std::cout << stats.getPolygonCount() << " triangles, ";
-			std::cout << stats.getBatchCount() << " batches." << std::endl;
-			fpstime = currenttime;
-			fps = 0;
+			jeep->render(renderqueues[i], math::Matrix4::TransMat(3.0f, 1.0f, 0.0f));
+			dwarf->render(renderqueues[i], math::Matrix4::TransMat(3.0f, 1.0f, 0.0f));
+			dwarf2->render(renderqueues[i], 1024, dwarf2positions);
 		}
+		// Render frame
+		graphics.render(frame);
+		// Swap buffers
+		// TODO
 	}
-
-	// Delete resources
-	delete renderable;
-	pipeline = 0;
-	model = 0;
-	anim = 0;
-	pipelinedef = 0;
-
-	graphics.shutdown();
-	return 0;
+	// Close render window
+	// TODO
 }

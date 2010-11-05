@@ -181,6 +181,10 @@ namespace render
 			{
 				return &renderqueues[index];
 			}
+			RenderQueue *getRenderQueues()
+			{
+				return &renderqueues[0];
+			}
 			unsigned int getRenderQueueCount()
 			{
 				return renderqueuecount;

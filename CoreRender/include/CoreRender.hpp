@@ -22,6 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_HPP_INCLUDED_
 #define _CORERENDER_HPP_INCLUDED_
 
+#include "CoreRender/core/Color.hpp"
 #include "CoreRender/core/Functor.hpp"
 #include "CoreRender/core/StandardFile.hpp"
 #include "CoreRender/core/FileList.hpp"
@@ -48,22 +49,23 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/res/ResourceManager.hpp"
 #include "CoreRender/render/Animation.hpp"
 #include "CoreRender/render/RenderResource.hpp"
-#include "CoreRender/render/RenderThread.hpp"
 #include "CoreRender/render/RenderStats.hpp"
 #include "CoreRender/render/RenderCaps.hpp"
 #include "CoreRender/render/Shader.hpp"
 #include "CoreRender/render/VideoDriverType.hpp"
-#include "CoreRender/render/RenderContextOpenGL.hpp"
-#include "CoreRender/render/RenderContextReuseOpenGL.hpp"
 #include "CoreRender/render/GeometryManager.hpp"
 #include "CoreRender/render/Texture.hpp"
-#include "CoreRender/render/RenderContext.hpp"
 #include "CoreRender/render/Material.hpp"
 #include "CoreRender/render/RenderTarget.hpp"
-#include "CoreRender/render/GraphicsEngine.hpp"
-#include "CoreRender/render/ModelRenderable.hpp"
-#include "CoreRender/render/PipelineDefinition.hpp"
-#include "CoreRender/render/DefaultUniform.hpp"
+#include "CoreRender/GraphicsEngine.hpp"
+#include "CoreRender/scene/Scene.hpp"
+#include "CoreRender/scene/Camera.hpp"
+#include "CoreRender/scene/Light.hpp"
+#include "CoreRender/scene/Mesh.hpp"
+#include "CoreRender/scene/AnimatedMesh.hpp"
+#include "CoreRender/scene/SpotLight.hpp"
+#include "CoreRender/scene/Animation.hpp"
+#include "CoreRender/scene/PointLight.hpp"
 
 /**
  * Main namespace containing the CoreRender classes.

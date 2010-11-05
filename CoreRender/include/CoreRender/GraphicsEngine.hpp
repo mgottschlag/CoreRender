@@ -22,24 +22,25 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_GRAPHICSENGINE_HPP_INCLUDED_
 #define _CORERENDER_RENDER_GRAPHICSENGINE_HPP_INCLUDED_
 
-#include "../core/FileSystem.hpp"
-#include "../core/Log.hpp"
-#include "Pipeline.hpp"
-#include "RenderStats.hpp"
-#include "UploadManager.hpp"
-
-#include <queue>
+#include "core/FileSystem.hpp"
+#include "core/Log.hpp"
+#include "render/Pipeline.hpp"
+#include "render/RenderStats.hpp"
+#include "render/UploadManager.hpp"
+#include "scene/Mesh.hpp"
+#include "scene/Animation.hpp"
 
 namespace cr
 {
-namespace res
-{
-	class ResourceManager;
-}
-namespace render
-{
-	class VideoDriver;
-	class FrameData;
+	namespace res
+	{
+		class ResourceManager;
+	}
+	namespace render
+	{
+		class VideoDriver;
+		class FrameData;
+	}
 
 	/**
 	 * Main class of the engine providing the main intialization functions.
@@ -84,10 +85,14 @@ namespace render
 			 */
 			void shutdown();
 
-			FrameData *beginFrame();
-			void endFrame(FrameData *frame);
-			void render(FrameData *frame);
-			void discard(FrameData *frame);
+			render::FrameData *beginFrame();
+			void endFrame(render::FrameData *frame);
+			void render(render::FrameData *frame);
+			void discard(render::FrameData *frame);
+
+			scene::Mesh::Ptr getMesh(const std::string name);
+			scene::Animation::Ptr getAnimation(const std::string name);
+			render::Pipeline::Ptr getPipeline(const std::string name);
 
 			/**
 			 * Sets a user-specified file system for the engine. This can be
@@ -138,24 +143,23 @@ namespace render
 			 * enabled.
 			 * @return Render statistics.
 			 */
-			const RenderStats &getRenderStats()
+			const render::RenderStats &getRenderStats()
 			{
 				return stats;
 			}
 		private:
-			VideoDriver *createDriver();
+			render::VideoDriver *createDriver();
 
-			UploadManager uploadmgr;
+			render::UploadManager uploadmgr;
 
 			res::ResourceManager *rmgr;
 			core::FileSystem::Ptr fs;
 			core::Log::Ptr log;
 
-			VideoDriver *driver;
+			render::VideoDriver *driver;
 
-			RenderStats stats;
+			render::RenderStats stats;
 	};
-}
 }
 
 #endif

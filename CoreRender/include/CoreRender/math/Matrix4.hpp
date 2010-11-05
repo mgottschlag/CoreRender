@@ -124,6 +124,10 @@ namespace math
 				               0, 0, 1, z,
 				               0, 0, 0, 1);
 			}
+			static Matrix4 TransMat(float x, float y, float z)
+			{
+				return TransMat(Vector3F(x, y, z));
+			}
 			static Matrix4 ScaleMat(const Vector3F &scale)
 			{
 				float x = scale.x;
@@ -133,6 +137,10 @@ namespace math
 				               0, y, 0, 0,
 				               0, 0, z, 0,
 				               0, 0, 0, 1);
+			}
+			static Matrix4 ScaleMat(float x, float y, float z)
+			{
+				return ScaleMat(Vector3F(x, y, z));
 			}
 			static Matrix4 Identity()
 			{

@@ -34,14 +34,14 @@ set(SRC
 	include/CoreRender/math/Vector2.hpp
 	include/CoreRender/math/Vector3.hpp
 	include/CoreRender/math/Vector4.hpp
-	include/CoreRender/render/AnimationFile.hpp
-	include/CoreRender/render/Animation.hpp
+	#include/CoreRender/render/AnimationFile.hpp
+	#include/CoreRender/render/Animation.hpp
 	include/CoreRender/render/BlendMode.hpp
 	include/CoreRender/render/FrameBuffer.hpp
 	include/CoreRender/render/FrameData.hpp
 	include/CoreRender/render/GeometryFile.hpp
 	include/CoreRender/render/GeometryManager.hpp
-	include/CoreRender/render/GraphicsEngine.hpp
+	include/CoreRender/GraphicsEngine.hpp
 	include/CoreRender/render/IndexBuffer.hpp
 	include/CoreRender/render/Material.hpp
 	#include/CoreRender/render/Model.hpp
@@ -92,9 +92,9 @@ set(SRC
 	src/core/StandardFileSystem.cpp
 	src/core/Thread.cpp
 	src/core/Time.cpp
-	src/render/Animation.cpp
+	#src/render/Animation.cpp
 	src/render/FrameBuffer.cpp
-	src/render/GraphicsEngine.cpp
+	src/GraphicsEngine.cpp
 	src/render/IndexBuffer.cpp
 	src/render/Material.cpp
 	#src/render/Model.cpp
