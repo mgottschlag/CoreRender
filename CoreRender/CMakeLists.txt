@@ -116,15 +116,22 @@ set(SRC
 	src/render/RenderTarget.cpp
 	#src/render/RenderThread.cpp
 	src/render/Shader.cpp
+	src/render/ShaderCombination.cpp
 	src/render/Texture2D.cpp
 	src/render/Texture.cpp
 	src/render/UniformData.cpp
+	src/render/UploadManager.cpp
 	src/render/VertexBuffer.cpp
 	src/render/VideoDriver.cpp
 	src/render/VideoDriver.hpp
 	src/res/LoadingThread.cpp
 	src/res/Resource.cpp
 	src/res/ResourceManager.cpp
+	src/scene/Scene.cpp
+	src/scene/AnimatedMesh.cpp
+	src/scene/Animation.cpp
+	src/scene/Mesh.cpp
+	src/scene/Camera.cpp
 )
 
 set(LIB

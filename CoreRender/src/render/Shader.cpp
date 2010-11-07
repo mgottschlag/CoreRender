@@ -210,7 +210,7 @@ namespace render
 		}
 		// Create shader
 		// TODO: Do not reupload the shader if it already exists
-		ShaderCombination::Ptr combination = new ShaderCombination;
+		ShaderCombination::Ptr combination = new ShaderCombination(getUploadManager());
 		
 		// Set flags
 		std::string flagtext;

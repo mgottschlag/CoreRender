@@ -19,57 +19,30 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_PIPELINESTAGE_HPP_INCLUDED_
-#define _CORERENDER_RENDER_PIPELINESTAGE_HPP_INCLUDED_
-
-#include "../res/Resource.hpp"
-
-#include <vector>
+#include "CoreRender/scene/Mesh.hpp"
 
 namespace cr
 {
-namespace render
+namespace scene
 {
-	struct PipelineCommandType
+	Mesh::Mesh(cr::res::ResourceManager *rmgr, const std::string &name)
+		: Resource(rmgr, name)
 	{
-		enum List
-		{
-			ClearTarget,
-			SetTarget,
-			BindTexture,
-			UnbindTextures,
-			DrawGeometry,
-			DoForwardLightLoop,
-			DoDeferredLightLoop,
-			DrawFullscreenQuad,
-		};
-	};
-	struct PipelineCommand
+	}
+	Mesh::~Mesh()
 	{
-		PipelineCommandType::List type;
-		std::vector<unsigned int> uintparams;
-		std::vector<std::string> stringparams;
-		std::vector<float> floatparams;
-		std::vector<res::Resource::Ptr> resources;
+	}
 
-		bool waitForLoading(bool recursive, bool highpriority)
-		{
-			bool success = true;
-			for (unsigned int i = 0; i < resources.size(); i++)
-			{
-				if (!resources[i]->waitForLoading(recursive, highpriority))
-					success = false;
-			}
-			return success;
-		}
-	};
-	struct PipelineStage
+	void Mesh::render(render::RenderQueue &queue,
+	                  math::Matrix4 transmat)
 	{
-		std::string name;
-		std::vector<PipelineCommand> commands;
-		bool enabled;
-	};
+		// TODO
+	}
+	void Mesh::render(render::RenderQueue &queue,
+	                  unsigned int instancecount,
+	                  math::Matrix4 *transmat)
+	{
+		// TODO
+	}
 }
 }
-
-#endif

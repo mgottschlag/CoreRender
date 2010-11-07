@@ -3,10 +3,12 @@
 	<Commands>
 		<!-- Render unlit scene -->
 		<Stage name="scenepass">
-			<Clear cleardepth="true" clearcolor0="true" color="0.2, 0.2, 0.2, 1.0" />
+			<ClearTarget cleardepth="true" clearcolor0="true" color="0.2, 0.2, 0.2, 1.0" />
 			<DrawGeometry context="AMBIENT" />
 		</Stage>
 		<!-- Render geometry again for all lights -->
-		<ForwardLightLoop name="lights" />
+		<Stage name="lighting">
+			<DoForwardLightLoop/>
+		</Stage>
 	</Commands>
 </Pipeline>

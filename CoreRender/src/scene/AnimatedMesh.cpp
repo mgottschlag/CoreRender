@@ -19,57 +19,46 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_PIPELINESTAGE_HPP_INCLUDED_
-#define _CORERENDER_RENDER_PIPELINESTAGE_HPP_INCLUDED_
-
-#include "../res/Resource.hpp"
-
-#include <vector>
+#include "CoreRender/scene/AnimatedMesh.hpp"
 
 namespace cr
 {
-namespace render
+namespace scene
 {
-	struct PipelineCommandType
+	AnimatedMesh::AnimatedMesh(Mesh::Ptr mesh)
 	{
-		enum List
-		{
-			ClearTarget,
-			SetTarget,
-			BindTexture,
-			UnbindTextures,
-			DrawGeometry,
-			DoForwardLightLoop,
-			DoDeferredLightLoop,
-			DrawFullscreenQuad,
-		};
-	};
-	struct PipelineCommand
+	}
+	AnimatedMesh::~AnimatedMesh()
 	{
-		PipelineCommandType::List type;
-		std::vector<unsigned int> uintparams;
-		std::vector<std::string> stringparams;
-		std::vector<float> floatparams;
-		std::vector<res::Resource::Ptr> resources;
+	}
 
-		bool waitForLoading(bool recursive, bool highpriority)
-		{
-			bool success = true;
-			for (unsigned int i = 0; i < resources.size(); i++)
-			{
-				if (!resources[i]->waitForLoading(recursive, highpriority))
-					success = false;
-			}
-			return success;
-		}
-	};
-	struct PipelineStage
+	void AnimatedMesh::setMesh(Mesh::Ptr mesh)
 	{
-		std::string name;
-		std::vector<PipelineCommand> commands;
-		bool enabled;
-	};
+	}
+	Mesh::Ptr AnimatedMesh::getMesh()
+	{
+	}
+
+	void AnimatedMesh::addAnimation(Animation::Ptr animation,
+	                                float weight,
+	                                bool additive)
+	{
+	}
+	void AnimatedMesh::setAnimation(unsigned int index, float time)
+	{
+	}
+	void AnimatedMesh::removeAnimation(unsigned int index)
+	{
+	}
+
+	void AnimatedMesh::render(render::RenderQueue &queue,
+	                          math::Matrix4 transmat)
+	{
+	}
+	void AnimatedMesh::render(render::RenderQueue &queue,
+	                          unsigned int instancecount,
+	                          math::Matrix4 *transmat)
+	{
+	}
 }
 }
-
-#endif

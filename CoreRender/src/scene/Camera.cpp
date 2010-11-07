@@ -19,57 +19,21 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_PIPELINESTAGE_HPP_INCLUDED_
-#define _CORERENDER_RENDER_PIPELINESTAGE_HPP_INCLUDED_
-
-#include "../res/Resource.hpp"
-
-#include <vector>
+#include "CoreRender/scene/Camera.hpp"
 
 namespace cr
 {
-namespace render
+namespace scene
 {
-	struct PipelineCommandType
+	Camera::Camera(render::Pipeline::Ptr pipeline)
+		: pipeline(pipeline)
 	{
-		enum List
-		{
-			ClearTarget,
-			SetTarget,
-			BindTexture,
-			UnbindTextures,
-			DrawGeometry,
-			DoForwardLightLoop,
-			DoDeferredLightLoop,
-			DrawFullscreenQuad,
-		};
-	};
-	struct PipelineCommand
+		// TODO: Make these functions inline?
+		setProjMat(math::Matrix4::PerspectiveFOV(90.0f, 1.0f, 1.0f, 1000.0f));
+		setViewMat(math::Matrix4::Identity());
+	}
+	Camera::~Camera()
 	{
-		PipelineCommandType::List type;
-		std::vector<unsigned int> uintparams;
-		std::vector<std::string> stringparams;
-		std::vector<float> floatparams;
-		std::vector<res::Resource::Ptr> resources;
-
-		bool waitForLoading(bool recursive, bool highpriority)
-		{
-			bool success = true;
-			for (unsigned int i = 0; i < resources.size(); i++)
-			{
-				if (!resources[i]->waitForLoading(recursive, highpriority))
-					success = false;
-			}
-			return success;
-		}
-	};
-	struct PipelineStage
-	{
-		std::string name;
-		std::vector<PipelineCommand> commands;
-		bool enabled;
-	};
+	}
 }
 }
-
-#endif

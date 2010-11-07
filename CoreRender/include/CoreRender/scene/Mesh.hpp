@@ -36,7 +36,7 @@ namespace scene
 	class Mesh : public res::Resource
 	{
 		public:
-			Mesh();
+			Mesh(cr::res::ResourceManager* rmgr, const std::string& name);
 			virtual ~Mesh();
 
 			void render(render::RenderQueue &queue,

@@ -217,6 +217,7 @@ namespace core
 			struct DestructorEntry
 			{
 				void (*callDestructor)(void*);
+				void *ptr;
 				DestructorEntry *next;
 			};
 			template<class T> static void callDestructor(void *ptr)
@@ -249,6 +250,7 @@ namespace core
 				void *ptr = allocate(sizeof(DestructorEntry) + sizeof(T));
 				DestructorEntry *destructor = (DestructorEntry*)ptr;
 				destructor->callDestructor = callDestructor<T>;
+				destructor->ptr = (char*)ptr + sizeof(DestructorEntry);
 				destructor->next = 0;
 				// Insert destructor into the destructor list
 				tbb::spin_mutex::scoped_lock lock(mutex);
@@ -265,6 +267,28 @@ namespace core
 				// Return memory
 				return (char*)ptr + sizeof(DestructorEntry);
 			}
+
+			template<class T> void registerDestructor(T *object)
+			{
+				// Allocate an extra destructor list entry
+				void *ptr = allocate(sizeof(DestructorEntry));
+				DestructorEntry *destructor = (DestructorEntry*)ptr;
+				destructor->callDestructor = callDestructor<T>;
+				destructor->ptr = object;
+				destructor->next = 0;
+				// Insert destructor into the destructor list
+				tbb::spin_mutex::scoped_lock lock(mutex);
+				if (!lastdestructor)
+				{
+					firstdestructor = destructor;
+					lastdestructor = destructor;
+				}
+				else
+				{
+					lastdestructor->next = destructor;
+					lastdestructor = destructor;
+				}
+			}
 		private:
 			static void *allocPage(unsigned int size);
 			static void freePage(void *page, unsigned int size);
@@ -275,8 +299,7 @@ namespace core
 				// Call all destructors
 				while (destructor)
 				{
-					void *ptr = (char*)destructor + sizeof(DestructorEntry);
-					destructor->callDestructor(ptr);
+					destructor->callDestructor(destructor->ptr);
 					destructor = destructor->next;
 				}
 				// Empty destructor list

@@ -70,6 +70,7 @@ namespace render
 				return caps;
 			}
 		private:
+			// TODO: Mutex type?
 			tbb::spin_mutex listmutex;
 			std::vector<RenderResource*> resupload;
 			std::vector<RenderResource*> resdeletion;

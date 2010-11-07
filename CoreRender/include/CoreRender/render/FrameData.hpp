@@ -92,6 +92,10 @@ namespace render
 	};
 	struct RenderQueue
 	{
+		RenderQueue()
+			: batches(0), batchcount(0)
+		{
+		}
 		RenderTargetInfo *target;
 		unsigned int context;
 		math::Matrix4 projmat;
@@ -204,7 +208,7 @@ namespace render
 		};
 		ResourceUploadEntry *resupload;
 		unsigned int resuploadcount;
-		RenderResource *resdeletion;
+		RenderResource **resdeletion;
 		unsigned int resdeletioncount;
 		struct ObjectUploadEntry
 		{
@@ -213,7 +217,7 @@ namespace render
 		};
 		ObjectUploadEntry *objupload;
 		unsigned int objuploadcount;
-		RenderObject *objdeletion;
+		RenderObject **objdeletion;
 		unsigned int objdeletioncount;
 	};
 	class FrameData

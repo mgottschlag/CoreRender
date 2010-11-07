@@ -23,8 +23,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_SCENE_CAMERA_HPP_INCLUDED_
 
 #include "../core/ReferenceCounted.hpp"
-#include "CoreRender/render/Pipeline.hpp"
-#include "CoreRender/render/RenderTarget.hpp"
+#include "../render/Pipeline.hpp"
+#include "../render/RenderTarget.hpp"
+#include "../math/Matrix4.hpp"
 
 namespace cr
 {
@@ -54,6 +55,23 @@ namespace scene
 				return target;
 			}
 
+			void setProjMat(math::Matrix4 projmat)
+			{
+				this->projmat = projmat;
+			}
+			math::Matrix4 getProjMat()
+			{
+				return projmat;
+			}
+			void setViewMat(math::Matrix4 viewmat)
+			{
+				this->viewmat = viewmat;
+			}
+			math::Matrix4 getViewMat()
+			{
+				return projmat;
+			}
+
 			void setViewport(unsigned int x,
 			                 unsigned int y,
 			                 unsigned int width,
@@ -64,6 +82,10 @@ namespace scene
 				viewport[2] = width;
 				viewport[3] = height;
 			}
+			unsigned int *getViewport()
+			{
+				return viewport;
+			}
 
 			typedef core::SharedPointer<Camera> Ptr;
 		private:
@@ -71,6 +93,8 @@ namespace scene
 			render::RenderTarget::Ptr target;
 
 			unsigned int viewport[4];
+			math::Matrix4 projmat;
+			math::Matrix4 viewmat;
 	};
 }
 }

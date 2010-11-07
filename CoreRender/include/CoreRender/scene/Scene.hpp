@@ -32,13 +32,14 @@ namespace render
 {
 	class SceneFrameData;
 	class FrameData;
+		class RenderQueue;
 }
 namespace scene
 {
 	class Scene
 	{
 		public:
-			Scene(GraphicsEngine *graphics);
+			Scene();
 			~Scene();
 
 			void addCamera(Camera::Ptr camera);
@@ -48,6 +49,16 @@ namespace scene
 
 			render::SceneFrameData *beginFrame(render::FrameData *frame);
 		private:
+			unsigned int getRenderQueueCount(Camera::Ptr camera);
+			unsigned int getShadowRenderQueueCount(Camera::Ptr camera);
+			unsigned int beginFrame(render::SceneFrameData *frame,
+			                        render::RenderQueue *queue,
+			                        Camera::Ptr camera);
+
+			tbb::mutex cameramutex;
+			std::vector<Camera::Ptr> cameras;
+			tbb::mutex lightmutex;
+			std::vector<Light::Ptr> lights;
 	};
 }
 }

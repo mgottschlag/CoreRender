@@ -33,6 +33,9 @@ namespace math
 	class Frustum
 	{
 		public:
+			Frustum()
+			{
+			}
 			Frustum(const Matrix4 &projmat)
 			{
 				setProjectionMatrix(projmat);

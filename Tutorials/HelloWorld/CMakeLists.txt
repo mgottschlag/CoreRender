@@ -7,4 +7,4 @@ endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 include_directories(../../CoreRender/include)
 
 add_executable(HelloWorld HelloWorld.cpp)
-target_link_libraries(HelloWorld CoreRender)
+target_link_libraries(HelloWorld CoreRender glfw)

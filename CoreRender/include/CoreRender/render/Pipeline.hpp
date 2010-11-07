@@ -24,6 +24,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "../res/Resource.hpp"
 #include "PipelineStage.hpp"
+#include "RenderTarget.hpp"
+
+class TiXmlElement;
 
 namespace cr
 {
@@ -50,8 +53,11 @@ namespace render
 
 			PipelineStage *addStage(const std::string &name);
 			PipelineStage *getStage(const std::string &name);
+			PipelineStage *getStage(unsigned int index);
 			void removeStage(const std::string &name);
 			unsigned int getStageCount();
+
+			void resizeTargets(unsigned int width, unsigned int height);
 
 			virtual bool load();
 
@@ -65,8 +71,28 @@ namespace render
 
 			typedef core::SharedPointer<Pipeline> Ptr;
 		private:
+			bool loadSetup(TiXmlElement *xml);
+			bool loadCommands(TiXmlElement *xml);
+			bool loadStage(TiXmlElement *xml, PipelineStage *stage);
 
 			std::vector<PipelineStage*> stages;
+
+			struct RenderTargetInfo
+			{
+				std::string name;
+				RenderTarget::Ptr target;
+				float relsize[2];
+				unsigned int abssize[2];
+			};
+			std::vector<RenderTargetInfo> rendertargets;
+			struct TargetTextureInfo
+			{
+				std::string name;
+				Texture2D::Ptr texture;
+				float relsize[2];
+				unsigned int abssize[2];
+			};
+			std::vector<TargetTextureInfo> targettextures;
 	};
 }
 }

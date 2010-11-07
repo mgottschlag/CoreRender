@@ -21,12 +21,20 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "CoreRender.hpp"
 
+#include <GL/glfw.h>
+
 using namespace cr;
 
 int main(int argc, char **argv)
 {
 	// Create render window
-	// TODO
+	glfwInit();
+	if (!glfwOpenWindow(1024,768, 8, 8, 8, 8, 24, 8, GLFW_WINDOW))
+	{
+		std::cerr << "Failed to open render window!" << std::endl;
+		glfwTerminate();
+		return -1;
+	}
 	// Initialize file system
 	GraphicsEngine graphics;
 	{
@@ -45,7 +53,7 @@ int main(int argc, char **argv)
 	}
 	graphics.getLog()->setConsoleLevel(core::LogLevel::Debug);
 	// Create scene
-	scene::Scene scene(&graphics);
+	scene::Scene scene;
 	// Add some models
 	scene::Mesh::Ptr jeep = graphics.getMesh("/models/jeep.mesh.xml");
 	scene::Mesh::Ptr dwarf = graphics.getMesh("/models/dwarf.mesh.xml");
@@ -62,20 +70,20 @@ int main(int argc, char **argv)
 	// Add a terrain
 	// TODO
 	// Add some lights
-	scene::SpotLight::Ptr spotlight = new scene::SpotLight(0, "SPOTLIGHT", "SHADOWMAP");
+	/*scene::SpotLight::Ptr spotlight = new scene::SpotLight(0, "SPOTLIGHT", "SHADOWMAP");
 	spotlight->setRadius(10.0f);
 	spotlight->setColor(core::Color(1.0f, 0.0f, 0.0f, 1.0f));
 	scene::PointLight::Ptr pointlight = new scene::PointLight(0, "POINTLIGHT", "");
 	spotlight->setRadius(10.0f);
-	spotlight->setColor(core::Color(0.0f, 1.0f, 0.0f, 1.0f));
+	spotlight->setColor(core::Color(0.0f, 1.0f, 0.0f, 1.0f));*/
 	// Add a camera
 	scene::Camera::Ptr camera = new scene::Camera;
 	camera->setPipeline(graphics.getPipeline("/pipelines/Forward.pipeline.xml"));
 	camera->setViewport(0, 0, 800, 600);
 	// Add the camera and the lights to the scene
 	scene.addCamera(camera);
-	scene.addLight(spotlight);
-	scene.addLight(pointlight);
+	/*scene.addLight(spotlight);
+	scene.addLight(pointlight);*/
 	// Render loop
 	bool stopping = false;
 	float animtime = 0.0f;
@@ -97,11 +105,27 @@ int main(int argc, char **argv)
 			dwarf->render(renderqueues[i], math::Matrix4::TransMat(3.0f, 1.0f, 0.0f));
 			dwarf2->render(renderqueues[i], 1024, dwarf2positions);
 		}
+		graphics.endFrame(frame);
 		// Render frame
 		graphics.render(frame);
 		// Swap buffers
-		// TODO
+		glfwSwapBuffers();
+		if (glfwGetWindowParam(GLFW_OPENED) == GL_FALSE)
+			stopping = true;
 	}
+	// Destroy ressources
+	scene.removeCamera(camera);
+	/*scene.removeLight(spotlight);
+	scene.removeLight(pointlight);*/
+	camera = 0;
+	/*spotlight = 0;
+	pointlight = 0;*/
+	jeep = 0;
+	dwarf = 0;
+	dwarf2 = 0;
+	dwarfanim = 0;
+	graphics.shutdown();
 	// Close render window
-	// TODO
+	glfwTerminate();
+	return 0;
 }

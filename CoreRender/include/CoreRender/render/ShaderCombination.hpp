@@ -23,6 +23,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_RENDER_SHADERCOMBINATION_HPP_INCLUDED_
 
 #include "RenderObject.hpp"
+#include "BlendMode.hpp"
+#include "DepthTest.hpp"
 
 #include <vector>
 #include <string>
@@ -53,7 +55,15 @@ namespace render
 	};
 	struct ShaderCombination : public RenderObject
 	{
-		ShaderCombination();
+		ShaderCombination(UploadManager &uploadmgr)
+			: RenderObject(uploadmgr)
+		{
+			programobject = 0;
+			shaderobjects[0] = 0;
+			shaderobjects[1] = 0;
+			shaderobjects[2] = 0;
+			shaderobjects[3] = 0;
+		}
 		virtual ~ShaderCombination();
 
 		struct ShaderCombinationData

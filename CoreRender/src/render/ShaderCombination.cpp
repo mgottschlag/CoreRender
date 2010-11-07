@@ -19,57 +19,27 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_PIPELINESTAGE_HPP_INCLUDED_
-#define _CORERENDER_RENDER_PIPELINESTAGE_HPP_INCLUDED_
-
-#include "../res/Resource.hpp"
-
-#include <vector>
+#include "CoreRender/render/ShaderCombination.hpp"
+#include "CoreRender/render/Shader.hpp"
 
 namespace cr
 {
 namespace render
 {
-	struct PipelineCommandType
+	ShaderCombination::~ShaderCombination()
 	{
-		enum List
-		{
-			ClearTarget,
-			SetTarget,
-			BindTexture,
-			UnbindTextures,
-			DrawGeometry,
-			DoForwardLightLoop,
-			DoDeferredLightLoop,
-			DrawFullscreenQuad,
-		};
-	};
-	struct PipelineCommand
-	{
-		PipelineCommandType::List type;
-		std::vector<unsigned int> uintparams;
-		std::vector<std::string> stringparams;
-		std::vector<float> floatparams;
-		std::vector<res::Resource::Ptr> resources;
+		if (programobject != 0)
+			shader->deleteCombination(this);
+	}
 
-		bool waitForLoading(bool recursive, bool highpriority)
-		{
-			bool success = true;
-			for (unsigned int i = 0; i < resources.size(); i++)
-			{
-				if (!resources[i]->waitForLoading(recursive, highpriority))
-					success = false;
-			}
-			return success;
-		}
-	};
-	struct PipelineStage
+	void ShaderCombination::upload(void *data)
 	{
-		std::string name;
-		std::vector<PipelineCommand> commands;
-		bool enabled;
-	};
+		uploadeddata = *(ShaderCombinationData*)data;
+		shader->compileCombination(this);
+	}
+	void *ShaderCombination::getUploadData()
+	{
+		return new ShaderCombinationData(currentdata);
+	}
 }
 }
-
-#endif

@@ -23,12 +23,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/core/StandardFileSystem.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
 #include "CoreRender/res/DefaultResourceFactory.hpp"
-#include "CoreRender/render/Animation.hpp"
 #include "CoreRender/render/RenderTarget.hpp"
-#include "CoreRender/render/Model.hpp"
 #include "CoreRender/render/Shader.hpp"
 #include "CoreRender/render/Pipeline.hpp"
 #include "CoreRender/render/FrameData.hpp"
+#include "CoreRender/render/Material.hpp"
 #include "CoreRender/core/MemoryPool.hpp"
 
 #include "render/opengl/VideoDriverOpenGL.hpp"
@@ -210,8 +209,6 @@ namespace cr
 		res::ResourceFactory::Ptr factory;
 		factory = new MaterialFactory(uploadmgr, rmgr);
 		rmgr->addFactory("Material", factory);
-		factory = new res::DefaultResourceFactory<render::Model>(rmgr);
-		rmgr->addFactory("Model", factory);
 		factory = new ShaderFactory(driver, uploadmgr, rmgr);
 		rmgr->addFactory("Shader", factory);
 		factory = new Texture2DFactory(driver, uploadmgr, rmgr);
@@ -222,12 +219,11 @@ namespace cr
 		rmgr->addFactory("VertexBuffer", factory);
 		factory = new FrameBufferFactory(driver, uploadmgr, rmgr);
 		rmgr->addFactory("FrameBuffer", factory);
-		factory = new res::DefaultResourceFactory<render::Animation>(rmgr);
-		rmgr->addFactory("Animation", factory);
 		factory = new res::DefaultResourceFactory<render::RenderTarget>(rmgr);
 		rmgr->addFactory("RenderTarget", factory);
 		factory = new res::DefaultResourceFactory<render::Pipeline>(rmgr);
 		rmgr->addFactory("Pipeline", factory);
+		// TODO: Scene resources
 		// Create default resources
 		// TODO
 		return true;
