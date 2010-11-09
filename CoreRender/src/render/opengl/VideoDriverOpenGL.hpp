@@ -96,6 +96,11 @@ namespace opengl
 			void setVertexBuffer(VertexBuffer *vertices);
 			void setIndexBuffer(IndexBuffer *indices);
 
+			void drawSingle(Batch *batch, const math::Matrix4 &transmat);
+			void drawInstanced(Batch *batch,
+			                   unsigned int instancecount,
+			                   math::Matrix4 *transmat);
+
 			RenderCapsOpenGL caps;
 
 			core::Log::Ptr log;

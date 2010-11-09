@@ -145,7 +145,7 @@ namespace render
 					success = false;
 			}
 		}
-		return false;
+		return success;
 	}
 
 	bool Pipeline::loadSetup(TiXmlElement *xml)

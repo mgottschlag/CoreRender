@@ -33,7 +33,8 @@ namespace render
 	Material::Material(UploadManager &uploadmgr,
 	                   res::ResourceManager *rmgr,
 	                   const std::string &name)
-		: RenderResource(uploadmgr, rmgr, name)
+		: RenderResource(uploadmgr, rmgr, name), uploadeddata(0),
+		shaderflagmask(0), shaderflagvalue(0)
 	{
 	}
 	Material::~Material()
@@ -43,6 +44,7 @@ namespace render
 	void Material::setShader(Shader::Ptr shader)
 	{
 		this->shader = shader;
+		shader->getFlags(shaderflags, shaderflagmask, shaderflagvalue);
 	}
 	Shader::Ptr Material::getShader()
 	{
@@ -55,6 +57,7 @@ namespace render
 		info.name = name;
 		info.texture = texture;
 		textures.push_back(info);
+		registerUpload();
 	}
 	Texture::Ptr Material::getTexture(const std::string &name)
 	{
@@ -267,8 +270,11 @@ namespace render
 
 	void Material::upload(void *data)
 	{
-		delete[] uploadeddata->textures;
-		delete uploadeddata;
+		if (uploadeddata)
+		{
+			delete[] uploadeddata->textures;
+			delete uploadeddata;
+		}
 		uploadeddata = (TextureList*)data;
 	}
 	void *Material::getUploadData()

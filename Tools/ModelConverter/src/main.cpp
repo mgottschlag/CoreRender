@@ -1,7 +1,7 @@
 
 #include "tinyxml.h"
-#include "../../../CoreRender/include/CoreRender/render/GeometryFile.hpp"
-#include "../../../CoreRender/include/CoreRender/render/AnimationFile.hpp"
+#include "../../../CoreRender/include/CoreRender/scene/GeometryFile.hpp"
+#include "../../../CoreRender/include/CoreRender/scene/AnimationFile.hpp"
 #include <assimp.hpp>
 #include <aiScene.h>
 #include <aiPostProcess.h>
@@ -12,7 +12,7 @@
 #include <sstream>
 
 using namespace cr;
-using namespace render;
+using namespace scene;
 
 struct OutputInfo
 {

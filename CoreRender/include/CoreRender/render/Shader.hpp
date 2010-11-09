@@ -106,20 +106,24 @@ namespace render
 			                BlendMode::List blendmode = BlendMode::Replace,
 			                bool depthwrite = true,
 			                DepthTest::List depthtest = DepthTest::Less);
-			/**
-			 * Returns whether this material has a certain context.
-			 * @param name Name of the context.
-			 * @return True if the context exists for this material.
-			 */
-			bool hasContext(const std::string &name);
 
 			/**
-			 * Adds a flag to the material. A flag can then be checked in
-			 * shaders via "#if FlagName".
-			 * @param flag Name of the flag.
-			 * @param defaultvalue Default value of the flag.
+			 * Returns the index of a certain shader compilation flag. A flag
+			 * can then be checked in shaders via "#if FlagName". If the flag
+			 * does not exist, it is created, with a default value of 0. Only 32
+			 * flags are supported, so do not call this too often with different
+			 * parameters.
+			 * @param name Name of the flag.
+			 * @return Index of the flag in the bit set.
 			 */
-			void addFlag(const std::string &flag, bool defaultvalue);
+			unsigned int getFlagIndex(const std::string &name);
+			/**
+			 * Sets the default value of a flag. This value is then used unless
+			 * a material overrides the setting.
+			 * @param index Index of the flag as returned by addFlag().
+			 * @param enabled If true, the flag is enabled by default.
+			 */
+			void setFlagValue(unsigned int index, bool enabled);
 
 			/**
 			 * Adds an attrib to the shaders. Only attribs which are added like
@@ -146,25 +150,50 @@ namespace render
 			/**
 			 * Returns the flag bitset for a string containing flag changes.
 			 * The string has to be space separated, with elements in the form
-			 * "Flagname=true|false", e.g. "Skinning=true NormalMapping=false".
+			 * "Flagname=true|false", e.g. "NormalMapping=false Specular=true".
 			 * If a flag is not set in the flag string, its default value is
 			 * used.
+			 *
+			 * Special flags in the flag bitset are "Skinning" and "Instancing",
+			 * these should not be set here but rather directly in
+			 * getCombination().
 			 * @note Do not add additional spaces!
-			 * @param flagsset Flag change string.
+			 * @param flagstr Flag change string.
+			 * @param flagmask The resulting flag mask (unchanged flags are 0).
+			 * @param flagvalue The values of the changed flags.
 			 * @return Bitset containing all flag values.
 			 */
-			unsigned int getFlags(const std::string &flagsset = "");
+			void getFlags(const std::string &flagstr,
+			              unsigned int &flagmask,
+			              unsigned int &flagvalue);
 
 			/**
 			 * Returns a shader instance for a context, taking a certain flag
 			 * set into account.
 			 * @param context Shader context.
-			 * @param flags Flag bitset as returned by getFlags().
+			 * @param flagmask Flag mask as returned by getFlags().
+			 * @param flagvalue Flag bitset as returned by getFlags().
+			 * @param instancing If true, the shader will try to get a
+			 * combination supporting instancing.
+			 * @param skinning If true, the shader will try to get a
+			 * combination supporting skinning.
 			 * @return Shader combination or 0 if no shader could be created.
 			 * @todo This (and other functions here) needs to be made threadsafe.
 			 */
 			ShaderCombination::Ptr getCombination(unsigned int context,
-			                                      unsigned int flags);
+			                                      unsigned int flagmask,
+			                                      unsigned int flagvalue,
+			                                      bool instancing,
+			                                      bool skinning);
+
+			bool supportsInstancing()
+			{
+				return supportsinstancing;
+			}
+			bool supportsSkinning()
+			{
+				return supportsskinning;
+			}
 
 			virtual const char *getType()
 			{
@@ -228,8 +257,12 @@ namespace render
 			};
 
 			std::map<std::string, std::string> texts;
+			tbb::mutex flagmutex;
 			std::vector<std::string> compilerflags;
 			unsigned int flagdefaults;
+			unsigned int supportedflags;
+			bool supportsskinning;
+			bool supportsinstancing;
 
 			std::vector<Context> contexts;
 

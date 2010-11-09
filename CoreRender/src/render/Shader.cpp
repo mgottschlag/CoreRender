@@ -32,7 +32,8 @@ namespace render
 	Shader::Shader(UploadManager &uploadmgr,
 	               res::ResourceManager *rmgr,
 	               const std::string &name)
-		: RenderResource(uploadmgr, rmgr, name), flagdefaults(0)
+		: RenderResource(uploadmgr, rmgr, name), flagdefaults(0),
+		supportedflags(0)
 	{
 	}
 	Shader::~Shader()
@@ -84,18 +85,30 @@ namespace render
 		return true;
 	}
 
-	void Shader::addFlag(const std::string &flag, bool defaultvalue)
+	unsigned int Shader::getFlagIndex(const std::string &name)
 	{
-		unsigned int index = compilerflags.size();
-		if (index == 32)
+		tbb::mutex::scoped_lock lock(flagmutex);
+		// Look for an existing flag
+		for (unsigned int i = 0; i < compilerflags.size(); i++)
 		{
-			getManager()->getLog()->warning("%s: Too many flags, flag omitted.",
-			                                getName().c_str());
-			return;
+			if (compilerflags[i] == name)
+				return i;
 		}
-		compilerflags.push_back(flag);
-		if (defaultvalue)
-			flagdefaults |= (1 << index);
+		unsigned int flagcount = compilerflags.size();
+		// We limit the number of flags to 32 so that they fit into unsigned int
+		if (flagcount == 32)
+			return 32;
+		compilerflags.push_back(name);
+		return flagcount;
+	}
+	void Shader::setFlagValue(unsigned int index, bool enabled)
+	{
+		if (index >= 32)
+			return;
+		if (enabled)
+			flagdefaults |= 1 << index;
+		else
+			flagdefaults &= ~(1 << index);
 	}
 
 	void Shader::addAttrib(const std::string &name)
@@ -135,10 +148,13 @@ namespace render
 		reupload();
 	}
 
-	unsigned int Shader::getFlags(const std::string &flagsset)
+	void Shader::getFlags(const std::string &flagstr,
+	                      unsigned int &flagmask,
+	                      unsigned int &flagvalue)
 	{
-		std::istringstream stream(flagsset);
-		unsigned int output = flagdefaults;
+		std::istringstream stream(flagstr);
+		unsigned int output = 0;
+		unsigned int outputmask = 0;
 		// Tokenize flag string
 		while(!stream.eof())
 		{
@@ -155,37 +171,35 @@ namespace render
 			}
 			// Get flag name
 			std::string flagname = flag.substr(0, equalsign);
-			int flagindex = -1;
-			for (unsigned int i = 0; i < compilerflags.size(); i++)
-			{
-				if (compilerflags[i] == flagname)
-				{
-					flagindex = i;
-					break;
-				}
-			}
-			if (flagindex == -1)
-			{
-				getManager()->getLog()->warning("Unknown flag: \"%s\".",
-				                            flagname.c_str());
+			unsigned int flagindex = getFlagIndex(flagname);
+			if (flagindex == 32)
 				continue;
-			}
 			// Get value
 			bool flagvalue = false;
 			if (flag.substr(equalsign + 1) == "true")
 				flagvalue = true;
 			// Set value in the bitset
+			outputmask |= 1 << flagindex;
 			if (flagvalue)
 				output |= 1 << flagindex;
-			else
-				output &= ~(1 << flagindex);
 		}
-		return output;
+		flagmask = outputmask;
+		flagvalue = output;
 	}
 
 	ShaderCombination::Ptr Shader::getCombination(unsigned int context,
-	                                          unsigned int flags)
+	                                              unsigned int flagmask,
+	                                              unsigned int flagvalue,
+	                                              bool instancing,
+	                                              bool skinning)
 	{
+		if (!supportsInstancing())
+			instancing = false;
+		if (!supportsSkinning())
+			skinning = false;
+		// Where no flags were set, we use the default flags
+		unsigned int flags = (flagdefaults & ~flagmask) | (flagvalue & flagmask);
+		flags &= supportedflags;
 		// Get context
 		Context *ctx = 0;
 		for (unsigned int i = 0; i < contexts.size(); i++)
@@ -198,20 +212,26 @@ namespace render
 		}
 		if (!ctx)
 		{
-			getManager()->getLog()->error("%s: Context not found.", getName().c_str());
+			std::string ctxstr = getManager()->getNameRegistry().getContext(context);
+			getManager()->getLog()->error("%s: Context %s not found.",
+			                              getName().c_str(),
+			                              ctxstr.c_str());
 			return false;
 		}
 		tbb::mutex::scoped_lock lock(combinationmutex);
 		// Look whether the combination already exists
 		for (unsigned int i = 0; i < ctx->combinations.size(); i++)
 		{
-			if (ctx->combinations[i]->compilerflags == flags)
+			if (ctx->combinations[i]->compilerflags == flags
+				&& ctx->combinations[i]->instancing == instancing
+				&& ctx->combinations[i]->skinning == skinning)
 				return ctx->combinations[i];
 		}
 		// Create shader
-		// TODO: Do not reupload the shader if it already exists
 		ShaderCombination::Ptr combination = new ShaderCombination(getUploadManager());
-		
+		combination->compilerflags = flags;
+		combination->instancing = instancing;
+		combination->skinning = skinning;
 		// Set flags
 		std::string flagtext;
 		for (unsigned int i = 0; i < compilerflags.size(); i++)
@@ -222,6 +242,14 @@ namespace render
 			else
 				flagtext += "0\n";
 		}
+		if (skinning)
+			flagtext += "#define Skinning 1\n";
+		else
+			flagtext += "#define Skinning 0\n";
+		if (instancing)
+			flagtext += "#define Instancing 1\n";
+		else
+			flagtext += "#define Instancing 0\n";
 		// Check whether texts exists
 		if (texts.find(ctx->vs) == texts.end())
 		{
@@ -555,8 +583,27 @@ namespace render
 			const char *defstr = element->Attribute("default");
 			if (defstr && !strcmp(defstr, "true"))
 				defvalue = true;
+			// Skinning and Instancing are treated separately
+			if (!strcmp(name, "Skinning"))
+			{
+				supportsskinning = true;
+				continue;
+			}
+			if (!strcmp(name, "Instancing"))
+			{
+				supportsinstancing = true;
+				continue;
+			}
 			// Add flag
-			addFlag(name, defvalue);
+			unsigned int flagindex = getFlagIndex(name);
+			if (flagindex == 32)
+			{
+				getManager()->getLog()->warning("%s: Too many flags, flag %s omitted.",
+				                                getName().c_str(), name);
+				continue;
+			}
+			setFlagValue(flagindex, defvalue);
+			supportedflags |= 1 << flagindex;
 		}
 		// Finish loading
 		finishLoading(true);

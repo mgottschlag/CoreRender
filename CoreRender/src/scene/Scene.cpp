@@ -158,6 +158,7 @@ namespace scene
 					render::RenderCommand *cmd = (render::RenderCommand*)ptr;
 					cmd->type = render::RenderCommandType::RenderQueue;
 					cmd->renderqueue.queue = &queue[queuecount];
+					frame->addCommand(cmd);
 					queuecount++;
 				}
 				else if (command->type == render::PipelineCommandType::DoForwardLightLoop)
@@ -169,6 +170,23 @@ namespace scene
 				{
 					// TODO
 					queuecount += shadowqueuecount;
+				}
+				else if (command->type == render::PipelineCommandType::ClearTarget)
+				{
+					void *ptr = memory->allocate(sizeof(render::RenderCommand));
+					render::RenderCommand *cmd = (render::RenderCommand*)ptr;
+					cmd->type = render::RenderCommandType::ClearTarget;
+					cmd->cleartarget.buffers = command->uintparams[0];
+					cmd->cleartarget.depth = command->floatparams[0];
+					cmd->cleartarget.color[0] = command->floatparams[1];
+					cmd->cleartarget.color[1] = command->floatparams[2];
+					cmd->cleartarget.color[2] = command->floatparams[3];
+					cmd->cleartarget.color[3] = command->floatparams[4];
+					frame->addCommand(cmd);
+				}
+				else
+				{
+					// TODO: Warning here
 				}
 			}
 		}

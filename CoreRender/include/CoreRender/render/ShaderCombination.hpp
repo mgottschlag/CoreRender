@@ -82,6 +82,8 @@ namespace render
 		virtual void *getUploadData();
 
 		unsigned int compilerflags;
+		bool instancing;
+		bool skinning;
 		ShaderCombinationData currentdata;
 		ShaderCombinationData uploadeddata;
 

@@ -39,7 +39,7 @@ set(SRC
 	include/CoreRender/render/BlendMode.hpp
 	include/CoreRender/render/FrameBuffer.hpp
 	include/CoreRender/render/FrameData.hpp
-	include/CoreRender/render/GeometryFile.hpp
+	include/CoreRender/render/#GeometryFile.hpp
 	include/CoreRender/render/GeometryManager.hpp
 	include/CoreRender/GraphicsEngine.hpp
 	include/CoreRender/render/IndexBuffer.hpp

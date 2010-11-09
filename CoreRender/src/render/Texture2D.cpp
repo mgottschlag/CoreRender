@@ -232,6 +232,7 @@ namespace render
 			uploaddata->data = malloc(datasize);
 			memcpy(uploaddata->data, currentdata.data, datasize);
 		}
+		return uploaddata;
 	}
 }
 }

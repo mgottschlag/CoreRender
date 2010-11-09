@@ -223,6 +223,10 @@ namespace cr
 		rmgr->addFactory("RenderTarget", factory);
 		factory = new res::DefaultResourceFactory<render::Pipeline>(rmgr);
 		rmgr->addFactory("Pipeline", factory);
+		factory = new res::DefaultResourceFactory<scene::Mesh>(rmgr);
+		rmgr->addFactory("Mesh", factory);
+		factory = new res::DefaultResourceFactory<scene::Animation>(rmgr);
+		rmgr->addFactory("Animation", factory);
 		// TODO: Scene resources
 		// Create default resources
 		// TODO

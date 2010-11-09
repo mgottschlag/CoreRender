@@ -69,6 +69,10 @@ namespace render
 			void setShaderFlags(const std::string &flags)
 			{
 				shaderflags = flags;
+				if (shader)
+				{
+					shader->getFlags(flags, shaderflagmask, shaderflagvalue);
+				}
 			}
 			/**
 			 * Returns a shader flag string.
@@ -76,6 +80,16 @@ namespace render
 			std::string getShaderFlags()
 			{
 				return shaderflags;
+			}
+			/**
+			 * Returns the shader flags as a bitset.
+			 * @see Shader::getFlags()
+			 */
+			void getShaderFlags(unsigned int &flagmask,
+			                    unsigned int &flagvalue)
+			{
+				flagmask = shaderflagmask;
+				flagvalue = shaderflagvalue;
 			}
 
 			/**
@@ -149,6 +163,8 @@ namespace render
 		private:
 			Shader::Ptr shader;
 			std::string shaderflags;
+			unsigned int shaderflagmask;
+			unsigned int shaderflagvalue;
 
 			std::vector<TextureInfo> textures;
 			TextureList *uploadeddata;

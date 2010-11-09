@@ -352,28 +352,6 @@ namespace opengl
 					break;
 			}
 		}
-		// Default uniforms
-		{
-			UniformLocations &locations = batch->shader->uniforms;
-			if (locations.projmat != -1)
-				glUniformMatrix4fv(locations.projmat, 1, GL_FALSE, projmat.m);
-			if (locations.viewmat != -1)
-				glUniformMatrix4fv(locations.viewmat, 1, GL_FALSE, viewmat.m);
-			if (locations.viewmatinv != -1)
-				glUniformMatrix4fv(locations.viewmatinv, 1, GL_FALSE, viewmatinv.m);
-			if (locations.viewprojmat != -1)
-				glUniformMatrix4fv(locations.viewprojmat, 1, GL_FALSE, viewprojmat.m);
-			math::Matrix4 worldmat = viewprojmat * batch->transmat;
-			if (locations.worldmat != -1)
-				glUniformMatrix4fv(locations.worldmat, 1, GL_FALSE, worldmat.m);
-			if (locations.worldnormalmat != -1)
-			{
-				// TODO: Is this correct?
-				math::Matrix4 worldnormalmat = worldmat.inverse().transposed();
-				glUniformMatrix4fv(locations.worldnormalmat, 1, GL_FALSE, worldnormalmat.m);
-			}
-			// TODO: Other uniforms
-		}
 		// Apply textures
 		for (unsigned int i = 0; i < shaderinfo->samplers.size(); i++)
 		{
@@ -416,32 +394,30 @@ namespace opengl
 			glUniform1i(samplerhandle, i);
 			// TODO: Additionally bound textures (getBoundTextures())
 		}
-		// Render triangles
-		unsigned int indexcount = batch->endindex - batch->startindex;
-		if (batch->indextype == 1)
+		// Default uniforms (not dependant on the transformation matrix)
 		{
-			glDrawElements(GL_TRIANGLES,
-			               indexcount,
-			               GL_UNSIGNED_BYTE,
-			               (void*)(batch->startindex));
+			UniformLocations &locations = batch->shader->uniforms;
+			if (locations.projmat != -1)
+				glUniformMatrix4fv(locations.projmat, 1, GL_FALSE, projmat.m);
+			if (locations.viewmat != -1)
+				glUniformMatrix4fv(locations.viewmat, 1, GL_FALSE, viewmat.m);
+			if (locations.viewmatinv != -1)
+				glUniformMatrix4fv(locations.viewmatinv, 1, GL_FALSE, viewmatinv.m);
+			if (locations.viewprojmat != -1)
+				glUniformMatrix4fv(locations.viewprojmat, 1, GL_FALSE, viewprojmat.m);
+			// TODO: Other uniforms
 		}
-		else if (batch->indextype == 2)
+		// Draw geometry
+		if (batch->transmatcount == 0)
+			drawSingle(batch, batch->transmat);
+		else
 		{
-			glDrawElements(GL_TRIANGLES,
-			               indexcount,
-			               GL_UNSIGNED_SHORT,
-			               (void*)(batch->startindex * 2));
+			for (unsigned int i = 0; i < batch->transmatcount; i++)
+			{
+				drawSingle(batch, batch->transmatlist[i]);
+			}
+			// TODO: Real instancing
 		}
-		else if (batch->indextype == 4)
-		{
-			glDrawElements(GL_TRIANGLES,
-			               indexcount,
-			               GL_UNSIGNED_INT,
-			               (void*)(batch->startindex * 4));
-		}
-		// Increase polygon/batch counters
-		getStats().increaseBatchCount(1);
-		getStats().increasePolygonCount(indexcount / 3);
 		// Clean up attribs
 		for (unsigned int i = 0; i < batch->shader->attriblocations.size(); i++)
 		{
@@ -614,6 +590,56 @@ namespace opengl
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices->getHandle());
 			currentindices = indices;
 		}
+	}
+
+	void VideoDriverOpenGL::drawSingle(Batch *batch, const math::Matrix4 &transmat)
+	{
+		// Default uniforms (not dependant on the transformation matrix)
+		{
+			UniformLocations &locations = batch->shader->uniforms;
+			math::Matrix4 worldmat = viewprojmat * transmat;
+			if (locations.worldmat != -1)
+				glUniformMatrix4fv(locations.worldmat, 1, GL_FALSE, worldmat.m);
+			if (locations.worldnormalmat != -1)
+			{
+				// TODO: Is this correct?
+				math::Matrix4 worldnormalmat = worldmat.inverse().transposed();
+				glUniformMatrix4fv(locations.worldnormalmat, 1, GL_FALSE, worldnormalmat.m);
+			}
+			// TODO: Other uniforms
+		}
+		// Render triangles
+		unsigned int indexcount = batch->endindex - batch->startindex;
+		if (batch->indextype == 1)
+		{
+			glDrawElements(GL_TRIANGLES,
+			               indexcount,
+			               GL_UNSIGNED_BYTE,
+			               (void*)(batch->startindex));
+		}
+		else if (batch->indextype == 2)
+		{
+			glDrawElements(GL_TRIANGLES,
+			               indexcount,
+			               GL_UNSIGNED_SHORT,
+			               (void*)(batch->startindex * 2));
+		}
+		else if (batch->indextype == 4)
+		{
+			glDrawElements(GL_TRIANGLES,
+			               indexcount,
+			               GL_UNSIGNED_INT,
+			               (void*)(batch->startindex * 4));
+		}
+		// Increase polygon/batch counters
+		getStats().increaseBatchCount(1);
+		getStats().increasePolygonCount(indexcount / 3);
+	}
+	void VideoDriverOpenGL::drawInstanced(Batch *batch,
+	                                      unsigned int instancecount,
+	                                      math::Matrix4 *transmat)
+	{
+		// TODO
 	}
 }
 }

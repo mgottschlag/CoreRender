@@ -23,7 +23,16 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_SCENE_MESH_HPP_INCLUDED_
 
 #include "../res/Resource.hpp"
-#include <CoreRender/math/Matrix4.hpp>
+#include "../math/Matrix4.hpp"
+#include "../render/VertexBuffer.hpp"
+#include "../render/IndexBuffer.hpp"
+#include "../render/VertexLayout.hpp"
+#include "../render/Material.hpp"
+#include "GeometryFile.hpp"
+
+#include <vector>
+
+class TiXmlElement;
 
 namespace cr
 {
@@ -45,8 +54,115 @@ namespace scene
 			            unsigned int instancecount,
 			            math::Matrix4 *transmat);
 
+			struct Node
+			{
+				std::string name;
+				int parent;
+				math::Matrix4 transmat;
+				math::Matrix4 abstrans;
+				math::Matrix4 abstransinverse;
+			};
+			struct Joint
+			{
+				int node;
+				math::Matrix4 jointmat;
+			};
+			struct BatchGeometry
+			{
+				/**
+				 * Vertex layout.
+				 */
+				render::VertexLayout::Ptr layout;
+				/**
+				 * Index size, can be 1, 2 or 4.
+				 */
+				unsigned int indextype;
+				/**
+				 * Start index in the index buffer.
+				 */
+				unsigned int startindex;
+				/**
+				 * Number of indices in the index buffer.
+				 */
+				unsigned int indexcount;
+				/**
+				 * Base vertex (offset added to all indices).
+				 */
+				unsigned int basevertex;
+				/**
+				 * Byte offset to the first vertex.
+				 */
+				unsigned int vertexoffset;
+				/**
+				 * Number of vertices in the vertex buffer.
+				 */
+				unsigned int vertexcount;
+				/**
+				 * Joints influencing this batch.
+				 */
+				std::vector<Joint> joints;
+			};
+
+			struct Batch
+			{
+				unsigned int node;
+				unsigned int geometry;
+				render::Material::Ptr material;
+			};
+
+			int getNode(const std::string &name)
+			{
+				for (unsigned int i = 0; i < nodes.size(); i++)
+				{
+					if (nodes[i].name == name)
+						return i;
+				}
+				return -1;
+			}
+
+			std::vector<BatchGeometry> &getGeometry()
+			{
+				return geometry;
+			}
+			std::vector<Node> &getNodes()
+			{
+				return nodes;
+			}
+			std::vector<Batch> &getBatches()
+			{
+				return batches;
+			}
+			render::VertexBuffer::Ptr getVertices()
+			{
+				return vertices;
+			}
+			render::IndexBuffer::Ptr getIndices()
+			{
+				return indices;
+			}
+
+			virtual bool load();
+
+			virtual bool waitForLoading(bool recursive,
+			                            bool highpriority = false);
+
+			virtual const char *getType()
+			{
+				return "Mesh";
+			}
+
 			typedef core::SharedPointer<Mesh> Ptr;
 		private:
+			bool loadGeometryFile(std::string filename);
+			render::VertexLayout::Ptr createVertexLayout(const GeometryFile::AttribInfo &attribs);
+
+			bool parseNode(TiXmlElement *xml, int parent);
+
+			std::vector<BatchGeometry> geometry;
+			std::vector<Node> nodes;
+			std::vector<Batch> batches;
+			render::VertexBuffer::Ptr vertices;
+			render::IndexBuffer::Ptr indices;
 	};
 }
 }

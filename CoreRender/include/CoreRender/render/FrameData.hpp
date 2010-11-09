@@ -27,6 +27,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "FrameBuffer.hpp"
 
 #include <tbb/spin_mutex.h>
+#include <tbb/mutex.h>
 
 namespace cr
 {
@@ -93,8 +94,8 @@ namespace render
 	struct RenderQueue
 	{
 		RenderQueue()
-			: batches(0), batchcount(0)
 		{
+			// TODO: Resize batches?
 		}
 		RenderTargetInfo *target;
 		unsigned int context;
@@ -102,11 +103,8 @@ namespace render
 		math::Matrix4 viewmat;
 		math::Frustum clipping[2];
 		int viewport[4];
-		// TODO: Do we want a std::vector here?
-		Batch *batches;
-		unsigned int batchcount;
-		// TODO: Try tbb::mutex here
-		tbb::spin_mutex batchmutex;
+		std::vector<Batch*> batches;
+		tbb::mutex batchmutex;
 		// TODO: Sort order
 		/**
 		 * Memory manager which is used for this render queue. We need this here

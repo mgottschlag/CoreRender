@@ -21,7 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "VideoDriver.hpp"
 #include "CoreRender/render/FrameData.hpp"
-#include <CoreRender/render/RenderTarget.hpp>
+#include "CoreRender/render/RenderTarget.hpp"
 
 namespace cr
 {
@@ -90,9 +90,9 @@ namespace render
 		            queue->viewport[3]);
 		setMatrices(queue->projmat, queue->viewmat);
 		// Render batches
-		for (unsigned int i = 0; i < queue->batchcount; i++)
+		for (unsigned int i = 0; i < queue->batches.size(); i++)
 		{
-			draw(&queue->batches[i]);
+			draw(queue->batches[i]);
 		}
 	}
 }

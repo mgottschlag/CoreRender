@@ -31,8 +31,18 @@ namespace scene
 	class Animation : public res::Resource
 	{
 		public:
-			Animation();
+			Animation(cr::res::ResourceManager* rmgr, const std::string& name);
 			virtual ~Animation();
+
+			virtual bool load();
+
+			virtual bool waitForLoading(bool recursive,
+			                            bool highpriority = false);
+
+			virtual const char *getType()
+			{
+				return "Animation";
+			}
 
 			typedef core::SharedPointer<Animation> Ptr;
 		private:

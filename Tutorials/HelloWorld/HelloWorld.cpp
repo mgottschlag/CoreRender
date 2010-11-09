@@ -55,18 +55,21 @@ int main(int argc, char **argv)
 	// Create scene
 	scene::Scene scene;
 	// Add some models
-	scene::Mesh::Ptr jeep = graphics.getMesh("/models/jeep.mesh.xml");
-	scene::Mesh::Ptr dwarf = graphics.getMesh("/models/dwarf.mesh.xml");
+	scene::Mesh::Ptr jeep = graphics.getMesh("/models/jeep.model.xml");
+	scene::Mesh::Ptr dwarf = graphics.getMesh("/models/dwarf.model.xml");
 	scene::AnimatedMesh::Ptr dwarf2 = new scene::AnimatedMesh(dwarf);
-	scene::Animation::Ptr dwarfanim = graphics.getAnimation("/models/dwarf.anim.xml");
+	scene::Animation::Ptr dwarfanim = graphics.getAnimation("/models/dwarf.anim");
 	dwarf2->addAnimation(dwarfanim, 1.0f);
 	math::Matrix4 dwarf2positions[1024];
 	for (unsigned int i = 0; i < 1024; i++)
 	{
-		float x = (float)(i % 32) * 10.0f;
-		float z = (float)(i / 32) * 10.0f;
-		dwarf2positions[i] = math::Matrix4::TransMat(x, 0.0f, z);
+		float x = (float)(i % 32) * 10.0f - 160.0f;
+		float z = (float)(i / 32) * 10.0f - 160.0f;
+		dwarf2positions[i] = math::Matrix4::TransMat(x, 0.0f, z)
+		                   * math::Matrix4::ScaleMat(0.2f, 0.2f, 0.2f);
 	}
+	// Wait for loading
+	dwarf->waitForLoading(true);
 	// Add a terrain
 	// TODO
 	// Add some lights
@@ -78,8 +81,13 @@ int main(int argc, char **argv)
 	spotlight->setColor(core::Color(0.0f, 1.0f, 0.0f, 1.0f));*/
 	// Add a camera
 	scene::Camera::Ptr camera = new scene::Camera;
+	//camera->setProjMat(math::Matrix4::Ortho(200.0f, 200.0f, -100.0f, 100.0f));
+	camera->setProjMat(math::Matrix4::PerspectiveFOV(90.0f, 4.0f/3.0f, 1.0f, 1000.0f));
+	math::Matrix4 viewmat = math::Matrix4::TransMat(0.0f, 0.0f, -130.0f)
+	                      * math::Quaternion(math::Vector3F(30.0f, 0.0f, 0.0f)).toMatrix();
+	camera->setViewMat(viewmat);
 	camera->setPipeline(graphics.getPipeline("/pipelines/Forward.pipeline.xml"));
-	camera->setViewport(0, 0, 800, 600);
+	camera->setViewport(0, 0, 1024, 768);
 	// Add the camera and the lights to the scene
 	scene.addCamera(camera);
 	/*scene.addLight(spotlight);
@@ -87,6 +95,8 @@ int main(int argc, char **argv)
 	// Render loop
 	bool stopping = false;
 	float animtime = 0.0f;
+	core::Time fpstime = core::Time::Now();
+	int fps = 0;
 	while (!stopping)
 	{
 		// Process input
@@ -94,6 +104,8 @@ int main(int argc, char **argv)
 		// Set animations
 		animtime = animtime + 0.01f;
 		dwarf2->setAnimation(0, animtime);
+		viewmat = viewmat * math::Quaternion(math::Vector3F(0.0f, 1.0f, 0.0f)).toMatrix();
+		camera->setViewMat(viewmat);
 		// Render objects
 		render::FrameData *frame = graphics.beginFrame();
 		render::SceneFrameData *scenedata = scene.beginFrame(frame);
@@ -101,9 +113,9 @@ int main(int argc, char **argv)
 		unsigned int queuecount = scenedata->getRenderQueueCount();
 		for (unsigned int i = 0; i < queuecount; i++)
 		{
-			jeep->render(renderqueues[i], math::Matrix4::TransMat(3.0f, 1.0f, 0.0f));
-			dwarf->render(renderqueues[i], math::Matrix4::TransMat(3.0f, 1.0f, 0.0f));
-			dwarf2->render(renderqueues[i], 1024, dwarf2positions);
+			jeep->render(renderqueues[i], math::Matrix4::TransMat(20.0f, 0.0f, 0.0f) * math::Matrix4::ScaleMat(5.0f, 5.0f, 5.0f));
+			dwarf->render(renderqueues[i], math::Matrix4::TransMat(-20.0f, 0.0f, 0.0f));
+			dwarf->render(renderqueues[i], 1024, dwarf2positions);
 		}
 		graphics.endFrame(frame);
 		// Render frame
@@ -112,6 +124,14 @@ int main(int argc, char **argv)
 		glfwSwapBuffers();
 		if (glfwGetWindowParam(GLFW_OPENED) == GL_FALSE)
 			stopping = true;
+		fps++;
+		core::Time currenttime = core::Time::Now();
+		if (currenttime - fpstime >= core::Duration::Seconds(1))
+		{
+			std::cout << "FPS: " << fps << std::endl;
+			fpstime = currenttime;
+			fps = 0;
+		}
 	}
 	// Destroy ressources
 	scene.removeCamera(camera);

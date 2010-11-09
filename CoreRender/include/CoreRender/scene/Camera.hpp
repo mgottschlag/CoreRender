@@ -69,7 +69,7 @@ namespace scene
 			}
 			math::Matrix4 getViewMat()
 			{
-				return projmat;
+				return viewmat;
 			}
 
 			void setViewport(unsigned int x,

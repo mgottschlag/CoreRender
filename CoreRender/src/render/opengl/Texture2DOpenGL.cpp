@@ -167,6 +167,7 @@ namespace opengl
 					log->error("Compressed texture not supported.");
 					if (uploaddata->data)
 						free(uploaddata->data);
+					delete uploaddata;
 					return;
 				}
 			}
@@ -179,6 +180,7 @@ namespace opengl
 				log->error("Cannot load compressed data into uncompressed texture.");
 				if (uploaddata->data)
 					free(uploaddata->data);
+				delete uploaddata;
 				return;
 			}
 		}
@@ -190,6 +192,7 @@ namespace opengl
 			log->error("Floating point texture not supported.");
 			if (uploaddata->data)
 				free(uploaddata->data);
+			delete uploaddata;
 			return;
 		}
 		// Depth-stencil
@@ -200,6 +203,7 @@ namespace opengl
 			log->error("Depth-stencil texture not supported.");
 			if (uploaddata->data)
 				free(uploaddata->data);
+			delete uploaddata;
 			return;
 		}
 		// TODO: Depth textures?
@@ -207,9 +211,11 @@ namespace opengl
 		if (!translateInternalFormat(uploaddata->internalformat, internal))
 		{
 			core::Log::Ptr log = getManager()->getLog();
-			log->error("Error translating internal texture format.");
+			log->error("Error translating internal texture format (%d).",
+			           uploaddata->internalformat);
 			if (uploaddata->data)
 				free(uploaddata->data);
+			delete uploaddata;
 			return;
 		}
 		if (uploaddata->data)
@@ -220,6 +226,7 @@ namespace opengl
 				log->error("Unsupported source format.");
 				if (uploaddata->data)
 					free(uploaddata->data);
+				delete uploaddata;
 				return;
 			}
 		}
@@ -282,6 +289,7 @@ namespace opengl
 				             0);
 			}
 		}
+		delete uploaddata;
 		// Error checking
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR)
