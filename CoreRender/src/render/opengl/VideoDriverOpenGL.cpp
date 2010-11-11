@@ -405,6 +405,11 @@ namespace opengl
 				glUniformMatrix4fv(locations.viewmatinv, 1, GL_FALSE, viewmatinv.m);
 			if (locations.viewprojmat != -1)
 				glUniformMatrix4fv(locations.viewprojmat, 1, GL_FALSE, viewprojmat.m);
+			if (batch->shader->skinning && locations.skinmat != -1)
+				glUniformMatrix4fv(locations.skinmat,
+				                   batch->skinmatcount,
+				                   GL_FALSE,
+				                   batch->skinmat);
 			// TODO: Other uniforms
 		}
 		// Draw geometry

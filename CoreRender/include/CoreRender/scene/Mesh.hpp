@@ -39,6 +39,7 @@ namespace cr
 namespace render
 {
 	class RenderQueue;
+	class Batch;
 }
 namespace scene
 {
@@ -141,6 +142,16 @@ namespace scene
 				return indices;
 			}
 
+			unsigned int getChangeCounter()
+			{
+				return changecounter;
+			}
+
+			render::Batch *prepareBatch(render::RenderQueue &queue,
+			                            unsigned int batchindex,
+			                            bool instancing,
+			                            bool skinning);
+
 			virtual bool load();
 
 			virtual bool waitForLoading(bool recursive,
@@ -163,6 +174,8 @@ namespace scene
 			std::vector<Batch> batches;
 			render::VertexBuffer::Ptr vertices;
 			render::IndexBuffer::Ptr indices;
+
+			unsigned int changecounter;
 	};
 }
 }

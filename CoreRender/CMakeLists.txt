@@ -79,6 +79,7 @@ set(SRC
 	include/CoreRender/res/ResourceFactory.hpp
 	include/CoreRender/res/Resource.hpp
 	include/CoreRender/res/ResourceManager.hpp
+	include/CoreRender/scene/Animation.hpp
 	src/3rdparty/tinystr.cpp
 	src/3rdparty/tinystr.h
 	src/3rdparty/tinyxml.cpp
@@ -132,6 +133,8 @@ set(SRC
 	src/scene/Animation.cpp
 	src/scene/Mesh.cpp
 	src/scene/Camera.cpp
+	src/scene/Animation.cpp
+	src/scene/AnimationBinding.cpp
 )
 
 set(LIB

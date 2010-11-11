@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "../core/ReferenceCounted.hpp"
 #include "Mesh.hpp"
 #include "Animation.hpp"
+#include "AnimationBinding.hpp"
 
 namespace cr
 {
@@ -39,11 +40,33 @@ namespace scene
 			void setMesh(Mesh::Ptr mesh);
 			Mesh::Ptr getMesh();
 
-			void addAnimation(Animation::Ptr animation,
-			                  float weight = 1.0,
-			                  bool additive = false);
+			struct AnimationStage
+			{
+				AnimationStage()
+					: binding(0, 0)
+				{
+				}
+				Animation::Ptr animation;
+				float weight;
+				bool additive;
+				float time;
+				AnimationBinding binding;
+			};
+
+			struct NodeAnimationInfo
+			{
+				bool updated;
+				math::Vector3F trans;
+				math::Vector3F scale;
+				math::Quaternion rot;
+			};
+
+			unsigned int addAnimation(Animation::Ptr animation,
+			                          float weight = 1.0,
+			                          bool additive = false);
 			void setAnimation(unsigned int index, float time);
 			void removeAnimation(unsigned int index);
+			unsigned int getAnimationCount();
 
 			void render(render::RenderQueue &queue,
 			            math::Matrix4 transmat);
@@ -53,6 +76,13 @@ namespace scene
 
 			typedef core::SharedPointer<AnimatedMesh> Ptr;
 		private:
+			float applyStage(unsigned int stageindex,
+			                 std::vector<NodeAnimationInfo> &nodes,
+			                 float weightsum);
+			void applyAnimation(std::vector<Mesh::Node> &nodes);
+
+			Mesh::Ptr mesh;
+			std::vector<AnimationStage> animstages;
 	};
 }
 }

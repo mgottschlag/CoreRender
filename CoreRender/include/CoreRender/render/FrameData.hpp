@@ -75,6 +75,9 @@ namespace render
 		unsigned int basevertex;
 		unsigned int vertexoffset;
 		unsigned int indextype;
+		// Skinning
+		float *skinmat;
+		unsigned int skinmatcount;
 		// Instancing
 		unsigned int transmatcount;
 		math::Matrix4 *transmatlist;

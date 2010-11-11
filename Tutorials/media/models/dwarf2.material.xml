@@ -1,5 +1,5 @@
 <Material>
-	<Shader file="/shaders/Model2.shader.xml" flags="Skinning=true" />
+	<Shader file="/shaders/Model2.shader.xml" />
 
 	<Texture name="tex" file="dwarf.jpg" />
 </Material>

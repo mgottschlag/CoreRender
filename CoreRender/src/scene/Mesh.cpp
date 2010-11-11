@@ -32,7 +32,7 @@ namespace cr
 namespace scene
 {
 	Mesh::Mesh(cr::res::ResourceManager *rmgr, const std::string &name)
-		: Resource(rmgr, name)
+		: Resource(rmgr, name), changecounter(0)
 	{
 	}
 	Mesh::~Mesh()
@@ -43,55 +43,13 @@ namespace scene
 	                  math::Matrix4 transmat)
 	{
 		// TODO: Culling
-		core::MemoryPool *memory = queue.memory;
 		for (unsigned int i = 0; i < batches.size(); i++)
 		{
-			if (!batches[i].material)
-				continue;
-			if (batches[i].geometry >= geometry.size())
-				continue;
-			if (batches[i].node >= nodes.size())
-				continue;
-			// Get material information
-			render::Material::Ptr material = batches[i].material;
-			if (!material->getShader())
-				continue;
-			unsigned int shaderflagmask;
-			unsigned int shaderflagvalue;
-			material->getShaderFlags(shaderflagmask,
-			                                    shaderflagvalue);
-			render::ShaderCombination *shader;
-			shader = material->getShader()->getCombination(queue.context,
-			                                               shaderflagmask,
-			                                               shaderflagvalue,
-			                                               false,
-			                                               false).get();
-			if (!shader)
-				continue;
-			BatchGeometry *geom = &geometry[batches[i].geometry];
 			// Create batch
-			void *ptr = memory->allocate(sizeof(render::Batch));
-			render::Batch *batch = (render::Batch*)ptr;
-			batch->vertices = vertices.get();
-			batch->indices = indices.get();
-			// TODO: This will crash if the layout is removed
-			batch->layout = geom->layout.get();
-			batch->shader = shader;
-			batch->material = material.get();
-			batch->transmat = nodes[batches[i].node].abstrans * transmat;
-			batch->transmatcount = 0;
-			// TODO: Custom uniforms
-			batch->customuniformcount = 0;
-			batch->customuniforms = 0;
-			// TODO: Sorting
-			batch->sortkey = 0.0f;
-			batch->startindex = geom->startindex;
-			// TODO: Rename endindex to indexcount
-			batch->endindex = geom->startindex + geom->indexcount;
-			batch->basevertex = geom->basevertex;
-			batch->vertexoffset = geom->vertexoffset;
-			batch->indextype = geom->indextype;
-			batch->indextype = geom->indextype;
+			render::Batch *batch = prepareBatch(queue, i, false, false);
+			if (!batch)
+				continue;
+			batch->transmat = transmat * nodes[batches[i].node].abstrans;
 			// Add batch to the render queue
 			tbb::mutex::scoped_lock lock(queue.batchmutex);
 			queue.batches.push_back(batch);
@@ -111,56 +69,74 @@ namespace scene
 		// TODO: Culling
 		for (unsigned int i = 0; i < batches.size(); i++)
 		{
-			if (!batches[i].material)
-				continue;
-			if (batches[i].geometry >= geometry.size())
-				continue;
-			if (batches[i].node >= nodes.size())
-				continue;
-			// Get material information
-			render::Material::Ptr material = batches[i].material;
-			if (!material->getShader())
-				continue;
-			unsigned int shaderflagmask;
-			unsigned int shaderflagvalue;
-			material->getShaderFlags(shaderflagmask,
-			                                    shaderflagvalue);
-			render::ShaderCombination *shader;
-			shader = material->getShader()->getCombination(queue.context,
-			                                               shaderflagmask,
-			                                               shaderflagvalue,
-			                                               true,
-			                                               false).get();
-			if (!shader)
-				continue;
-			BatchGeometry *geom = &geometry[batches[i].geometry];
 			// Create batch
-			void *ptr = memory->allocate(sizeof(render::Batch));
-			render::Batch *batch = (render::Batch*)ptr;
-			batch->vertices = vertices.get();
-			batch->indices = indices.get();
-			// TODO: This will crash if the layout is removed
-			batch->layout = geom->layout.get();
-			batch->shader = shader;
-			batch->material = material.get();
+			render::Batch *batch = prepareBatch(queue, i, true, false);
+			if (!batch)
+				continue;
+			batch->transmat = math::Matrix4::Identity();
 			batch->transmatcount = instancecount;
 			batch->transmatlist = matrices;
-			// TODO: Custom uniforms
-			batch->customuniformcount = 0;
-			batch->customuniforms = 0;
-			// TODO: Sorting
-			batch->sortkey = 0.0f;
-			batch->startindex = geom->startindex;
-			// TODO: Rename endindex to indexcount
-			batch->endindex = geom->startindex + geom->indexcount;
-			batch->basevertex = geom->basevertex;
-			batch->vertexoffset = geom->vertexoffset;
-			batch->indextype = geom->indextype;
-			batch->indextype = geom->indextype;
 			// Add batch to the render queue
 			tbb::mutex::scoped_lock lock(queue.batchmutex);
 			queue.batches.push_back(batch);
 		}
+	}
+
+	render::Batch *Mesh::prepareBatch(render::RenderQueue &queue,
+	                                  unsigned int batchindex,
+	                                  bool instancing,
+	                                  bool skinning)
+	{
+		Batch &meshbatch = batches[batchindex];
+		if (!meshbatch.material)
+			return 0;
+		if (meshbatch.geometry >= geometry.size())
+			return 0;
+		if (meshbatch.node >= nodes.size())
+			return 0;
+		core::MemoryPool *memory = queue.memory;
+		// Get material information
+		render::Material::Ptr material = meshbatch.material;
+		if (!material->getShader())
+			return 0;
+		unsigned int shaderflagmask;
+		unsigned int shaderflagvalue;
+		material->getShaderFlags(shaderflagmask,
+		                                    shaderflagvalue);
+		render::ShaderCombination *shader;
+		shader = material->getShader()->getCombination(queue.context,
+		                                               shaderflagmask,
+		                                               shaderflagvalue,
+		                                               instancing,
+		                                               skinning).get();
+		if (!shader)
+			return 0;
+		BatchGeometry *geom = &geometry[meshbatch.geometry];
+		// Create batch
+		void *ptr = memory->allocate(sizeof(render::Batch));
+		render::Batch *batch = (render::Batch*)ptr;
+		batch->vertices = vertices.get();
+		batch->indices = indices.get();
+		// TODO: This will crash if the layout is removed
+		batch->layout = geom->layout.get();
+		batch->shader = shader;
+		batch->material = material.get();
+		batch->transmatcount = 0;
+		batch->skinmat = 0;
+		batch->skinmatcount = 0;
+		// TODO: Custom uniforms
+		batch->customuniformcount = 0;
+		batch->customuniforms = 0;
+		// TODO: Sorting
+		batch->sortkey = 0.0f;
+		batch->startindex = geom->startindex;
+		// TODO: Rename endindex to indexcount
+		batch->endindex = geom->startindex + geom->indexcount;
+		batch->basevertex = geom->basevertex;
+		batch->vertexoffset = geom->vertexoffset;
+		batch->indextype = geom->indextype;
+		batch->indextype = geom->indextype;
+		return batch;
 	}
 
 	bool Mesh::load()
@@ -271,6 +247,7 @@ namespace scene
 				geometry[geomidx].joints[index].node = nodeidx;
 			}
 		}
+		changecounter++;
 		finishLoading(true);
 		return true;
 	}
@@ -406,9 +383,17 @@ namespace scene
 				       &batchdata[i].jointmatrices[j * 16],
 				       sizeof(float) * 16);
 				// TODO: Insert the node here?
+				std::cout << "jointmat " << j << "." << std::endl;
+				for (unsigned int k = 0; k < 16; k++)
+				{
+					std::cout << jointmat.m[k] << ", ";
+					if (k % 4 == 3)
+						std::cout << std::endl;
+				}
 				geometry[i].joints[j].node = -1;
 			}
 		}
+		std::cout << "Loading finished." << std::endl;
 		return true;
 	}
 	render::VertexLayout::Ptr Mesh::createVertexLayout(const GeometryFile::AttribInfo &attribs)

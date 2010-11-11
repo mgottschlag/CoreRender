@@ -70,6 +70,7 @@ int main(int argc, char **argv)
 	}
 	// Wait for loading
 	dwarf->waitForLoading(true);
+	dwarfanim->waitForLoading(false);
 	// Add a terrain
 	// TODO
 	// Add some lights
@@ -83,7 +84,7 @@ int main(int argc, char **argv)
 	scene::Camera::Ptr camera = new scene::Camera;
 	//camera->setProjMat(math::Matrix4::Ortho(200.0f, 200.0f, -100.0f, 100.0f));
 	camera->setProjMat(math::Matrix4::PerspectiveFOV(90.0f, 4.0f/3.0f, 1.0f, 1000.0f));
-	math::Matrix4 viewmat = math::Matrix4::TransMat(0.0f, 0.0f, -130.0f)
+	math::Matrix4 viewmat = math::Matrix4::TransMat(0.0f, 0.0f, -200.0f)
 	                      * math::Quaternion(math::Vector3F(30.0f, 0.0f, 0.0f)).toMatrix();
 	camera->setViewMat(viewmat);
 	camera->setPipeline(graphics.getPipeline("/pipelines/Forward.pipeline.xml"));
@@ -104,6 +105,8 @@ int main(int argc, char **argv)
 		// Set animations
 		animtime = animtime + 0.01f;
 		dwarf2->setAnimation(0, animtime);
+		if (animtime > 1.4f)
+			animtime = 0.0f;
 		viewmat = viewmat * math::Quaternion(math::Vector3F(0.0f, 1.0f, 0.0f)).toMatrix();
 		camera->setViewMat(viewmat);
 		// Render objects
@@ -115,7 +118,7 @@ int main(int argc, char **argv)
 		{
 			jeep->render(renderqueues[i], math::Matrix4::TransMat(20.0f, 0.0f, 0.0f) * math::Matrix4::ScaleMat(5.0f, 5.0f, 5.0f));
 			dwarf->render(renderqueues[i], math::Matrix4::TransMat(-20.0f, 0.0f, 0.0f));
-			dwarf->render(renderqueues[i], 1024, dwarf2positions);
+			dwarf2->render(renderqueues[i], 1024, dwarf2positions);
 		}
 		graphics.endFrame(frame);
 		// Render frame

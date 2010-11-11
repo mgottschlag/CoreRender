@@ -87,6 +87,10 @@ namespace render
 
 	unsigned int Shader::getFlagIndex(const std::string &name)
 	{
+		if (name == "Skinning")
+			return 32;
+		if (name == "Instancing")
+			return 32;
 		tbb::mutex::scoped_lock lock(flagmutex);
 		// Look for an existing flag
 		for (unsigned int i = 0; i < compilerflags.size(); i++)
@@ -707,23 +711,6 @@ namespace render
 		return true;
 	}
 
-	/*void Shader::prepareAllShaders()
-	{
-		tbb::spin_mutex::scoped_lock lock(preparationmutex);
-		// Load all flag combinations in the preparation list
-		for (unsigned int i = 0; i < preparationlist.size(); i++)
-		{
-			unsigned int flags = getFlags(preparationlist[i]);
-			for (std::map<std::string, Context>::iterator it = contexts.begin();
-			     it != contexts.end(); it++)
-			{
-				// Let getShader() create the shader now
-				getShader(it->first, flags);
-			}
-		}
-		// Clear the list
-		preparationlist.clear();
-	}*/
 	void Shader::reupload()
 	{
 		// Register everything for upload
