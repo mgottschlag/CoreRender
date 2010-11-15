@@ -80,6 +80,7 @@ namespace opengl
 			glDeleteRenderbuffersEXT(1, &config.defaultdepthbuffer);
 			config.defaultdepthbuffer = 0;
 		}
+		delete uploaddata;
 	}
 }
 }

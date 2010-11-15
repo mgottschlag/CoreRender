@@ -233,6 +233,8 @@ namespace render
 			typedef core::SharedPointer<Shader> Ptr;
 		protected:
 			virtual void *getUploadData();
+
+			virtual void onDelete();
 		private:
 			bool resolveIncludes(const std::string &text,
 			                     std::string &output,

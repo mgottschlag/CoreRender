@@ -57,6 +57,13 @@ namespace render
 	{
 		public:
 			/**
+			 * Constructor.
+			 */
+			VideoDriver()
+			{
+				bindTextures(0, 0);
+			}
+			/**
 			 * Destructor.
 			 */
 			virtual ~VideoDriver()

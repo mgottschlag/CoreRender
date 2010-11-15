@@ -236,6 +236,22 @@ namespace cr
 	{
 		// Delete default resources
 		// TODO
+		// Delete remaining resources
+		// This has to be done repeatedly as a resource can hold references to
+		// other resources which can only be freed after the resource is deleted
+		unsigned deleted = 0;
+		do
+		{
+			core::MemoryPool deletionmem;
+			render::UploadLists deletionlists;
+			uploadmgr.getLists(deletionlists, &deletionmem);
+			// We have to call uploadResources() to prevent memory leaks here as
+			// the upload data is deleted in the upload functions
+			uploadmgr.uploadResources(deletionlists);
+			uploadmgr.deleteResources(deletionlists);
+			deleted = deletionlists.objdeletioncount + deletionlists.resdeletioncount;
+		}
+		while (deleted > 0);
 		// Delete driver
 		delete driver;
 		// Stop resource manager

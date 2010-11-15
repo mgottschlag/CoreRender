@@ -42,7 +42,7 @@ namespace render
 	void UploadManager::registerDeletion(RenderResource *resource)
 	{
 		tbb::spin_mutex::scoped_lock lock(listmutex);
-		resupload.push_back(resource);
+		resdeletion.push_back(resource);
 	}
 	void UploadManager::registerUpload(RenderObject *object)
 	{
@@ -52,7 +52,7 @@ namespace render
 	void UploadManager::registerDeletion(RenderObject *object)
 	{
 		tbb::spin_mutex::scoped_lock lock(listmutex);
-		objupload.push_back(object);
+		objdeletion.push_back(object);
 	}
 
 	void UploadManager::getLists(UploadLists &lists, core::MemoryPool *memory)
@@ -111,13 +111,13 @@ namespace render
 	}
 	void UploadManager::deleteResources(UploadLists &lists)
 	{
-		for (unsigned int i = 0; i < lists.resdeletioncount; i++)
-		{
-			delete lists.resdeletion[i];
-		}
 		for (unsigned int i = 0; i < lists.objdeletioncount; i++)
 		{
 			delete lists.objdeletion[i];
+		}
+		for (unsigned int i = 0; i < lists.resdeletioncount; i++)
+		{
+			delete lists.resdeletion[i];
 		}
 	}
 }

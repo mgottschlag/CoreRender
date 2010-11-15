@@ -35,6 +35,7 @@ namespace render
 	void ShaderCombination::upload(void *data)
 	{
 		uploadeddata = *(ShaderCombinationData*)data;
+		delete (ShaderCombinationData*)data;
 		shader->compileCombination(this);
 	}
 	void *ShaderCombination::getUploadData()

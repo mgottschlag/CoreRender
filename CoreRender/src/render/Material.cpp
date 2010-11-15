@@ -41,7 +41,7 @@ namespace render
 	{
 		if (uploadeddata)
 		{
-			delete[] uploadeddata;
+			delete[] uploadeddata->textures;
 			delete uploadeddata;
 		}
 	}

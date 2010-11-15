@@ -33,7 +33,7 @@ namespace render
 	               res::ResourceManager *rmgr,
 	               const std::string &name)
 		: RenderResource(uploadmgr, rmgr, name), flagdefaults(0),
-		supportedflags(0)
+		supportedflags(0), supportsskinning(false), supportsinstancing(false)
 	{
 	}
 	Shader::~Shader()
@@ -624,6 +624,17 @@ namespace render
 	void *Shader::getUploadData()
 	{
 		return new ShaderInfo(currentinfo);
+	}
+
+	void Shader::onDelete()
+	{
+		// We have to drop all references to ShaderCombination instances here
+		// because these need to be deleted at the same time as this shader
+		for (unsigned int i = 0; i < contexts.size(); i++)
+		{
+			contexts[i].combinations.clear();
+		}
+		RenderResource::onDelete();
 	}
 
 	bool Shader::resolveIncludes(const std::string &text,
