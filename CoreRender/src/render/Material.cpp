@@ -33,8 +33,8 @@ namespace render
 	Material::Material(UploadManager &uploadmgr,
 	                   res::ResourceManager *rmgr,
 	                   const std::string &name)
-		: RenderResource(uploadmgr, rmgr, name), uploadeddata(0),
-		shaderflagmask(0), shaderflagvalue(0)
+		: RenderResource(uploadmgr, rmgr, name), shaderflagmask(0),
+		shaderflagvalue(0), uploadeddata(0)
 	{
 	}
 	Material::~Material()
@@ -97,17 +97,7 @@ namespace render
 		}
 		{
 			// Get shader
-			TiXmlElement *shaderelem;
-			for (TiXmlNode *node = root->FirstChild("Shader");
-			     node != 0;
-			     node = root->IterateChildren("Shader", node))
-			{
-				getManager()->getLog()->debug("%s: Text.",
-				                              getName().c_str());
-				shaderelem = node->ToElement();
-				if (shaderelem)
-					break;
-			}
+			TiXmlElement *shaderelem = root->FirstChildElement("Shader");
 			if (!shaderelem)
 			{
 				getManager()->getLog()->error("%s: No shader given.",

@@ -20,6 +20,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/render/RenderTarget.hpp"
+#include <CoreRender/core/MemoryPool.hpp>
 
 namespace cr
 {
@@ -71,6 +72,18 @@ namespace render
 	unsigned int RenderTarget::getColorBufferCount()
 	{
 		return colorbuffers.size();
+	}
+
+	void RenderTarget::getRenderTargetInfo(cr::render::RenderTargetInfo& info,
+	                                       cr::core::MemoryPool *memory)
+	{
+		info.framebuffer = &framebuffer->getConfiguration();
+		info.depthbuffer = depthbuffer.get();
+		info.colorbuffercount = colorbuffers.size();
+		void *ptr = memory->allocate(sizeof(Texture*) * info.colorbuffercount);
+		info.colorbuffers = (Texture**)ptr;
+		for (unsigned int i = 0; i < info.colorbuffercount; i++)
+			info.colorbuffers[i] = colorbuffers[i].get();
 	}
 }
 }

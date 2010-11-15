@@ -170,6 +170,8 @@ namespace opengl
 			int location = glGetAttribLocation(program, attribname.c_str());
 			combination->attriblocations[i] = location;
 		}
+		// Skinning transMat attrib
+		combination->transmatattrib = glGetAttribLocation(program, "transMat");
 		// Get default uniform locations
 		combination->uniforms.worldmat = glGetUniformLocation(program,
 		                                                      "worldMat");

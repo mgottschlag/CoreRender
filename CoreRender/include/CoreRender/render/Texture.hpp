@@ -121,6 +121,22 @@ namespace render
 					return false;
 			}
 		}
+		/**
+		 * Returns true if the format is a floating point format.
+		 * @return True if the format contains floating point data.
+		 */
+		static bool isDepth(TextureFormat::List format)
+		{
+			switch (format)
+			{
+				case Depth24Stencil8:
+				case Depth24:
+				case Depth16:
+					return true;
+				default:
+					return false;
+			}
+		}
 
 		/**
 		 * Converts a string to a texture format enum value. The string has to

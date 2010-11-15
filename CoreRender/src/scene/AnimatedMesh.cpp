@@ -88,7 +88,6 @@ namespace scene
 	{
 		// Compute animation data for all nodes
 		std::vector<Mesh::Node> animatednodes = mesh->getNodes();
-		unsigned int nodecount = animatednodes.size();
 		applyAnimation(animatednodes);
 		// Render mesh
 		const std::vector<Mesh::Batch> &batches = mesh->getBatches();

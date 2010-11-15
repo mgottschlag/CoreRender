@@ -276,6 +276,18 @@ namespace opengl
 				                       0,
 				                       0);
 			}
+			else if (TextureFormat::isDepth(uploaddata->internalformat))
+			{
+				glTexImage2D(GL_TEXTURE_2D,
+				             0,
+				             internal,
+				             uploaddata->width,
+				             uploaddata->height,
+				             0,
+				             GL_DEPTH_COMPONENT,
+				             GL_UNSIGNED_BYTE,
+				             0);
+			}
 			else
 			{
 				glTexImage2D(GL_TEXTURE_2D,

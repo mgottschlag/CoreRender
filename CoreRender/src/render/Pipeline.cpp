@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <cstring>
 #include <sstream>
+#include <CoreRender/render/Material.hpp>
 
 namespace cr
 {
@@ -33,6 +34,8 @@ namespace render
 	Pipeline::Pipeline(res::ResourceManager *rmgr, const std::string &name)
 		: Resource(rmgr, name)
 	{
+		targetsize[0] = 512;
+		targetsize[1] = 512;
 	}
 	Pipeline::~Pipeline()
 	{
@@ -150,8 +153,158 @@ namespace render
 
 	bool Pipeline::loadSetup(TiXmlElement *xml)
 	{
-		// TODO
-		return false;
+		// Load textures
+		for (TiXmlElement *element = xml->FirstChildElement("Texture");
+		     element != 0;
+		     element = element->NextSiblingElement("Texture"))
+		{
+			// Get texture name
+			const char *name = element->Attribute("name");
+			if (!name)
+			{
+				getManager()->getLog()->error("%s: Texture name missing.",
+				                              getName().c_str());
+				continue;
+			}
+			// Get texture format
+			const char *formatstr = element->Attribute("format");
+			TextureFormat::List format = TextureFormat::RGBA8;
+			if (formatstr)
+			{
+				format = TextureFormat::fromString(formatstr);
+				if (format == TextureFormat::Invalid)
+				{
+					getManager()->getLog()->error("%s: Invalid texture format \"%s\".",
+					                              getName().c_str(),
+					                              formatstr);
+					continue;
+				}
+			}
+			TargetTextureInfo texture;
+			texture.name = name;
+			parseSize(element, texture.relsize, texture.abssize);
+			// Create texture resource
+			unsigned int texturesize[2];
+			texturesize[0] = (unsigned int)(texture.relsize[0] * targetsize[0])
+			               + texture.abssize[0];
+			texturesize[1] = (unsigned int)(texture.relsize[1] * targetsize[1])
+			               + texture.abssize[1];
+			Texture2D::Ptr texres = getManager()->createResource<Texture2D>("Texture2D");
+			texres->set(texturesize[0], texturesize[1], format);
+			texture.texture = texres;
+			// Add the texture to the texture list
+			targettextures.push_back(texture);
+		}
+		// Load frame buffer resources
+		for (TiXmlElement *element = xml->FirstChildElement("FrameBuffer");
+		     element != 0;
+		     element = element->NextSiblingElement("FrameBuffer"))
+		{
+			// Get texture name
+			const char *name = element->Attribute("name");
+			if (!name)
+			{
+				getManager()->getLog()->error("%s: Texture name missing.",
+				                              getName().c_str());
+				continue;
+			}
+			FrameBufferInfo fb;
+			fb.name = name;
+			parseSize(element, fb.relsize, fb.abssize);
+			// Get depthbuffer
+			bool depthbuffer = false;
+			const char *depthbufferstr = element->Attribute("depthbuffer");
+			if (depthbufferstr && !strcmp(depthbufferstr, "true"))
+			{
+				depthbuffer = true;
+			}
+			// Create framebuffer
+			fb.fb = getManager()->createResource<FrameBuffer>("FrameBuffer");
+			unsigned int fbsize[2];
+			fbsize[0] = (unsigned int)(fb.relsize[0] * targetsize[0])
+			          + fb.abssize[0];
+			fbsize[1] = (unsigned int)(fb.relsize[1] * targetsize[1])
+			          + fb.abssize[1];
+			fb.fb->setSize(fbsize[0], fbsize[1], depthbuffer);
+			framebuffers.push_back(fb);
+		}
+		// Load render targets
+		for (TiXmlElement *element = xml->FirstChildElement("RenderTarget");
+		     element != 0;
+		     element = element->NextSiblingElement("RenderTarget"))
+		{
+			// Get target name
+			const char *name = element->Attribute("name");
+			if (!name)
+			{
+				getManager()->getLog()->error("%s: RenderTarget name missing.",
+				                              getName().c_str());
+				continue;
+			}
+			// Get framebuffer
+			const char *fbname = element->Attribute("framebuffer");
+			if (!fbname)
+			{
+				getManager()->getLog()->error("%s: RenderTarget framebuffer name missing.",
+				                              getName().c_str());
+				continue;
+			}
+			FrameBuffer::Ptr fb = getFrameBuffer(fbname);
+			if (!fb)
+			{
+				getManager()->getLog()->error("%s: RenderTarget framebuffer not found.",
+				                              getName().c_str());
+				continue;
+			}
+			// Create render target
+			RenderTargetInfo target;
+			target.target = getManager()->createResource<RenderTarget>("RenderTarget");
+			target.name = name;
+			target.target->setFrameBuffer(fb);
+			// Depth buffer
+			TiXmlElement *depthbufferelem = element->FirstChildElement("DepthBuffer");
+			if (depthbufferelem)
+			{
+				const char *texname = depthbufferelem->Attribute("texture");
+				if (!texname)
+				{
+					getManager()->getLog()->error("%s: DepthBuffer texture missing.",
+					                              getName().c_str());
+					continue;
+				}
+				Texture2D::Ptr texture = getTargetTexture(texname);
+				if (!texture)
+				{
+					getManager()->getLog()->error("%s: DepthBuffer texture not found.",
+					                              getName().c_str());
+					continue;
+				}
+				target.target->setDepthBuffer(texture);
+			}
+			// Color buffers
+			for (TiXmlElement *colorbufferelem = element->FirstChildElement("ColorBuffer");
+			     colorbufferelem != 0;
+			     colorbufferelem = colorbufferelem->NextSiblingElement("ColorBuffer"))
+			{
+				const char *texname = colorbufferelem->Attribute("texture");
+				if (!texname)
+				{
+					getManager()->getLog()->error("%s: ColorBuffer texture missing.",
+					                              getName().c_str());
+					continue;
+				}
+				Texture2D::Ptr texture = getTargetTexture(texname);
+				if (!texture)
+				{
+					getManager()->getLog()->error("%s: ColorBuffer texture not found.",
+					                              getName().c_str());
+					continue;
+				}
+				target.target->addColorBuffer(texture);
+			}
+			rendertargets.push_back(target);
+		}
+		return true;
 	}
 	bool Pipeline::loadCommands(TiXmlElement *xml)
 	{
@@ -227,6 +380,32 @@ namespace render
 			}
 			else if (!strcmp(element->Value(), "SetTarget"))
 			{
+				const char *name = element->Attribute("name");
+				if (!name)
+				{
+					getManager()->getLog()->error("%s: Target name missing.",
+					                              getName().c_str());
+					continue;
+				}
+				PipelineCommand command;
+				command.type = PipelineCommandType::SetTarget;
+				if (strcmp(name, ""))
+				{
+					RenderTarget::Ptr target = getRenderTarget(name);
+					if (!target)
+					{
+						getManager()->getLog()->error("%s: Target \"%s\" not found.",
+						                              getName().c_str(),
+						                              name);
+						continue;
+					}
+					command.resources.push_back(target);
+				}
+				else
+				{
+					command.resources.push_back(0);
+				}
+				stage->commands.push_back(command);
 			}
 			else if (!strcmp(element->Value(), "DrawGeometry"))
 			{
@@ -245,15 +424,75 @@ namespace render
 			}
 			else if (!strcmp(element->Value(), "BindTexture"))
 			{
-				// TODO
+				// Get sampler name
+				const char *name = element->Attribute("name");
+				if (!name)
+				{
+					getManager()->getLog()->error("%s: Sampler name missing.",
+					                              getName().c_str());
+					continue;
+				}
+				// Get texture name
+				const char *texture = element->Attribute("texture");
+				if (!texture)
+				{
+					getManager()->getLog()->error("%s: Texture name missing.",
+					                              getName().c_str());
+					continue;
+				}
+				// Create command
+				PipelineCommand command;
+				command.type = PipelineCommandType::BindTexture;
+				command.stringparams.push_back(name);
+				if (strcmp(texture, ""))
+				{
+					Texture2D::Ptr textureres = getTargetTexture(texture);
+					if (!textureres)
+					{
+						getManager()->getLog()->error("%s: Texture \"%s\" not found.",
+						                              getName().c_str(),
+						                              texture);
+						continue;
+					}
+					command.resources.push_back(textureres);
+				}
+				else
+				{
+					command.resources.push_back(0);
+				}
+				stage->commands.push_back(command);
 			}
 			else if (!strcmp(element->Value(), "UnbindTextures"))
 			{
-				// TODO
+				PipelineCommand command;
+				command.type = PipelineCommandType::UnbindTextures;
+				stage->commands.push_back(command);
 			}
 			else if (!strcmp(element->Value(), "FullscreenQuad"))
 			{
-				// TODO
+				const char *contextstr = element->Attribute("context");
+				if (!contextstr)
+				{
+					getManager()->getLog()->error("%s: Context name missing.",
+					                              getName().c_str());
+					continue;
+				}
+				const char *materialname = element->Attribute("material");
+				if (!materialname)
+				{
+					getManager()->getLog()->error("%s: Material name missing.",
+					                              getName().c_str());
+					continue;
+				}
+				PipelineCommand command;
+				command.type = PipelineCommandType::DrawFullscreenQuad;
+				unsigned int context = getManager()->getNameRegistry().getContext(contextstr);
+				command.uintparams.push_back(context);
+				Material::Ptr material;
+				material = getManager()->getOrLoad<Material>("Material",
+				                                             materialname);
+				command.resources.push_back(material);
+				stage->commands.push_back(command);
 			}
 			else if (!strcmp(element->Value(), "DoForwardLightLoop"))
 			{
@@ -276,6 +515,77 @@ namespace render
 			}
 		}
 		return true;
+	}
+
+	void Pipeline::parseSize(TiXmlElement *xml, float *relsize, int *abssize)
+	{
+		abssize[0] = 0;
+		abssize[1] = 0;
+		relsize[0] = 1.0;
+		relsize[1] = 1.0;
+		// TODO: Allow mixing relative and absolute size?
+		const char *relsizestr = xml->Attribute("relsize");
+		const char *abssizestr = xml->Attribute("abssize");
+		if (relsizestr)
+		{
+			// The user can omit one component if both are the same
+			if (strchr(relsizestr,','))
+			{
+				std::istringstream stream(relsizestr);
+				char separator;
+				stream >> relsize[0] >> separator >> relsize[1];
+			}
+			else
+			{
+				relsize[0] = strtof(relsizestr, 0);
+				relsize[1] = relsize[0];
+			}
+		}
+		else if(abssizestr)
+		{
+			relsize[0] = 0;
+			relsize[1] = 0;
+			// The user can omit one component if both are the same
+			if (strchr(abssizestr,','))
+			{
+				std::istringstream stream(abssizestr);
+				char separator;
+				stream >> abssize[0] >> separator >> abssize[1];
+			}
+			else
+			{
+				abssize[0] = atoi(abssizestr);
+				abssize[1] = abssize[0];
+			}
+		}
+	}
+
+	FrameBuffer::Ptr Pipeline::getFrameBuffer(const std::string &name)
+	{
+		for (unsigned int i = 0; i < framebuffers.size(); i++)
+		{
+			if (framebuffers[i].name == name)
+				return framebuffers[i].fb;
+		}
+		return 0;
+	}
+	Texture2D::Ptr Pipeline::getTargetTexture(const std::string &name)
+	{
+		for (unsigned int i = 0; i < targettextures.size(); i++)
+		{
+			if (targettextures[i].name == name)
+				return targettextures[i].texture;
+		}
+		return 0;
+	}
+	RenderTarget::Ptr Pipeline::getRenderTarget(const std::string &name)
+	{
+		for (unsigned int i = 0; i < rendertargets.size(); i++)
+		{
+			if (rendertargets[i].name == name)
+				return rendertargets[i].target;
+		}
+		return 0;
 	}
 }
 }

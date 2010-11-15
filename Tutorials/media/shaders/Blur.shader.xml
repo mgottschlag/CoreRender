@@ -7,7 +7,7 @@
 		void main()
 		{
 			// Transformation
-			texcoord = texcoord0;
+			texcoord = (pos + vec2(1.0, 1.0)) * 0.5;
 			gl_Position = vec4(pos, 0.0, 1.0);
 		}
 	]]>
@@ -26,11 +26,11 @@
 	<Text name="VS_HBLUR">
 	<![CDATA[
 		attribute vec2 pos;
-		attribute vec2 texcoord0;
 		varying vec3 texcoord[9];
-		uniform vec2 targetSize;
+		uniform vec2 frameBufSize;
 		void main()
 		{
+			vec2 texcoord0 = (pos + vec2(1.0, 1.0)) * 0.5;
 			float offsets[4];
 			float weights[5];
 			weights[0] = 0.1595769122;
@@ -44,10 +44,10 @@
 			offsets[2] = 5.2931777789;
 			offsets[3] = 7.2314752165;
 
-			offsets[0] /= targetSize.x;
-			offsets[1] /= targetSize.x;
-			offsets[2] /= targetSize.x;
-			offsets[3] /= targetSize.x;
+			offsets[0] /= frameBufSize.x;
+			offsets[1] /= frameBufSize.x;
+			offsets[2] /= frameBufSize.x;
+			offsets[3] /= frameBufSize.x;
 			// Calculate texture coords for different samples
 			texcoord[0] = vec3(texcoord0.x - offsets[3], texcoord0.y, weights[4]);
 			texcoord[1] = vec3(texcoord0.x - offsets[2], texcoord0.y, weights[3]);
@@ -63,33 +63,14 @@
 		}
 	]]>
 	</Text>
-	<Text name="FS_HBLUR">
-	<![CDATA[
-		varying vec3 texcoord[9];
-		uniform sampler2D source;
-		void main()
-		{
-			gl_FragColor.rgb = texture2D(source, texcoord[0].xy).rgb * texcoord[0].z
-				+ texture2D(source, texcoord[1].xy).rgb * texcoord[1].z
-				+ texture2D(source, texcoord[2].xy).rgb * texcoord[2].z
-				+ texture2D(source, texcoord[3].xy).rgb * texcoord[3].z
-				+ texture2D(source, texcoord[4].xy).rgb * texcoord[4].z
-				+ texture2D(source, texcoord[5].xy).rgb * texcoord[5].z
-				+ texture2D(source, texcoord[6].xy).rgb * texcoord[6].z
-				+ texture2D(source, texcoord[7].xy).rgb * texcoord[7].z
-				+ texture2D(source, texcoord[8].xy).rgb * texcoord[8].z;
-		}
-	]]>
-	</Text>
-
 	<Text name="VS_VBLUR">
 	<![CDATA[
 		attribute vec2 pos;
-		attribute vec2 texcoord0;
 		varying vec3 texcoord[9];
-		uniform vec2 targetSize;
+		uniform vec2 frameBufSize;
 		void main()
 		{
+			vec2 texcoord0 = (pos + vec2(1.0, 1.0)) * 0.5;
 			float offsets[4];
 			float weights[5];
 			weights[0] = 0.1595769122;
@@ -103,10 +84,10 @@
 			offsets[2] = 5.2931777789;
 			offsets[3] = 7.2314752165;
 
-			offsets[0] /= targetSize.y;
-			offsets[1] /= targetSize.y;
-			offsets[2] /= targetSize.y;
-			offsets[3] /= targetSize.y;
+			offsets[0] /= frameBufSize.y;
+			offsets[1] /= frameBufSize.y;
+			offsets[2] /= frameBufSize.y;
+			offsets[3] /= frameBufSize.y;
 			// Calculate texture coords for different samples
 			texcoord[0] = vec3(texcoord0.x, texcoord0.y - offsets[3], weights[4]);
 			texcoord[1] = vec3(texcoord0.x, texcoord0.y - offsets[2], weights[3]);
@@ -122,7 +103,7 @@
 		}
 	]]>
 	</Text>
-	<Text name="FS_VBLUR">
+	<Text name="FS_BLUR">
 	<![CDATA[
 		varying vec3 texcoord[9];
 		uniform sampler2D source;
@@ -142,19 +123,16 @@
 	</Text>
 
 	<Attrib name="pos" />
-	<Attrib name="texcoord0" />
-
-	<Uniform name="targetSize" type="float2" />
 
 	<Texture name="source" />
 
 	<Context name="COPY_COLOR" vs="VS_COPY" fs="FS_COPY">
 		<Depth write="false" test="Always" />
 	</Context>
-	<Context name="HORIZONTAL_BLUR" vs="VS_HBLUR" fs="FS_HBLUR">
+	<Context name="HORIZONTAL_BLUR" vs="VS_HBLUR" fs="FS_BLUR">
 		<Depth write="false" test="Always" />
 	</Context>
-	<Context name="VERTICAL_BLUR" vs="VS_VBLUR" fs="FS_VBLUR">
+	<Context name="VERTICAL_BLUR" vs="VS_VBLUR" fs="FS_BLUR">
 		<Depth write="false" test="Always" />
 	</Context>
 </Shader>

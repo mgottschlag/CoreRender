@@ -29,6 +29,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/VertexLayout.hpp"
 #include "CoreRender/render/Material.hpp"
 #include "CoreRender/render/RenderTarget.hpp"
+#include "CoreRender/res/ResourceManager.hpp"
 
 #include <GL/glew.h>
 
@@ -77,6 +78,10 @@ namespace opengl
 		glEnable(GL_CULL_FACE);
 		glDepthFunc(GL_LESS);
 		glEnable(GL_DEPTH_TEST);
+		// Initialize instancing transMat buffer object
+		// TODO: This is a hack, but using plain vertex arrays hits a slow path
+		// at least here
+		glGenBuffers(1, &instancingbuffer);
 		return true;
 	}
 	bool VideoDriverOpenGL::shutdown()
@@ -163,11 +168,18 @@ namespace opengl
 		{
 			if (target->colorbuffers[i] == currentfb->colorbuffers[i])
 				continue;
-			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
-			                          GL_COLOR_ATTACHMENT0_EXT + i,
-			                          GL_TEXTURE_2D,
-			                          target->colorbuffers[i],
-			                          0);
+			if (target->colorbuffers[i])
+				glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
+				                          GL_COLOR_ATTACHMENT0_EXT + i,
+				                          GL_TEXTURE_2D,
+				                          target->colorbuffers[i]->getHandle(),
+				                          0);
+			else
+				glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
+				                          GL_COLOR_ATTACHMENT0_EXT + i,
+				                          GL_TEXTURE_2D,
+				                          0,
+				                          0);
 			currentfb->colorbuffers[i] = target->colorbuffers[i];
 		}
 		// Bind depth buffer
@@ -185,7 +197,7 @@ namespace opengl
 				glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
 				                          GL_DEPTH_ATTACHMENT_EXT,
 				                          GL_TEXTURE_2D,
-				                          target->depthbuffer,
+				                          target->depthbuffer->getHandle(),
 				                          0);
 			}
 			currentfb->depthbuffer = target->depthbuffer;
@@ -207,6 +219,8 @@ namespace opengl
 	{
 		// Set viewport
 		glViewport(x, y, width, height);
+		targetwidth = width;
+		targetheight = height;
 	}
 	void VideoDriverOpenGL::clear(unsigned int buffers,
 	                              float *color,
@@ -249,7 +263,7 @@ namespace opengl
 		// Change vertex/index buffer
 		setVertexBuffer(batch->vertices);
 		setIndexBuffer(batch->indices);
-		// Bind buffers/shader
+		// Bind shader
 		// TODO: Error checking
 		if (currentshader != batch->shader)
 		{
@@ -353,47 +367,7 @@ namespace opengl
 			}
 		}
 		// Apply textures
-		for (unsigned int i = 0; i < shaderinfo->samplers.size(); i++)
-		{
-			int samplerhandle = batch->shader->samplerlocations[i];
-			if (samplerhandle == -1)
-				continue;
-			Material::TextureInfo *textureinfo = 0;
-			Material::TextureList *texturelist = batch->material->getUploadedTextures();
-			if (!texturelist)
-				continue;
-			for (unsigned int j = 0; j < texturelist->texturecount; j++)
-			{
-				if (texturelist->textures[j].name == shaderinfo->samplers[i].name)
-				{
-					textureinfo = &texturelist->textures[j];
-					break;
-				}
-			}
-			if (!textureinfo)
-				continue;
-			int opengltype = GL_TEXTURE_2D;
-			switch (textureinfo->texture->getTextureType())
-			{
-				case TextureType::Texture1D:
-					opengltype = GL_TEXTURE_1D;
-					break;
-				case TextureType::Texture2D:
-					opengltype = GL_TEXTURE_2D;
-					break;
-				case TextureType::Texture3D:
-					opengltype = GL_TEXTURE_3D;
-					break;
-				case TextureType::TextureCube:
-					opengltype = GL_TEXTURE_CUBE_MAP;
-					break;
-			}
-			// TODO: Better manage texture units
-			glActiveTexture(GL_TEXTURE0 + i);
-			glBindTexture(opengltype, textureinfo->texture->getHandle());
-			glUniform1i(samplerhandle, i);
-			// TODO: Additionally bound textures (getBoundTextures())
-		}
+		applyTextures(batch->shader, batch->material);
 		// Default uniforms (not dependant on the transformation matrix)
 		{
 			UniformLocations &locations = batch->shader->uniforms;
@@ -410,6 +384,8 @@ namespace opengl
 				                   batch->skinmatcount,
 				                   GL_FALSE,
 				                   batch->skinmat);
+			if (locations.framebufsize != -1)
+				glUniform2f(locations.framebufsize, targetwidth, targetheight);
 			// TODO: Other uniforms
 		}
 		// Draw geometry
@@ -417,11 +393,15 @@ namespace opengl
 			drawSingle(batch, batch->transmat);
 		else
 		{
-			for (unsigned int i = 0; i < batch->transmatcount; i++)
+			if (batch->shader->instancing)
+				drawInstanced(batch, batch->transmatcount, batch->transmatlist);
+			else
 			{
-				drawSingle(batch, batch->transmatlist[i]);
+				for (unsigned int i = 0; i < batch->transmatcount; i++)
+				{
+					drawSingle(batch, batch->transmatlist[i]);
+				}
 			}
-			// TODO: Real instancing
 		}
 		// Clean up attribs
 		for (unsigned int i = 0; i < batch->shader->attriblocations.size(); i++)
@@ -429,6 +409,77 @@ namespace opengl
 			if (batch->shader->attriblocations[i] == -1)
 				continue;
 			glDisableVertexAttribArray(batch->shader->attriblocations[i]);
+		}
+	}
+
+	void VideoDriverOpenGL::drawQuad(float *vertices,
+	                                 ShaderCombination *shader,
+	                                 Material *material)
+	{
+		// Change blend mode if necessary
+		setBlendMode(shader->uploadeddata.blendmode);
+		// Change depth test
+		setDepthTest(shader->uploadeddata.depthtest);
+		// Change depth write
+		setDepthWrite(shader->uploadeddata.depthwrite);
+		// Disable vertex/index buffers, we directly read the vertices from the
+		// passed buffer
+		setVertexBuffer(0);
+		setIndexBuffer(0);
+		// Bind shader
+		// TODO: Error checking
+		if (currentshader != shader)
+		{
+			glUseProgram(shader->programobject);
+			currentshader = shader;
+		}
+		Shader::ShaderInfo *shaderinfo = shader->shader->getUploadedData();
+		// Apply attribs
+		// We only bind the hardcoded pos attribute here
+		float vertexdata[8];
+		vertexdata[0] = vertices[0];
+		vertexdata[1] = vertices[1];
+		vertexdata[2] = vertices[2];
+		vertexdata[3] = vertices[1];
+		vertexdata[4] = vertices[0];
+		vertexdata[5] = vertices[3];
+		vertexdata[6] = vertices[2];
+		vertexdata[7] = vertices[3];
+		unsigned int posattribname = material->getManager()->getNameRegistry().getAttrib("pos");
+		for (unsigned int i = 0; i < shaderinfo->attribs.size(); i++)
+		{
+			int attribhandle = shader->attriblocations[i];
+			if (attribhandle == -1)
+				continue;
+			unsigned int name = shaderinfo->attribs[i];
+			if (name != posattribname)
+				continue;
+			glEnableVertexAttribArray(attribhandle);
+			glVertexAttribPointer(attribhandle, 2, GL_FLOAT, GL_FALSE, 0, vertexdata);
+		}
+		// Apply textures
+		applyTextures(shader, material);
+		// TODO: Additionally bound textures (getBoundTextures())
+		// Uniforms
+		// TODO
+		UniformLocations &locations = shader->uniforms;
+		if (locations.framebufsize != -1)
+			glUniform2f(locations.framebufsize, targetwidth, targetheight);
+		// Draw a single quad
+		unsigned char indices[] = {
+			0, 1, 2,
+			2, 1, 3
+		};
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_BYTE, indices);
+		// Clean up attribs
+		for (unsigned int i = 0; i < shader->attriblocations.size(); i++)
+		{
+			if (shader->attriblocations[i] == -1)
+				continue;
+			unsigned int name = shaderinfo->attribs[i];
+			if (name != posattribname)
+				return;
+			glDisableVertexAttribArray(shader->attriblocations[i]);
 		}
 	}
 
@@ -449,7 +500,7 @@ namespace opengl
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		currentindices = 0;
 		// Unbind currently used textures
-		unbindTextures();
+		bindTextures(0, 0);
 	}
 
 	void VideoDriverOpenGL::setMatrices(math::Matrix4 projmat,
@@ -466,7 +517,8 @@ namespace opengl
 	{
 		for (unsigned int i = 0; i < fb->colorbuffers.size(); i++)
 		{
-			glBindTexture(GL_TEXTURE_2D, fb->colorbuffers[i]);
+			if (fb->colorbuffers[i])
+				glBindTexture(GL_TEXTURE_2D, fb->colorbuffers[i]->getHandle());
 			glGenerateMipmapEXT(GL_TEXTURE_2D);
 		}
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -536,6 +588,7 @@ namespace opengl
 					drawbuffers[buffercount] = GL_COLOR_ATTACHMENT0_EXT + bufferindex;
 					buffercount++;
 				}
+				buffers = buffers >> 1;
 				bufferindex++;
 			}
 			glDrawBuffers(buffercount, drawbuffers);
@@ -584,7 +637,10 @@ namespace opengl
 	{
 		if (vertices != currentvertices)
 		{
-			glBindBuffer(GL_ARRAY_BUFFER, vertices->getHandle());
+			if (vertices)
+				glBindBuffer(GL_ARRAY_BUFFER, vertices->getHandle());
+			else
+				glBindBuffer(GL_ARRAY_BUFFER, 0);
 			currentvertices = vertices;
 		}
 	}
@@ -592,7 +648,10 @@ namespace opengl
 	{
 		if (indices != currentindices)
 		{
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices->getHandle());
+			if (indices)
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices->getHandle());
+			else
+				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 			currentindices = indices;
 		}
 	}
@@ -644,7 +703,135 @@ namespace opengl
 	                                      unsigned int instancecount,
 	                                      math::Matrix4 *transmat)
 	{
-		// TODO
+		// Disable vertex buffer as we specify the transformation matrices as
+		// an attrib directly without using a buffer object
+		// TODO: Not using a buffer hits a slow path
+		//setVertexBuffer(0);
+		// Upload transformation matrices
+		glBindBuffer(GL_ARRAY_BUFFER, instancingbuffer);
+		glBufferData(GL_ARRAY_BUFFER, instancecount * 16 * sizeof(float),
+			transmat, GL_STREAM_DRAW);
+		// Set transMat attrib
+		if (batch->shader->transmatattrib != -1)
+		{
+			glEnableVertexAttribArray(batch->shader->transmatattrib);
+			glVertexAttribPointer(batch->shader->transmatattrib, 4, GL_FLOAT,
+				GL_FALSE, 16 * sizeof(float), 0);
+			glEnableVertexAttribArray(batch->shader->transmatattrib + 1);
+			glVertexAttribPointer(batch->shader->transmatattrib + 1, 4,
+				GL_FLOAT, GL_FALSE, 16 * sizeof(float),
+				(void*)(4 * sizeof(float)));
+			glEnableVertexAttribArray(batch->shader->transmatattrib + 2);
+			glVertexAttribPointer(batch->shader->transmatattrib + 2, 4,
+				GL_FLOAT, GL_FALSE, 16 * sizeof(float),
+				(void*)(8 * sizeof(float)));
+			glEnableVertexAttribArray(batch->shader->transmatattrib + 3);
+			glVertexAttribPointer(batch->shader->transmatattrib + 3, 4,
+				GL_FLOAT, GL_FALSE, 16 * sizeof(float),
+				(void*)(12 * sizeof(float)));
+			// Enable instancing
+			glVertexAttribDivisorARB(batch->shader->transmatattrib, 1);
+			glVertexAttribDivisorARB(batch->shader->transmatattrib + 1, 1);
+			glVertexAttribDivisorARB(batch->shader->transmatattrib + 2, 1);
+			glVertexAttribDivisorARB(batch->shader->transmatattrib + 3, 1);
+		}
+		// Render triangles
+		unsigned int indexcount = batch->endindex - batch->startindex;
+		if (batch->indextype == 1)
+		{
+			glDrawElementsInstancedARB(GL_TRIANGLES,
+			                           indexcount,
+			                           GL_UNSIGNED_BYTE,
+			                           (void*)(batch->startindex),
+			                           instancecount);
+		}
+		else if (batch->indextype == 2)
+		{
+			glDrawElementsInstancedARB(GL_TRIANGLES,
+			                           indexcount,
+			                           GL_UNSIGNED_SHORT,
+			                           (void*)(batch->startindex * 2),
+			                           instancecount);
+		}
+		else if (batch->indextype == 4)
+		{
+			glDrawElementsInstancedARB(GL_TRIANGLES,
+			                           indexcount,
+			                           GL_UNSIGNED_INT,
+			                           (void*)(batch->startindex * 4),
+			                           instancecount);
+		}
+		// Increase polygon/batch counters
+		getStats().increaseBatchCount(instancecount);
+		getStats().increasePolygonCount(indexcount / 3 * instancecount);
+		// Clean up buffer binding
+		setVertexBuffer(0);
+		// Clean up attribs
+		if (batch->shader->transmatattrib != -1)
+		{
+			glDisableVertexAttribArray(batch->shader->transmatattrib);
+			glDisableVertexAttribArray(batch->shader->transmatattrib + 1);
+			glDisableVertexAttribArray(batch->shader->transmatattrib + 2);
+			glDisableVertexAttribArray(batch->shader->transmatattrib + 3);
+		}
+	}
+
+	void VideoDriverOpenGL::applyTextures(ShaderCombination *shader,
+	                                      Material *material)
+	{
+		Shader::ShaderInfo *shaderinfo = shader->shader->getUploadedData();
+		// Apply textures
+		for (unsigned int i = 0; i < shaderinfo->samplers.size(); i++)
+		{
+			int samplerhandle = shader->samplerlocations[i];
+			if (samplerhandle == -1)
+				continue;
+			Texture *texture = 0;
+			// Fetch the texture from the material
+			Material::TextureList *texturelist = material->getUploadedTextures();
+			if (texturelist)
+			{
+				for (unsigned int j = 0; j < texturelist->texturecount; j++)
+				{
+					if (texturelist->textures[j].name == shaderinfo->samplers[i].name)
+					{
+						texture = texturelist->textures[j].texture.get();
+						break;
+					}
+				}
+			}
+			// Additionally bound textures (getBoundTextures())
+			for (unsigned int j = 0; j < getBoundTextureCount(); j++)
+			{
+				if (shaderinfo->samplers[i].name == getBoundTextures()[j].name)
+				{
+					texture = getBoundTextures()[j].tex;
+					break;
+				}
+			}
+			if (!texture)
+				continue;
+			int opengltype = GL_TEXTURE_2D;
+			switch (texture->getTextureType())
+			{
+				case TextureType::Texture1D:
+					opengltype = GL_TEXTURE_1D;
+					break;
+				case TextureType::Texture2D:
+					opengltype = GL_TEXTURE_2D;
+					break;
+				case TextureType::Texture3D:
+					opengltype = GL_TEXTURE_3D;
+					break;
+				case TextureType::TextureCube:
+					opengltype = GL_TEXTURE_CUBE_MAP;
+					break;
+			}
+			// TODO: Better manage texture units
+			glActiveTexture(GL_TEXTURE0 + i);
+			glBindTexture(opengltype, texture->getHandle());
+			glUniform1i(samplerhandle, i);
+		}
 	}
 }
 }

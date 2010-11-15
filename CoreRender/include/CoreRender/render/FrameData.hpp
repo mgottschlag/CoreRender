@@ -89,10 +89,14 @@ namespace render
 			ClearTarget,
 			SetTarget,
 			RenderQueue,
-			BindTexture,
-			UnbindTextures,
+			BindTextures,
 			DrawQuad,
 		};
+	};
+	struct TextureBinding
+	{
+		const char *name;
+		Texture *tex;
 	};
 	struct RenderQueue
 	{
@@ -100,12 +104,10 @@ namespace render
 		{
 			// TODO: Resize batches?
 		}
-		RenderTargetInfo *target;
 		unsigned int context;
 		math::Matrix4 projmat;
 		math::Matrix4 viewmat;
 		math::Frustum clipping[2];
-		int viewport[4];
 		std::vector<Batch*> batches;
 		tbb::mutex batchmutex;
 		// TODO: Sort order
@@ -131,6 +133,7 @@ namespace render
 			struct
 			{
 				RenderTargetInfo *target;
+				int viewport[4];
 			} settarget;
 			struct
 			{
@@ -138,9 +141,9 @@ namespace render
 			} renderqueue;
 			struct
 			{
-				Texture *texture;
-				const char *sampler;
-			} bindtexture;
+				unsigned int texturecount;
+				TextureBinding *textures;
+			} bindtextures;
 			struct
 			{
 				/**
@@ -148,7 +151,8 @@ namespace render
 				 * are in the range -1..1.
 				 */
 				float quad[4];
-
+				ShaderCombination *shader;
+				Material *material;
 			} drawquad;
 		};
 		RenderCommand *next;

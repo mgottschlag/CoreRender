@@ -1,0 +1,37 @@
+<Shader>
+	<Text name="VS_FSQUAD">
+	<![CDATA[
+		attribute vec2 pos;
+		varying vec2 texcoord;
+		void main()
+		{
+			// Transformation
+			texcoord = pos * 0.5 + vec2(0.5, 0.5);
+			gl_Position = vec4(pos, 0.0, 1.0);
+		}
+	]]>
+	</Text>
+	<Text name="FS_COPY">
+	<![CDATA[
+		varying vec2 texcoord;
+		uniform sampler2D source;
+		void main()
+		{
+			gl_FragColor = texture2D(source, texcoord);
+			//gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+			//gl_FragColor = vec4(texcoord, 0.0, 1.0);
+		}
+	]]>
+	</Text>
+
+	<Attrib name="pos" />
+
+	<Texture name="source" />
+
+	<Context name="AMBIENT" vs="VS_FSQUAD" fs="FS_COPY">
+		<Depth write="false" test="Always" />
+	</Context>
+	<Context name="COPY_DEPTH" vs="VS_FSQUAD" fs="FS_COPY">
+		<Depth write="false" test="Always" />
+	</Context>
+</Shader>

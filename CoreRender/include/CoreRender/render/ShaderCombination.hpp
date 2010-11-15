@@ -91,6 +91,10 @@ namespace render
 		std::vector<int> customuniforms;
 		std::vector<int> attriblocations;
 		std::vector<int> samplerlocations;
+		/**
+		 * Location of the transMat attribute for instancing.
+		 */
+		int transmatattrib;
 
 		Shader *shader;
 

@@ -23,6 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_RENDER_FRAMEBUFFER_HPP_INCLUDED_
 
 #include "RenderResource.hpp"
+#include "Texture.hpp"
 
 namespace cr
 {
@@ -91,9 +92,9 @@ namespace render
 			struct Configuration
 			{
 				unsigned int handle;
-				unsigned int depthbuffer;
+				Texture *depthbuffer;
 				unsigned int defaultdepthbuffer;
-				std::vector<unsigned int> colorbuffers;
+				std::vector<Texture*> colorbuffers;
 			};
 
 			/**

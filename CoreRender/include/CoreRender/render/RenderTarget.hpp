@@ -28,16 +28,18 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace cr
 {
+namespace core
+{
+	class MemoryPool;
+}
 namespace render
 {
 	struct RenderTargetInfo
 	{
-		unsigned int width;
-		unsigned int height;
 		FrameBuffer::Configuration *framebuffer;
-		unsigned int depthbuffer;
+		Texture *depthbuffer;
 		unsigned int colorbuffercount;
-		unsigned int *colorbuffers;
+		Texture **colorbuffers;
 	};
 
 	class RenderTarget : public res::Resource
@@ -58,7 +60,8 @@ namespace render
 			void removeColorBuffer(unsigned int index);
 			unsigned int getColorBufferCount();
 
-			void getRenderTargetInfo(RenderTargetInfo &info);
+			void getRenderTargetInfo(RenderTargetInfo &info,
+			                         core::MemoryPool *memory);
 
 			virtual const char *getType()
 			{

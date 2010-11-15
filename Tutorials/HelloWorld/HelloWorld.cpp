@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 	math::Matrix4 viewmat = math::Matrix4::TransMat(0.0f, 0.0f, -200.0f)
 	                      * math::Quaternion(math::Vector3F(30.0f, 0.0f, 0.0f)).toMatrix();
 	camera->setViewMat(viewmat);
-	camera->setPipeline(graphics.getPipeline("/pipelines/Forward.pipeline.xml"));
+	camera->setPipeline(graphics.getPipeline("/pipelines/Blur.pipeline.xml"));
 	camera->setViewport(0, 0, 1024, 768);
 	// Add the camera and the lights to the scene
 	scene.addCamera(camera);
@@ -116,8 +116,10 @@ int main(int argc, char **argv)
 		unsigned int queuecount = scenedata->getRenderQueueCount();
 		for (unsigned int i = 0; i < queuecount; i++)
 		{
-			jeep->render(renderqueues[i], math::Matrix4::TransMat(20.0f, 0.0f, 0.0f) * math::Matrix4::ScaleMat(5.0f, 5.0f, 5.0f));
+			jeep->render(renderqueues[i], math::Matrix4::TransMat(20.0f, 0.0f, 0.0f)
+			                            * math::Matrix4::ScaleMat(5.0f, 5.0f, 5.0f));
 			dwarf->render(renderqueues[i], math::Matrix4::TransMat(-20.0f, 0.0f, 0.0f));
+			dwarf2->render(renderqueues[i], math::Matrix4::TransMat(-60.0f, 0.0f, 0.0f));
 			dwarf2->render(renderqueues[i], 1024, dwarf2positions);
 		}
 		graphics.endFrame(frame);
@@ -135,6 +137,7 @@ int main(int argc, char **argv)
 			fpstime = currenttime;
 			fps = 0;
 		}
+		//usleep(100000);
 	}
 	// Destroy ressources
 	scene.removeCamera(camera);

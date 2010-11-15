@@ -22,6 +22,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/scene/Scene.hpp"
 #include "CoreRender/render/FrameData.hpp"
 #include "CoreRender/core/MemoryPool.hpp"
+#include "CoreRender/core/HashMap.hpp"
+#include "CoreRender/render/Material.hpp"
+
+#include <cstring>
 
 namespace cr
 {
@@ -137,6 +141,10 @@ namespace scene
 		core::MemoryPool *memory = queue->memory;
 		unsigned int shadowqueuecount = getShadowRenderQueueCount(camera);
 		unsigned int queuecount = 0;
+		std::vector<render::TextureBinding> boundtextures;
+		render::TextureBinding *preparedtextures = 0;
+		// We need to keep track of the current pipeline state as targets etc
+		// are set with a command but actually passed for every queue
 		for (unsigned int i = 0; i < pipeline->getStageCount(); i++)
 		{
 			render::PipelineStage *stage = pipeline->getStage(i);
@@ -145,14 +153,12 @@ namespace scene
 				render::PipelineCommand *command = &stage->commands[j];
 				if (command->type == render::PipelineCommandType::DrawGeometry)
 				{
+					prepareTextures(frame, boundtextures, preparedtextures, memory);
 					// DrawGeometry commands render using only the camera itself
 					queue[queuecount].context = command->uintparams[0];
 					queue[queuecount].projmat = camera->getProjMat();
 					queue[queuecount].viewmat = camera->getViewMat();
 					// TODO: Clipping
-					unsigned int *viewport = camera->getViewport();
-					for (unsigned int k = 0; k < 4; k++)
-						queue[queuecount].viewport[k] = viewport[k];
 					// Add draw command to the queue
 					void *ptr = memory->allocate(sizeof(render::RenderCommand));
 					render::RenderCommand *cmd = (render::RenderCommand*)ptr;
@@ -163,11 +169,13 @@ namespace scene
 				}
 				else if (command->type == render::PipelineCommandType::DoForwardLightLoop)
 				{
+					prepareTextures(frame, boundtextures, preparedtextures, memory);
 					// TODO
 					queuecount += shadowqueuecount;
 				}
 				else if (command->type == render::PipelineCommandType::DoDeferredLightLoop)
 				{
+					prepareTextures(frame, boundtextures, preparedtextures, memory);
 					// TODO
 					queuecount += shadowqueuecount;
 				}
@@ -184,13 +192,141 @@ namespace scene
 					cmd->cleartarget.color[3] = command->floatparams[4];
 					frame->addCommand(cmd);
 				}
+				else if (command->type == render::PipelineCommandType::SetTarget)
+				{
+					// TODO: Configurable viewport
+					render::RenderTargetInfo *targetinfo = 0;
+					render::FrameBuffer::Ptr fb;
+					if (command->resources[0])
+					{
+						void *ptr = memory->allocate(sizeof(render::RenderTargetInfo));
+						targetinfo = (render::RenderTargetInfo*)ptr;
+						render::RenderTarget *newtarget;
+						newtarget = (render::RenderTarget*)command->resources[0].get();
+						newtarget->getRenderTargetInfo(*targetinfo, memory);
+						fb = newtarget->getFrameBuffer();
+					}
+					else
+						targetinfo = 0;
+					void *ptr = memory->allocate(sizeof(render::RenderCommand));
+					render::RenderCommand *cmd = (render::RenderCommand*)ptr;
+					cmd->type = render::RenderCommandType::SetTarget;
+					cmd->settarget.target = targetinfo;
+					if (!targetinfo)
+					{
+						// If we render to the final target, use the camera
+						// viewport
+						unsigned int *viewport = camera->getViewport();
+						for (unsigned int k = 0; k < 4; k++)
+							cmd->settarget.viewport[k] = viewport[k];
+					}
+					else
+					{
+						// If we render to an intermediate buffer, use the
+						// whole buffer
+						cmd->settarget.viewport[0] = 0;
+						cmd->settarget.viewport[1] = 0;
+						cmd->settarget.viewport[2] = fb->getWidth();
+						cmd->settarget.viewport[3] = fb->getHeight();
+					}
+					frame->addCommand(cmd);
+				}
+				else if (command->type == render::PipelineCommandType::BindTexture)
+				{
+					render::Texture *tex = (render::Texture*)command->resources[0].get();
+					//boundtextures.insert(std::make_pair(command->stringparams[0], tex));
+					bool found = false;
+					for (unsigned int i = 0; i < boundtextures.size(); i++)
+					{
+						if (command->stringparams[0] == boundtextures[i].name)
+						{
+							found = true;
+							if (tex == 0)
+							{
+								boundtextures[i] = boundtextures[boundtextures.size() - 1];
+								boundtextures.pop_back();
+							}
+							else
+								boundtextures[i].tex = tex;
+						}
+					}
+					if (!found && tex)
+					{
+						// Allocate memory for the string from the memory pool
+						unsigned int namelength = command->stringparams[0].length();
+						char *name = (char*)memory->allocate(namelength + 1);
+						strcpy(name, command->stringparams[0].c_str());
+						render::TextureBinding newentry;
+						newentry.tex = tex;
+						newentry.name = name;
+						boundtextures.push_back(newentry);
+					}
+					preparedtextures = 0;
+				}
+				else if (command->type == render::PipelineCommandType::UnbindTextures)
+				{
+					if (boundtextures.size() > 0)
+					{
+						boundtextures.clear();
+						preparedtextures = 0;
+					}
+				}
+				else if (command->type == render::PipelineCommandType::DrawFullscreenQuad)
+				{
+					prepareTextures(frame, boundtextures, preparedtextures, memory);
+					render::Material *mat = (render::Material*)command->resources[0].get();
+					if (!mat)
+						continue;
+					render::Shader::Ptr shader = mat->getShader();
+					if (!shader)
+						continue;
+					unsigned int context = command->uintparams[0];
+					render::ShaderCombination::Ptr comb = shader->getCombination(context,
+					                                                             0,
+					                                                             0,
+					                                                             false,
+					                                                             false);
+					if (!comb)
+						continue;
+					void *ptr = memory->allocate(sizeof(render::RenderCommand));
+					render::RenderCommand *cmd = (render::RenderCommand*)ptr;
+					cmd->type = render::RenderCommandType::DrawQuad;
+					cmd->drawquad.quad[0] = cmd->drawquad.quad[1] = -1.0f;
+					cmd->drawquad.quad[2] = cmd->drawquad.quad[3] = 1.0f;
+					cmd->drawquad.material = mat;
+					cmd->drawquad.shader = comb.get();
+					frame->addCommand(cmd);
+				}
 				else
 				{
-					// TODO: Warning here
+					// TODO: Log
+					std::cout << "Warning: Unimplemented pipeline command type "
+						<< command->type << std::endl;
 				}
 			}
 		}
 		return queuecount;
+	}
+
+	void Scene::prepareTextures(render::SceneFrameData *frame,
+	                            const std::vector<render::TextureBinding> &textures,
+	                            render::TextureBinding *&prepared,
+	                            core::MemoryPool *memory)
+	{
+		if (prepared)
+			return;
+		if (textures.size() == 0)
+			return;
+		unsigned int memsize = sizeof(render::TextureBinding) * textures.size();
+		prepared = (render::TextureBinding*)memory->allocate(memsize);
+		memcpy(prepared, &textures[0], memsize);
+		void *ptr = memory->allocate(sizeof(render::RenderCommand));
+		render::RenderCommand *cmd = (render::RenderCommand*)ptr;
+		cmd->type = render::RenderCommandType::BindTextures;
+		cmd->bindtextures.texturecount = textures.size();
+		cmd->bindtextures.textures = prepared;
+		frame->addCommand(cmd);
+		
 	}
 }
 }

@@ -32,7 +32,8 @@ namespace render
 {
 	class SceneFrameData;
 	class FrameData;
-		class RenderQueue;
+	struct RenderQueue;
+	struct TextureBinding;
 }
 namespace scene
 {
@@ -54,6 +55,11 @@ namespace scene
 			unsigned int beginFrame(render::SceneFrameData *frame,
 			                        render::RenderQueue *queue,
 			                        Camera::Ptr camera);
+
+			static void prepareTextures(render::SceneFrameData *frame,
+			                            const std::vector<render::TextureBinding> &textures,
+			                            render::TextureBinding *&prepared,
+			                            core::MemoryPool *memory);
 
 			tbb::mutex cameramutex;
 			std::vector<Camera::Ptr> cameras;

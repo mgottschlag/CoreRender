@@ -68,6 +68,10 @@ namespace opengl
 
 			virtual void draw(Batch *batch);
 
+			virtual void drawQuad(float *vertices,
+			                      ShaderCombination *shader,
+			                      Material *material);
+
 			virtual void endFrame();
 
 			virtual void setMatrices(math::Matrix4 projmat,
@@ -101,6 +105,8 @@ namespace opengl
 			                   unsigned int instancecount,
 			                   math::Matrix4 *transmat);
 
+			void applyTextures(ShaderCombination *shader, Material *material);
+
 			RenderCapsOpenGL caps;
 
 			core::Log::Ptr log;
@@ -119,6 +125,11 @@ namespace opengl
 			math::Matrix4 viewmat;
 			math::Matrix4 viewmatinv;
 			math::Matrix4 viewprojmat;
+
+			unsigned int targetwidth;
+			unsigned int targetheight;
+
+			unsigned int instancingbuffer;
 	};
 
 }

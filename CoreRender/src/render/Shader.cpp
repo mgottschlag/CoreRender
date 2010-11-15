@@ -197,6 +197,7 @@ namespace render
 	                                              bool instancing,
 	                                              bool skinning)
 	{
+		// TODO: Also check capabilities
 		if (!supportsInstancing())
 			instancing = false;
 		if (!supportsSkinning())

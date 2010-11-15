@@ -1,5 +1,6 @@
 <Shader>
 	<Flag name="Skinning" default="false" />
+	<Flag name="Instancing" default="false" />
 
 	<Text name="VS_GENERAL">
 	<![CDATA[
@@ -12,6 +13,9 @@
 		attribute vec4 jointweight;
 		uniform mat4 skinMat[50];
 		#endif
+		#if Instancing
+		attribute mat4 transMat;
+		#endif
 		varying vec2 texcoord;
 		varying vec3 worldPos;
 		varying vec3 worldNormal;
@@ -19,10 +23,10 @@
 		{
 			// Transformation
 			texcoord = texcoord0;
-			vec4 translated = transMat * vec4(pos, 1.0);
+			/*vec4 translated = transMat * vec4(pos, 1.0);
 			worldPos = translated.xyz / translated.w;
 			translated = transMat * vec4(normal, 0.0);
-			worldNormal = translated.xyz;
+			worldNormal = translated.xyz;*/
 			#if Skinning
 			// Skinning
 			mat4 mat = mat4(0.0);
@@ -31,9 +35,17 @@
 				mat += skinMat[int(jointindex[i])] * jointweight[i];
 			}
 			vec4 skinpos = mat * vec4(pos, 1.0);
+			#if Instancing
+			gl_Position = viewProjMat * transMat * skinpos;
+			#else
 			gl_Position = worldMat * skinpos;
+			#endif
+			#else
+			#if Instancing
+			gl_Position = viewProjMat * transMat * vec4(pos, 1.0);
 			#else
 			gl_Position = worldMat * vec4(pos, 1.0);
+			#endif
 			#endif
 		}
 	]]>
@@ -102,17 +114,18 @@
 	<Attrib name="jointindex" />
 	<Attrib name="jointweight" />
 
-	<Uniform name="worldMat" type="mat4" />
+	<!--<Uniform name="worldMat" type="mat4" />
 	<Uniform name="skinMat" count="50" type="mat4" />
 	<Uniform name="lightPos" type="float3" />
 	<Uniform name="lightRadius" type="float1" />
 	<Uniform name="lightDir" type="float3" />
 	<Uniform name="lightAngle" type="float1" />
-	<Uniform name="lightColor" type="float3" />
+	<Uniform name="lightColor" type="float3" />-->
 
 	<Texture name="tex" />
 
 	<Context name="AMBIENT" vs="VS_GENERAL" fs="FS_AMBIENT" />
+	<Context name="ATTRIBPASS" vs="VS_GENERAL" fs="FS_AMBIENT" />
 	<Context name="POINTLIGHT" vs="VS_GENERAL" fs="FS_POINTLIGHT">
 		<Depth write="false" test="LessEqual" />
 		<Blend mode="Add" />

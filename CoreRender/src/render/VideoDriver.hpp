@@ -45,6 +45,8 @@ namespace render
 	class UploadManager;
 	struct RenderQueue;
 	struct Batch;
+	class Material;
+	struct TextureBinding;
 
 	/**
 	 * Render system backend. This is used to create backend-specific classes
@@ -147,6 +149,18 @@ namespace render
 			virtual void draw(Batch *batch) = 0;
 
 			/**
+			 * Draws a simple quad.
+			 * @param vertices Four vertices, each one consisting of two floats
+			 * for the position in view space (coordinates shall be in the range
+			 * -1..1).
+			 * @param shader Shader used for rendering the quad.
+			 * @param material Material settings used for the quad.
+			 */
+			virtual void drawQuad(float *vertices,
+			                      ShaderCombination *shader,
+			                      Material *material) = 0;
+
+			/**
 			 * Called at the end of the frame. This cleans up currently bound
 			 * resources.
 			 */
@@ -155,14 +169,19 @@ namespace render
 			virtual void setMatrices(math::Matrix4 projmat,
 			                         math::Matrix4 viewmat) = 0;
 
-			struct TextureBinding
+			void bindTextures(TextureBinding *textures, unsigned int texturecount)
 			{
-				const char *sampler;
-				Texture *texture;
-			};
-			void bindTexture(const char *sampler, Texture *texture);
-			void unbindTextures();
-			const std::vector<TextureBinding> &getBoundTextures();
+				boundtextures = textures;
+				this->texturecount = texturecount;
+			}
+			TextureBinding *getBoundTextures()
+			{
+				return boundtextures;
+			}
+			unsigned int getBoundTextureCount()
+			{
+				return texturecount;
+			}
 
 			/**
 			 * Returns the type of this video driver.
@@ -195,7 +214,8 @@ namespace render
 
 			RenderStats stats;
 
-			std::vector<TextureBinding> boundtextures;
+			TextureBinding *boundtextures;
+			unsigned int texturecount;
 	};
 }
 }

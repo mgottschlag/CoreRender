@@ -27,22 +27,6 @@ namespace cr
 {
 namespace render
 {
-	void VideoDriver::bindTexture(const char *sampler, Texture *texture)
-	{
-		TextureBinding binding;
-		binding.sampler = sampler;
-		binding.texture = texture;
-		boundtextures.push_back(binding);
-	}
-	void VideoDriver::unbindTextures()
-	{
-		boundtextures.clear();
-	}
-	const std::vector<VideoDriver::TextureBinding> &VideoDriver::getBoundTextures()
-	{
-		return boundtextures;
-	}
-
 	void VideoDriver::executeCommands(RenderCommand *command)
 	{
 		while (command)
@@ -63,19 +47,26 @@ namespace render
 				break;
 			case RenderCommandType::SetTarget:
 				setRenderTarget(command->settarget.target);
+				setViewport(command->settarget.viewport[0],
+				            command->settarget.viewport[1],
+				            command->settarget.viewport[2],
+				            command->settarget.viewport[3]);
 				break;
 			case RenderCommandType::RenderQueue:
 				renderQueue(command->renderqueue.queue);
 				break;
-			case RenderCommandType::BindTexture:
-				bindTexture(command->bindtexture.sampler,
-				            command->bindtexture.texture);
-				break;
-			case RenderCommandType::UnbindTextures:
-				unbindTextures();
+			case RenderCommandType::BindTextures:
+				bindTextures(command->bindtextures.textures,
+				            command->bindtextures.texturecount);
 				break;
 			case RenderCommandType::DrawQuad:
 				// TODO
+				drawQuad(command->drawquad.quad,
+				         command->drawquad.shader,
+				         command->drawquad.material);
+				break;
+			default:
+				// TODO: Warning here
 				break;
 		}
 	}
@@ -83,11 +74,6 @@ namespace render
 	void VideoDriver::renderQueue(RenderQueue *queue)
 	{
 		// Setup common data
-		setRenderTarget(queue->target);
-		setViewport(queue->viewport[0],
-		            queue->viewport[1],
-		            queue->viewport[2],
-		            queue->viewport[3]);
 		setMatrices(queue->projmat, queue->viewmat);
 		// Render batches
 		for (unsigned int i = 0; i < queue->batches.size(); i++)
