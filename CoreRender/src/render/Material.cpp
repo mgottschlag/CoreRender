@@ -39,6 +39,11 @@ namespace render
 	}
 	Material::~Material()
 	{
+		if (uploadeddata)
+		{
+			delete[] uploadeddata;
+			delete uploadeddata;
+		}
 	}
 
 	void Material::setShader(Shader::Ptr shader)
@@ -73,6 +78,46 @@ namespace render
 	const std::vector<Material::TextureInfo> &Material::getTextures()
 	{
 		return textures;
+	}
+
+	void Material::setUniform(std::string name, unsigned int size, float *data)
+	{
+		if (size > 16)
+		{
+			getManager()->getLog()->error("%s: setUniform(): Wrong size.",
+			                              getName().c_str());
+			return;
+		}
+		// Search for an existing entry in the uniform list
+		// This currently does not use a hash map or sth like that because of
+		// the low number of uniforms which are usually used
+		for (unsigned int i = 0; i < uniforms.size(); i++)
+		{
+			if (uniforms[i].name == name)
+			{
+				uniforms[i].size = size;
+				memcpy(uniforms[i].data, data, size * sizeof(float));
+				return;
+			}
+		}
+		// If the uniform was not found, create a new list entry
+		UniformInfo uniform;
+		uniform.name = name;
+		uniform.size = size;
+		memcpy(uniform.data, data, size * sizeof(float));
+		uniforms.push_back(uniform);
+	}
+	void Material::removeUniform(std::string name)
+	{
+		for (unsigned int i = 0; i < uniforms.size(); i++)
+		{
+			if (uniforms[i].name == name)
+			{
+				uniforms.erase(uniforms.begin() + i);
+				registerUpload();
+				return;
+			}
+		}
 	}
 
 	bool Material::load()
@@ -232,7 +277,7 @@ namespace render
 				}
 			}
 			// Add uniform
-			uniforms.add(name).set(type, defdata);
+			setUniform(name, size, defdata);
 			delete[] defdata;
 		}
 		finishLoading(true);
@@ -247,13 +292,13 @@ namespace render
 			return true;
 		// Wait for the shader
 		bool result = true;
-		if (shader)
-			result = result && shader->waitForLoading(recursive, highpriority);
+		if (shader && !shader->waitForLoading(recursive, highpriority))
+			result = false;
 		// Wait for the textures
 		for (unsigned int i = 0; i < textures.size(); i++)
 		{
-			result = result && textures[i].texture->waitForLoading(recursive,
-			                                                       highpriority);
+			if (!textures[i].texture->waitForLoading(recursive, highpriority))
+				result = false;
 		}
 		return result;
 	}
@@ -262,7 +307,6 @@ namespace render
 	{
 		if (uploadeddata)
 		{
-			delete[] uploadeddata->textures;
 			delete uploadeddata;
 		}
 		uploadeddata = (TextureList*)data;

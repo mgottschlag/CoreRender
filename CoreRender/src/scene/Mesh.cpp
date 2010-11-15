@@ -124,9 +124,6 @@ namespace scene
 		batch->transmatcount = 0;
 		batch->skinmat = 0;
 		batch->skinmatcount = 0;
-		// TODO: Custom uniforms
-		batch->customuniformcount = 0;
-		batch->customuniforms = 0;
 		// TODO: Sorting
 		batch->sortkey = 0.0f;
 		batch->startindex = geom->startindex;
@@ -136,6 +133,27 @@ namespace scene
 		batch->vertexoffset = geom->vertexoffset;
 		batch->indextype = geom->indextype;
 		batch->indextype = geom->indextype;
+		// Custom uniforms
+		const std::vector<render::Material::UniformInfo> &uniforms = material->getUniforms();
+		batch->customuniformcount = uniforms.size();
+		if (uniforms.size() > 0)
+		{
+			ptr = memory->allocate(sizeof(render::CustomUniform) * uniforms.size());
+			render::CustomUniform *uniformdata = (render::CustomUniform*)ptr;
+			for (unsigned int i = 0; i < uniforms.size(); i++)
+			{
+				uniformdata[i].size = uniforms[i].size;
+				uniformdata[i].data = (float*)memory->allocate(sizeof(float) * uniforms[i].size);
+				memcpy(uniformdata[i].data,
+				       uniforms[i].data,
+				       uniforms[i].size * sizeof(float));
+				uniformdata[i].name = (char*)memory->allocate(uniforms[i].name.length() + 1);
+				strcpy(uniformdata[i].name, uniforms[i].name.c_str());
+			}
+			batch->customuniforms = uniformdata;
+		}
+		else
+			batch->customuniforms = 0;
 		return batch;
 	}
 

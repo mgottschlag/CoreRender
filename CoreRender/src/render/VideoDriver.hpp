@@ -31,6 +31,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/Shader.hpp"
 #include "CoreRender/render/RenderStats.hpp"
 #include "CoreRender/render/FrameBuffer.hpp"
+#include "CoreRender/math/Matrix4.hpp"
 
 namespace cr
 {

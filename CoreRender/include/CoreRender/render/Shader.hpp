@@ -25,7 +25,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "RenderResource.hpp"
 #include "BlendMode.hpp"
 #include "ShaderVariableType.hpp"
-#include "UniformData.hpp"
 #include "DepthTest.hpp"
 #include "Texture.hpp"
 #include "ShaderCombination.hpp"

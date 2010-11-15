@@ -48,6 +48,13 @@ namespace render
 	class VertexLayout;
 	struct RenderTargetInfo;
 
+	struct CustomUniform
+	{
+		char *name;
+		unsigned int size;
+		float *data;
+	};
+
 	struct Batch
 	{
 		VertexBuffer *vertices;
@@ -59,12 +66,6 @@ namespace render
 		Material *material;
 		math::Matrix4 transmat;
 
-		struct CustomUniform
-		{
-			const char *name;
-			unsigned int size;
-			float *data;
-		};
 		unsigned int customuniformcount;
 		CustomUniform *customuniforms;
 

@@ -70,7 +70,6 @@ set(SRC
 	include/CoreRender/render/TextureCube.hpp
 	include/CoreRender/render/Texture.hpp
 	include/CoreRender/render/TimerQuery.hpp
-	include/CoreRender/render/UniformData.hpp
 	include/CoreRender/render/VertexBuffer.hpp
 	include/CoreRender/render/VertexLayout.hpp
 	include/CoreRender/render/VideoDriverType.hpp
@@ -120,7 +119,6 @@ set(SRC
 	src/render/ShaderCombination.cpp
 	src/render/Texture2D.cpp
 	src/render/Texture.cpp
-	src/render/UniformData.cpp
 	src/render/UploadManager.cpp
 	src/render/VertexBuffer.cpp
 	src/render/VideoDriver.cpp

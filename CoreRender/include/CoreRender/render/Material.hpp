@@ -24,7 +24,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Shader.hpp"
 #include "Texture.hpp"
-#include "UniformData.hpp"
 
 namespace cr
 {
@@ -126,11 +125,28 @@ namespace render
 			const std::vector<TextureInfo> &getTextures();
 
 			/**
-			 * Returns the uniform data used for this material. The uniform
-			 * values are applied after the default shader text values, but
-			 * before those specified by the user in RenderJob.
+			 * Overridden custom uniform. Note that per batch uniform settings
+			 * override this again.
 			 */
-			UniformData &getUniformData()
+			struct UniformInfo
+			{
+				/**
+				 * Name of the uniform.
+				 */
+				std::string name;
+				/**
+				 * Number of float components.
+				 */
+				unsigned int size;
+				/**
+				 * Data which is sent to OpenGL.
+				 */
+				float data[16];
+			};
+
+			void setUniform(std::string name, unsigned int size, float *data);
+			void removeUniform(std::string name);
+			const std::vector<UniformInfo> &getUniforms()
 			{
 				return uniforms;
 			}
@@ -156,7 +172,6 @@ namespace render
 			}
 			virtual void upload(void *data);
 
-
 			typedef core::SharedPointer<Material> Ptr;
 		protected:
 			virtual void *getUploadData();
@@ -167,9 +182,8 @@ namespace render
 			unsigned int shaderflagvalue;
 
 			std::vector<TextureInfo> textures;
+			std::vector<UniformInfo> uniforms;
 			TextureList *uploadeddata;
-
-			UniformData uniforms;
 	};
 }
 }
