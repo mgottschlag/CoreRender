@@ -60,7 +60,6 @@ namespace render
 				            command->bindtextures.texturecount);
 				break;
 			case RenderCommandType::DrawQuad:
-				// TODO
 				drawQuad(command->drawquad.quad,
 				         command->drawquad.shader,
 				         command->drawquad.material);
@@ -75,6 +74,7 @@ namespace render
 	{
 		// Setup common data
 		setMatrices(queue->projmat, queue->viewmat);
+		setLightUniforms(queue->light);
 		// Render batches
 		for (unsigned int i = 0; i < queue->batches.size(); i++)
 		{

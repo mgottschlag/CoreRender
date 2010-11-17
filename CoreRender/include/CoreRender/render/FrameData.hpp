@@ -99,6 +99,14 @@ namespace render
 		const char *name;
 		Texture *tex;
 	};
+	struct LightUniforms
+	{
+		float position[4];
+		float direction[3];
+		float color[4];
+		math::Matrix4 shadowmat;
+		Texture *shadowmap;
+	};
 	struct RenderQueue
 	{
 		RenderQueue()
@@ -119,6 +127,7 @@ namespace render
 		 */
 		core::MemoryPool *memory;
 		// TODO: Light uniforms
+		LightUniforms *light;
 	};
 	struct RenderCommand
 	{

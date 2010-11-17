@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/core/MemoryPool.hpp"
 #include "CoreRender/core/HashMap.hpp"
 #include "CoreRender/render/Material.hpp"
+#include "CoreRender/res/ResourceManager.hpp"
 
 #include <cstring>
 
@@ -31,11 +32,28 @@ namespace cr
 {
 namespace scene
 {
-	Scene::Scene()
+	Scene::Scene(res::ResourceManager *rmgr)
 	{
+		shadowmap = rmgr->createResource<render::Texture2D>("Texture2D");
+		shadowmap->set(512, 512, render::TextureFormat::Depth24);
+		render::FrameBuffer::Ptr shadowfb;
+		shadowfb = rmgr->createResource<render::FrameBuffer>("FrameBuffer");
+		shadowfb->setSize(512, 512, false);
+		shadowtarget = rmgr->createResource<render::RenderTarget>("RenderTarget");
+		shadowtarget->setDepthBuffer(shadowmap);
+		shadowtarget->setFrameBuffer(shadowfb);
 	}
 	Scene::~Scene()
 	{
+		destroy();
+	}
+
+	void Scene::destroy()
+	{
+		cameras.clear();
+		lights.clear();
+		shadowmap = 0;
+		shadowtarget = 0;
 	}
 
 	void Scene::addCamera(Camera::Ptr camera)
@@ -108,7 +126,21 @@ namespace scene
 		render::Pipeline::Ptr pipeline = camera->getPipeline();
 		if (!pipeline)
 			return 0;
-		unsigned int shadowqueuecount = getShadowRenderQueueCount(camera);
+		// Only lights which are visible need to be drawn
+		std::vector<Light::Ptr> lights;
+		clipLights(camera, lights);
+		// We need the exact number of shadows/lights to be rendered for
+		// allocating render queues
+		unsigned int forwardlightcount, forwardshadowcount;
+		getForwardLightCount(camera,
+		                     lights,
+		                     forwardlightcount,
+		                     forwardshadowcount);
+		unsigned int deferredlightcount, deferredshadowcount;
+		getDeferredLightCount(camera,
+		                      lights,
+		                      deferredlightcount,
+		                      deferredshadowcount);
 		unsigned int queuecount = 0;
 		for (unsigned int i = 0; i < pipeline->getStageCount(); i++)
 		{
@@ -119,17 +151,55 @@ namespace scene
 				if (command->type == render::PipelineCommandType::DrawGeometry)
 					queuecount++;
 				else if (command->type == render::PipelineCommandType::DoForwardLightLoop)
-					queuecount += shadowqueuecount;
+				{
+					queuecount += forwardshadowcount;
+					queuecount += forwardlightcount;
+				}
 				else if (command->type == render::PipelineCommandType::DoDeferredLightLoop)
-					queuecount += shadowqueuecount;
+					queuecount += deferredshadowcount;
 			}
 		}
 		return queuecount;
 	}
-	unsigned int Scene::getShadowRenderQueueCount(Camera::Ptr camera)
+	void Scene::getForwardLightCount(Camera::Ptr camera,
+	                                 std::vector<Light::Ptr> &lights,
+	                                 unsigned int &lightcount,
+	                                 unsigned int &shadowcount)
+	{
+		lightcount = 0;
+		shadowcount = 0;
+		for (unsigned int i = 0; i < lights.size(); i++)
+		{
+			if (lights[i]->getLightContext() == -1)
+				continue;
+			lightcount++;
+			if (lights[i]->getShadowsEnabled()
+				&& lights[i]->getShadowContext() != -1)
+				shadowcount++;
+		}
+	}
+	void Scene::getDeferredLightCount(Camera::Ptr camera,
+	                                  std::vector<Light::Ptr> &lights,
+	                                  unsigned int &lightcount,
+	                                  unsigned int &shadowcount)
+	{
+		lightcount = 0;
+		shadowcount = 0;
+		for (unsigned int i = 0; i < lights.size(); i++)
+		{
+			if (!lights[i]->getDeferredMaterial())
+				continue;
+			lightcount++;
+			if (lights[i]->getShadowsEnabled()
+				&& lights[i]->getShadowContext() != -1)
+				shadowcount++;
+		}
+	}
+	void Scene::clipLights(Camera::Ptr camera,
+	                       std::vector<Light::Ptr> &visible)
 	{
 		// TODO
-		return 0;
+		visible = lights;
 	}
 	unsigned int Scene::beginFrame(render::SceneFrameData *frame,
 	                               render::RenderQueue *queue,
@@ -139,10 +209,13 @@ namespace scene
 		if (!pipeline)
 			return 0;
 		core::MemoryPool *memory = queue->memory;
-		unsigned int shadowqueuecount = getShadowRenderQueueCount(camera);
+		// Only lights which are visible need to be drawn
+		std::vector<Light::Ptr> lights;
+		clipLights(camera, lights);
 		unsigned int queuecount = 0;
 		std::vector<render::TextureBinding> boundtextures;
 		render::TextureBinding *preparedtextures = 0;
+		render::RenderTarget::Ptr currenttarget = 0;
 		// We need to keep track of the current pipeline state as targets etc
 		// are set with a command but actually passed for every queue
 		for (unsigned int i = 0; i < pipeline->getStageCount(); i++)
@@ -158,6 +231,7 @@ namespace scene
 					queue[queuecount].context = command->uintparams[0];
 					queue[queuecount].projmat = camera->getProjMat();
 					queue[queuecount].viewmat = camera->getViewMat();
+					queue[queuecount].light = 0;
 					// TODO: Clipping
 					// Add draw command to the queue
 					void *ptr = memory->allocate(sizeof(render::RenderCommand));
@@ -170,14 +244,75 @@ namespace scene
 				else if (command->type == render::PipelineCommandType::DoForwardLightLoop)
 				{
 					prepareTextures(frame, boundtextures, preparedtextures, memory);
-					// TODO
-					queuecount += shadowqueuecount;
+					// Render all lights one by one (forward lighting)
+					for (unsigned int i = 0; i < lights.size(); i++)
+					{
+						if (lights[i]->getLightContext() == -1)
+							continue;
+						void *ptr = memory->allocate(sizeof(render::LightUniforms));
+						render::LightUniforms *light = (render::LightUniforms*)ptr;
+						light->shadowmap = 0;
+						lights[i]->getLightInfo(light);
+						math::Matrix4 shadowmat;
+						if (lights[i]->getShadowsEnabled()
+							&& lights[i]->getShadowContext() != -1)
+						{
+							light->shadowmap = shadowmap.get();
+							unsigned int shadowmapcount = lights[i]->getShadowMapCount();
+							insertSetTarget(frame, shadowtarget, camera, memory);
+							void *ptr = memory->allocate(sizeof(render::RenderCommand));
+							render::RenderCommand *cmd = (render::RenderCommand*)ptr;
+							cmd->type = render::RenderCommandType::ClearTarget;
+							cmd->cleartarget.buffers = 1;
+							cmd->cleartarget.depth = 1.0f;
+							frame->addCommand(cmd);
+							lights[i]->prepareShadowMaps(frame,
+							                             &queue[queuecount],
+							                             camera,
+							                             &shadowmat,
+							                             light);
+							insertSetTarget(frame, currenttarget, camera, memory);
+							queuecount += shadowmapcount;
+							// The shadow matrix has to be modified to output
+							// texture coordinates (0..1 instead of -1..1)
+							shadowmat = math::Matrix4::TransMat(0.5f, 0.5f, 0.0f)
+							          * math::Matrix4::ScaleMat(0.5f, 0.5f, 1.0f)
+							          * shadowmat;
+						}
+						light->shadowmat = shadowmat;
+						// Light pass using the current camera and the light
+						// context
+						queue[queuecount].context = lights[i]->getLightContext();
+						queue[queuecount].projmat = camera->getProjMat();
+						queue[queuecount].viewmat = camera->getViewMat();
+						queue[queuecount].light = light;
+						// TODO: Clipping
+						// Add draw command to the queue
+						ptr = memory->allocate(sizeof(render::RenderCommand));
+						render::RenderCommand *cmd = (render::RenderCommand*)ptr;
+						cmd->type = render::RenderCommandType::RenderQueue;
+						cmd->renderqueue.queue = &queue[queuecount];
+						frame->addCommand(cmd);
+						queuecount++;
+					}
 				}
 				else if (command->type == render::PipelineCommandType::DoDeferredLightLoop)
 				{
 					prepareTextures(frame, boundtextures, preparedtextures, memory);
-					// TODO
-					queuecount += shadowqueuecount;
+					// Render all lights one by one (forward lighting)
+					for (unsigned int i = 0; i < lights.size(); i++)
+					{
+						if (!lights[i]->getDeferredMaterial())
+							continue;
+						if (lights[i]->getShadowsEnabled()
+							&& lights[i]->getShadowContext() != -1)
+						{
+							// TODO: Shadow map queue
+							queuecount++;
+						}
+						// Light quad
+						// TODO
+					}
 				}
 				else if (command->type == render::PipelineCommandType::ClearTarget)
 				{
@@ -194,42 +329,8 @@ namespace scene
 				}
 				else if (command->type == render::PipelineCommandType::SetTarget)
 				{
-					// TODO: Configurable viewport
-					render::RenderTargetInfo *targetinfo = 0;
-					render::FrameBuffer::Ptr fb;
-					if (command->resources[0])
-					{
-						void *ptr = memory->allocate(sizeof(render::RenderTargetInfo));
-						targetinfo = (render::RenderTargetInfo*)ptr;
-						render::RenderTarget *newtarget;
-						newtarget = (render::RenderTarget*)command->resources[0].get();
-						newtarget->getRenderTargetInfo(*targetinfo, memory);
-						fb = newtarget->getFrameBuffer();
-					}
-					else
-						targetinfo = 0;
-					void *ptr = memory->allocate(sizeof(render::RenderCommand));
-					render::RenderCommand *cmd = (render::RenderCommand*)ptr;
-					cmd->type = render::RenderCommandType::SetTarget;
-					cmd->settarget.target = targetinfo;
-					if (!targetinfo)
-					{
-						// If we render to the final target, use the camera
-						// viewport
-						unsigned int *viewport = camera->getViewport();
-						for (unsigned int k = 0; k < 4; k++)
-							cmd->settarget.viewport[k] = viewport[k];
-					}
-					else
-					{
-						// If we render to an intermediate buffer, use the
-						// whole buffer
-						cmd->settarget.viewport[0] = 0;
-						cmd->settarget.viewport[1] = 0;
-						cmd->settarget.viewport[2] = fb->getWidth();
-						cmd->settarget.viewport[3] = fb->getHeight();
-					}
-					frame->addCommand(cmd);
+					currenttarget = (render::RenderTarget*)command->resources[0].get();
+					insertSetTarget(frame, currenttarget, camera, memory);
 				}
 				else if (command->type == render::PipelineCommandType::BindTexture)
 				{
@@ -327,6 +428,47 @@ namespace scene
 		cmd->bindtextures.textures = prepared;
 		frame->addCommand(cmd);
 		
+	}
+
+	void Scene::insertSetTarget(render::SceneFrameData *frame,
+	                            render::RenderTarget::Ptr target,
+	                            Camera::Ptr camera,
+	                            core::MemoryPool *memory)
+	{
+		// TODO: Configurable viewport
+		render::RenderTargetInfo *targetinfo = 0;
+		render::FrameBuffer::Ptr fb;
+		if (target)
+		{
+			void *ptr = memory->allocate(sizeof(render::RenderTargetInfo));
+			targetinfo = (render::RenderTargetInfo*)ptr;
+			target->getRenderTargetInfo(*targetinfo, memory);
+			fb = target->getFrameBuffer();
+		}
+		else
+			targetinfo = 0;
+		void *ptr = memory->allocate(sizeof(render::RenderCommand));
+		render::RenderCommand *cmd = (render::RenderCommand*)ptr;
+		cmd->type = render::RenderCommandType::SetTarget;
+		cmd->settarget.target = targetinfo;
+		if (!targetinfo)
+		{
+			// If we render to the final target, use the camera
+			// viewport
+			unsigned int *viewport = camera->getViewport();
+			for (unsigned int k = 0; k < 4; k++)
+				cmd->settarget.viewport[k] = viewport[k];
+		}
+		else
+		{
+			// If we render to an intermediate buffer, use the
+			// whole buffer
+			cmd->settarget.viewport[0] = 0;
+			cmd->settarget.viewport[1] = 0;
+			cmd->settarget.viewport[2] = fb->getWidth();
+			cmd->settarget.viewport[3] = fb->getHeight();
+		}
+		frame->addCommand(cmd);
 	}
 }
 }

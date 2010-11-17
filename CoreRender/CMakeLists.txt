@@ -19,7 +19,6 @@ set(SRC
 	include/CoreRender/core/Semaphore.hpp
 	include/CoreRender/core/StandardFile.hpp
 	include/CoreRender/core/StandardFileSystem.hpp
-	#include/CoreRender/core/StringTable.hpp
 	include/CoreRender/core/StructPacking.hpp
 	include/CoreRender/core/Thread.hpp
 	include/CoreRender/core/Time.hpp
@@ -34,36 +33,24 @@ set(SRC
 	include/CoreRender/math/Vector2.hpp
 	include/CoreRender/math/Vector3.hpp
 	include/CoreRender/math/Vector4.hpp
-	#include/CoreRender/render/AnimationFile.hpp
-	#include/CoreRender/render/Animation.hpp
 	include/CoreRender/render/BlendMode.hpp
 	include/CoreRender/render/FrameBuffer.hpp
 	include/CoreRender/render/FrameData.hpp
-	include/CoreRender/render/#GeometryFile.hpp
 	include/CoreRender/render/GeometryManager.hpp
 	include/CoreRender/GraphicsEngine.hpp
 	include/CoreRender/render/IndexBuffer.hpp
 	include/CoreRender/render/Material.hpp
-	#include/CoreRender/render/Model.hpp
-	#include/CoreRender/render/ModelRenderable.hpp
 	include/CoreRender/render/OcclusionQuery.hpp
-	#include/CoreRender/render/PipelineCommand.hpp
-	#include/CoreRender/render/PipelineDefinition.hpp
 	include/CoreRender/render/Pipeline.hpp
-	#include/CoreRender/render/Renderable.hpp
 	include/CoreRender/render/RenderCaps.hpp
-	#include/CoreRender/render/Renderer.hpp
-	#include/CoreRender/render/RenderJob.hpp
 	include/CoreRender/render/RenderQuery.hpp
 	include/CoreRender/render/RenderResource.hpp
 	include/CoreRender/render/RenderStats.hpp
 	include/CoreRender/render/RenderTarget.hpp
 	include/CoreRender/render/RenderObject.hpp
-	#include/CoreRender/render/RenderThread.hpp
 	include/CoreRender/render/ShaderCombination.hpp
 	include/CoreRender/render/Shader.hpp
 	include/CoreRender/render/ShaderVariableType.hpp
-	#include/CoreRender/render/SpatialRenderable.hpp
 	include/CoreRender/render/Texture1D.hpp
 	include/CoreRender/render/Texture2D.hpp
 	include/CoreRender/render/Texture3D.hpp
@@ -92,13 +79,10 @@ set(SRC
 	src/core/StandardFileSystem.cpp
 	src/core/Thread.cpp
 	src/core/Time.cpp
-	#src/render/Animation.cpp
 	src/render/FrameBuffer.cpp
 	src/GraphicsEngine.cpp
 	src/render/IndexBuffer.cpp
 	src/render/Material.cpp
-	#src/render/Model.cpp
-	#src/render/ModelRenderable.cpp
 	src/render/opengl/FrameBufferOpenGL.cpp
 	src/render/opengl/IndexBufferOpenGL.cpp
 	src/render/opengl/RenderCapsOpenGL.cpp
@@ -107,14 +91,9 @@ set(SRC
 	src/render/opengl/VertexBufferOpenGL.cpp
 	src/render/opengl/VideoDriverOpenGL.cpp
 	src/render/Pipeline.cpp
-	#src/render/PipelineCommand.cpp
-	#src/render/PipelineDefinition.cpp
-	#src/render/Renderer.cpp
-	#src/render/RenderJob.cpp
 	src/render/RenderResource.cpp
 	src/render/RenderObject.cpp
 	src/render/RenderTarget.cpp
-	#src/render/RenderThread.cpp
 	src/render/Shader.cpp
 	src/render/ShaderCombination.cpp
 	src/render/Texture2D.cpp
@@ -133,6 +112,9 @@ set(SRC
 	src/scene/Camera.cpp
 	src/scene/Animation.cpp
 	src/scene/AnimationBinding.cpp
+	src/scene/PointLight.cpp
+	src/scene/SpotLight.cpp
+	src/scene/Light.cpp
 )
 
 set(LIB

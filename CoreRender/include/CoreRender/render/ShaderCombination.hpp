@@ -52,6 +52,7 @@ namespace render
 		int shadowmat;
 		int shadowbias;
 		int shadowsplitdist;
+		int shadowmap;
 	};
 	struct ShaderCombination : public RenderObject
 	{

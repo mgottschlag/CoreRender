@@ -278,6 +278,10 @@ namespace opengl
 			}
 			else if (TextureFormat::isDepth(uploaddata->internalformat))
 			{
+				// TODO: Hack
+				//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 				glTexImage2D(GL_TEXTURE_2D,
 				             0,
 				             internal,

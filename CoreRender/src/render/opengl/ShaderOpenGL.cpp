@@ -203,6 +203,8 @@ namespace opengl
 		                                                      "shadowBias");
 		combination->uniforms.shadowsplitdist = glGetUniformLocation(program,
 		                                                             "shadowSplitDist");
+		combination->uniforms.shadowmap = glGetUniformLocation(program,
+		                                                       "shadowMap");
 		// Get uniform locations
 		combination->customuniforms.resize(uploadedinfo.uniforms.size());
 		for (unsigned int i = 0; i < uploadedinfo.uniforms.size(); i++)

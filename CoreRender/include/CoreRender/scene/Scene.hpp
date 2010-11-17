@@ -40,8 +40,10 @@ namespace scene
 	class Scene
 	{
 		public:
-			Scene();
+			Scene(res::ResourceManager *rmgr);
 			~Scene();
+
+			void destroy();
 
 			void addCamera(Camera::Ptr camera);
 			void removeCamera(Camera::Ptr camera);
@@ -51,7 +53,16 @@ namespace scene
 			render::SceneFrameData *beginFrame(render::FrameData *frame);
 		private:
 			unsigned int getRenderQueueCount(Camera::Ptr camera);
-			unsigned int getShadowRenderQueueCount(Camera::Ptr camera);
+			void getForwardLightCount(Camera::Ptr camera,
+			                          std::vector<Light::Ptr> &lights,
+			                          unsigned int &lightcount,
+			                          unsigned int &shadowcount);
+			void getDeferredLightCount(Camera::Ptr camera,
+			                           std::vector<Light::Ptr> &lights,
+			                           unsigned int &lightcount,
+			                           unsigned int &shadowcount);
+			void clipLights(Camera::Ptr camera,
+			                std::vector<Light::Ptr> &visible);
 			unsigned int beginFrame(render::SceneFrameData *frame,
 			                        render::RenderQueue *queue,
 			                        Camera::Ptr camera);
@@ -61,10 +72,20 @@ namespace scene
 			                            render::TextureBinding *&prepared,
 			                            core::MemoryPool *memory);
 
+			void insertSetTarget(render::SceneFrameData *frame,
+			                     render::RenderTarget::Ptr target,
+			                     Camera::Ptr camera,
+			                     core::MemoryPool *memory);
+
 			tbb::mutex cameramutex;
 			std::vector<Camera::Ptr> cameras;
 			tbb::mutex lightmutex;
 			std::vector<Light::Ptr> lights;
+
+			res::ResourceManager *rmgr;
+
+			render::Texture2D::Ptr shadowmap;
+			render::RenderTarget::Ptr shadowtarget;
 	};
 }
 }

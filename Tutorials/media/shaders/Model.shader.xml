@@ -4,59 +4,33 @@
 
 	<Text name="VS_GENERAL">
 	<![CDATA[
-		#include "utility/defaultUniforms.glsl"
+		#include "utility/vsCommon.glsl"
 		attribute vec3 pos;
 		attribute vec3 normal;
 		attribute vec2 texcoord0;
-		#if Skinning
-		attribute vec4 jointindex;
-		attribute vec4 jointweight;
-		uniform mat4 skinMat[50];
-		#endif
-		#if Instancing
-		attribute mat4 transMat;
-		#endif
 		varying vec2 texcoord;
 		varying vec3 worldPos;
 		varying vec3 worldNormal;
 		void main()
 		{
-			// Transformation
 			texcoord = texcoord0;
-			/*vec4 translated = transMat * vec4(pos, 1.0);
-			worldPos = translated.xyz / translated.w;
-			translated = transMat * vec4(normal, 0.0);
-			worldNormal = translated.xyz;*/
-			#if Skinning
-			// Skinning
-			mat4 mat = mat4(0.0);
-			for (int i = 0; i < 4; i++)
-			{
-				mat += skinMat[int(jointindex[i])] * jointweight[i];
-			}
-			vec4 skinpos = mat * vec4(pos, 1.0);
-			#if Instancing
-			gl_Position = viewProjMat * transMat * skinpos;
-			#else
-			gl_Position = worldMat * skinpos;
-			#endif
-			#else
-			#if Instancing
-			gl_Position = viewProjMat * transMat * vec4(pos, 1.0);
-			#else
-			gl_Position = worldMat * vec4(pos, 1.0);
-			#endif
-			#endif
+			vec4 vertexPos = getWorldPos(getSkinningPos(vec4(pos, 1.0)));
+			worldPos = vertexPos.xyz / vertexPos.w;
+			// TODO: Proper normal matrix
+			worldNormal = getWorldPos(getSkinningPos(vec4(normal, 0.0))).xyz;
+
+			gl_Position = viewProjMat * vertexPos;
 		}
 	]]>
 	</Text>
 	<Text name="FS_AMBIENT">
 	<![CDATA[
-		varying vec2 texcoord;
 		uniform sampler2D tex;
+		uniform vec4 ambientLight;
+		varying vec2 texcoord;
 		void main()
 		{
-			gl_FragColor = texture2D(tex, texcoord);
+			gl_FragColor = texture2D(tex, texcoord) * ambientLight;
 		}
 	]]>
 	</Text>
@@ -64,49 +38,91 @@
 	<![CDATA[
 		varying vec2 texcoord;
 		uniform sampler2D tex;
-		uniform vec3 lightPos;
-		uniform float lightRadius;
+		uniform vec4 lightPos;
 		varying vec3 worldPos;
 		varying vec3 worldNormal;
-		uniform vec3 lightColor;
+		uniform vec4 lightColor;
 		void main()
 		{
-			vec3 lightVec = lightPos - worldPos;
+			vec3 lightVec = lightPos.xyz - worldPos;
 			float lightDist = length(lightVec);
-			lightVec /= lightDist;
+			lightVec /= vec3(lightDist);
 			// Compute attenuation
-			lightDist = lightDist / lightRadius;
+			lightDist = lightDist / lightPos.w;
 			float attenuation = max(dot(lightVec, normalize(worldNormal)), 0.0) * (1.0 - lightDist * lightDist);
-			gl_FragColor.rgb = texture2D(tex, texcoord).rgb * lightColor * attenuation;
+			gl_FragColor.rgb = texture2D(tex, texcoord).rgb * lightColor.rgb * attenuation;
 		}
 	]]>
 	</Text>
 	<Text name="FS_SPOTLIGHT">
 	<![CDATA[
+		uniform sampler2DShadow shadowMap;
+		uniform mat4 shadowMat;
+
 		varying vec2 texcoord;
 		uniform sampler2D tex;
-		uniform vec3 lightPos;
-		uniform float lightRadius;
+		uniform vec4 lightPos;
 		varying vec3 worldPos;
 		varying vec3 worldNormal;
-		uniform vec3 lightColor;
-		uniform float lightAngle;
+		uniform vec4 lightColor;
 		uniform vec3 lightDir;
 		void main()
 		{
-			vec3 lightVec = lightPos - worldPos;
+			// Get light data
+			vec3 lightVec = lightPos.xyz - worldPos;
 			float lightDist = length(lightVec);
 			lightVec /= lightDist;
 			vec3 normal = normalize(worldNormal);
+
 			// Compute attenuation
-			lightDist = lightDist / lightRadius;
+			lightDist = lightDist / lightPos.w;
 			float attenuation = max(dot(lightVec, normal), 0.0) * (1.0 - lightDist * lightDist);
+			float lightAngle = lightColor.w;
 			float angle = dot(lightVec, -lightDir);
 			attenuation *= clamp((angle - lightAngle) * 5.0, 0.0, 1.0);
-			gl_FragColor.rgb = texture2D(tex, texcoord).rgb * lightColor * attenuation;
+
+			// Get shadow
+			vec4 shadowPos = shadowMat * vec4(worldPos, 1.0);
+			shadowPos.z = lightDist;
+			shadowPos.xy /= shadowPos.w;
+
+			float shadow = shadow2D(shadowMap, shadowPos.xyz).r;
+
+			// Assemble result
+			gl_FragColor.rgb = texture2D(tex, texcoord).rgb * lightColor.rgb * attenuation * shadow;
+			//gl_FragColor.rgb = vec3(shadow);
+			//gl_FragColor.rgb = shadowPos.xyz;
+			//gl_FragColor = texture2D(shadowMap, shadowPos.xy);
 		}
 	]]>
 	</Text>
+
+	<Text name="VS_SHADOWMAP">
+	<![CDATA[
+		#include "utility/vsCommon.glsl"
+		attribute vec3 pos;
+		varying float depth;
+		void main()
+		{
+			vec4 vertexPos = getWorldPos(getSkinningPos(vec4(pos, 1.0)));
+			vec3 worldPos = vertexPos.xyz / vertexPos.w;
+			depth = length(lightPos.xyz - worldPos) / lightPos.w;
+
+			gl_Position = viewProjMat * vertexPos;
+		}
+	]]>
+	</Text>
+	<Text name="FS_SHADOWMAP">
+	<![CDATA[
+		varying float depth;
+		void main()
+		{
+			// TODO: Proper bias here
+			gl_FragDepth = depth + 0.0001;
+		}
+	]]>
+	</Text>
+
 
 	<Attrib name="pos" />
 	<Attrib name="normal" />
@@ -114,13 +130,9 @@
 	<Attrib name="jointindex" />
 	<Attrib name="jointweight" />
 
-	<!--<Uniform name="worldMat" type="mat4" />
-	<Uniform name="skinMat" count="50" type="mat4" />
-	<Uniform name="lightPos" type="float3" />
-	<Uniform name="lightRadius" type="float1" />
-	<Uniform name="lightDir" type="float3" />
-	<Uniform name="lightAngle" type="float1" />
-	<Uniform name="lightColor" type="float3" />-->
+	<Uniform name="ambientLight" type="float4">
+		0.2, 0.2, 0.2, 1.0
+	</Uniform>
 
 	<Texture name="tex" />
 
@@ -134,4 +146,5 @@
 		<Depth write="false" test="LessEqual" />
 		<Blend mode="Add" />
 	</Context>
+	<Context name="SHADOWMAP" vs="VS_SHADOWMAP" fs="FS_SHADOWMAP" />
 </Shader>

@@ -31,11 +31,11 @@ namespace math
 		// TODO: Fast float functions go here
 		static const float pi = 3.14159f;
 
-		float degToRad(float degrees)
+		static float degToRad(float degrees)
 		{
 			return degrees * (pi / 180.0f);
 		}
-		float radToDeg(float radians)
+		static float radToDeg(float radians)
 		{
 			return radians * (180.0f / pi);
 		}

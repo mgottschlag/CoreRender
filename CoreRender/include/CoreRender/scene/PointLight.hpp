@@ -26,18 +26,38 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace cr
 {
+namespace res
+{
+	class NameRegistry;
+}
 namespace scene
 {
 	class PointLight : public Light
 	{
 		public:
+			PointLight(res::NameRegistry *names,
+			           render::Material::Ptr deferredmat,
+			           const char *lightcontext,
+			           const char *shadowcontext);
 			PointLight(render::Material::Ptr deferredmat,
-			          const char *lightcontext,
-			          const char *shadowcontext);
+			           int lightcontext,
+			           int shadowcontext);
 			virtual ~PointLight();
+
+			void setRadius(float radius)
+			{
+				this->radius = radius;
+			}
+			float getRadius()
+			{
+				return radius;
+			}
+
+			virtual void getLightInfo(render::LightUniforms *uniforms);
 
 			typedef core::SharedPointer<PointLight> Ptr;
 		private:
+			float radius;
 	};
 }
 }

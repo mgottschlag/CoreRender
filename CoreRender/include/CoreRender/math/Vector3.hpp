@@ -256,6 +256,10 @@ namespace math
 				z = (T)v.z;
 				return *this;
 			}
+			Vector3<T> operator-()
+			{
+				return Vector3<T>(-x, -y, -z);
+			}
 			Vector3<T> &operator=(const std::string &s)
 			{
 				set(s);

@@ -203,7 +203,11 @@ namespace opengl
 			currentfb->depthbuffer = target->depthbuffer;
 		}
 		// Change draw buffers
-		unsigned int drawbuffers = 0xFFFFFFFF >> (32 - target->colorbuffercount);
+		unsigned int drawbuffers;
+		if (target->colorbuffercount > 0)
+			drawbuffers = 0xFFFFFFFF >> (32 - target->colorbuffercount);
+		else
+			drawbuffers = 0;
 		forceDrawBuffers(drawbuffers);
 		// Check fbo state
 		GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
@@ -254,6 +258,8 @@ namespace opengl
 
 	void VideoDriverOpenGL::draw(Batch *batch)
 	{
+		if (batch->shader->programobject == 0)
+			return;
 		// Change blend mode if necessary
 		setBlendMode(batch->shader->uploadeddata.blendmode);
 		// Change depth test
@@ -387,6 +393,36 @@ namespace opengl
 			if (locations.framebufsize != -1)
 				glUniform2f(locations.framebufsize, targetwidth, targetheight);
 			// TODO: Other uniforms
+			LightUniforms *light = getLightUniforms();
+			if (light)
+			{
+				if (locations.lightpos != -1)
+					glUniform4f(locations.lightpos,
+					            light->position[0],
+					            light->position[1],
+					            light->position[2],
+					            light->position[3]);
+				if (locations.lightdir != -1)
+					glUniform3f(locations.lightdir,
+					            light->direction[0],
+					            light->direction[1],
+					            light->direction[2]);
+				if (locations.lightcolor != -1)
+					glUniform4f(locations.lightcolor,
+					            light->color[0],
+					            light->color[1],
+					            light->color[2],
+					            light->color[3]);
+				if (locations.shadowmat != -1)
+					glUniformMatrix4fv(locations.shadowmat, 1, GL_FALSE, light->shadowmat.m);
+				if (locations.shadowmap && light->shadowmap)
+				{
+					unsigned int texcount = shaderinfo->samplers.size();
+					glActiveTexture(GL_TEXTURE0 + texcount);
+					glBindTexture(GL_TEXTURE_2D, light->shadowmap->getHandle());
+					glUniform1i(locations.shadowmap, texcount);
+				}
+			}
 		}
 		// Draw geometry
 		if (batch->transmatcount == 0)
@@ -501,6 +537,7 @@ namespace opengl
 		currentindices = 0;
 		// Unbind currently used textures
 		bindTextures(0, 0);
+		setLightUniforms(0);
 	}
 
 	void VideoDriverOpenGL::setMatrices(math::Matrix4 projmat,
@@ -575,6 +612,10 @@ namespace opengl
 				glDrawBuffer(GL_BACK);
 			else
 				glDrawBuffer(GL_NONE);
+		}
+		else if (buffers == 0)
+		{
+			glDrawBuffer(GL_NONE);
 		}
 		else
 		{
@@ -661,13 +702,12 @@ namespace opengl
 		// Default uniforms (not dependant on the transformation matrix)
 		{
 			UniformLocations &locations = batch->shader->uniforms;
-			math::Matrix4 worldmat = viewprojmat * transmat;
 			if (locations.worldmat != -1)
-				glUniformMatrix4fv(locations.worldmat, 1, GL_FALSE, worldmat.m);
+				glUniformMatrix4fv(locations.worldmat, 1, GL_FALSE, transmat.m);
 			if (locations.worldnormalmat != -1)
 			{
 				// TODO: Is this correct?
-				math::Matrix4 worldnormalmat = worldmat.inverse().transposed();
+				math::Matrix4 worldnormalmat = transmat.inverse().transposed();
 				glUniformMatrix4fv(locations.worldnormalmat, 1, GL_FALSE, worldnormalmat.m);
 			}
 			// TODO: Other uniforms
@@ -769,6 +809,10 @@ namespace opengl
 		// Clean up attribs
 		if (batch->shader->transmatattrib != -1)
 		{
+			glVertexAttribDivisorARB(batch->shader->transmatattrib, 0);
+			glVertexAttribDivisorARB(batch->shader->transmatattrib + 1, 0);
+			glVertexAttribDivisorARB(batch->shader->transmatattrib + 2, 0);
+			glVertexAttribDivisorARB(batch->shader->transmatattrib + 3, 0);
 			glDisableVertexAttribArray(batch->shader->transmatattrib);
 			glDisableVertexAttribArray(batch->shader->transmatattrib + 1);
 			glDisableVertexAttribArray(batch->shader->transmatattrib + 2);

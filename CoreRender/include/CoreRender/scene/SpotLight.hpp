@@ -23,18 +23,25 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_SCENE_SPOTLIGHT_HPP_INCLUDED_
 
 #include "Light.hpp"
-#include <CoreRender/render/Material.hpp>
 
 namespace cr
 {
+namespace res
+{
+	class NameRegistry;
+}
 namespace scene
 {
 	class SpotLight : public Light
 	{
 		public:
-			SpotLight(render::Material::Ptr deferredmat,
+			SpotLight(res::NameRegistry *names,
+			          render::Material::Ptr deferredmat,
 			          const char *lightcontext,
 			          const char *shadowcontext);
+			SpotLight(render::Material::Ptr deferredmat,
+			          int lightcontext,
+			          int shadowcontext);
 			virtual ~SpotLight();
 
 			void setRadius(float radius)
@@ -45,10 +52,26 @@ namespace scene
 			{
 				return radius;
 			}
+			void setAngle(float angle)
+			{
+				this->angle = angle;
+			}
+			float getAngle()
+			{
+				return angle;
+			}
+
+			virtual void prepareShadowMaps(render::SceneFrameData *frame,
+			                               render::RenderQueue *queue,
+			                               Camera::Ptr camera,
+			                               math::Matrix4 *shadowmat,
+			                               render::LightUniforms *uniforms);
+			virtual void getLightInfo(render::LightUniforms *uniforms);
 
 			typedef core::SharedPointer<SpotLight> Ptr;
 		private:
 			float radius;
+			float angle;
 	};
 }
 }

@@ -48,6 +48,7 @@ namespace render
 	struct Batch;
 	class Material;
 	struct TextureBinding;
+	class LightUniforms;
 
 	/**
 	 * Render system backend. This is used to create backend-specific classes
@@ -62,6 +63,7 @@ namespace render
 			VideoDriver()
 			{
 				bindTextures(0, 0);
+				light = 0;
 			}
 			/**
 			 * Destructor.
@@ -191,6 +193,15 @@ namespace render
 				return texturecount;
 			}
 
+			void setLightUniforms(LightUniforms *light)
+			{
+				this->light = light;
+			}
+			LightUniforms *getLightUniforms()
+			{
+				return light;
+			}
+
 			/**
 			 * Returns the type of this video driver.
 			 */
@@ -224,6 +235,8 @@ namespace render
 
 			TextureBinding *boundtextures;
 			unsigned int texturecount;
+
+			LightUniforms *light;
 	};
 }
 }
