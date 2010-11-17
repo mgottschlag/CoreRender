@@ -43,6 +43,8 @@ namespace scene
 			&& meshchangecounter == mesh->getChangeCounter())
 			return;
 		forceUpdate();
+		animchangecounter = animation->getChangeCounter();
+		meshchangecounter = mesh->getChangeCounter();
 	}
 
 	const std::vector<int> &AnimationBinding::getNodes()

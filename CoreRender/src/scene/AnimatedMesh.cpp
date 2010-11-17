@@ -197,7 +197,7 @@ namespace scene
 	}
 
 	float AnimatedMesh::applyStage(unsigned int stageindex,
-	                               std::vector<AnimatedMesh::NodeAnimationInfo> &nodes,
+	                               AnimatedMesh::NodeAnimationInfo *nodes,
 	                               float weightsum)
 	{
 		float remainingweight = 1.0f - weightsum;
@@ -257,9 +257,8 @@ namespace scene
 	void AnimatedMesh::applyAnimation(std::vector<Mesh::Node> &nodes)
 	{
 		unsigned int nodecount = nodes.size();
-		std::vector<NodeAnimationInfo> animationinfo;
-		animationinfo.resize(nodecount);
-		for (unsigned int i = 0; i < animationinfo.size(); i++)
+		NodeAnimationInfo *animationinfo = new NodeAnimationInfo[nodecount];
+		for (unsigned int i = 0; i < nodecount; i++)
 			animationinfo[i].updated = false;
 		float weightsum = 0.0f;
 		for (unsigned int i = 0; i < animstages.size(); i++)
@@ -298,8 +297,8 @@ namespace scene
 			else
 				nodes[i].abstrans = nodes[nodes[i].parent].abstrans
 				                  * nodes[i].transmat;
-			nodes[i].abstransinverse = nodes[i].abstrans.inverse();
 		}
+		delete[] animationinfo;
 	}
 }
 }

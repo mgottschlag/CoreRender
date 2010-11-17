@@ -400,14 +400,6 @@ namespace scene
 				memcpy(&jointmat.m[0],
 				       &batchdata[i].jointmatrices[j * 16],
 				       sizeof(float) * 16);
-				// TODO: Insert the node here?
-				std::cout << "jointmat " << j << "." << std::endl;
-				for (unsigned int k = 0; k < 16; k++)
-				{
-					std::cout << jointmat.m[k] << ", ";
-					if (k % 4 == 3)
-						std::cout << std::endl;
-				}
 				geometry[i].joints[j].node = -1;
 			}
 		}

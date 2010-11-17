@@ -77,7 +77,7 @@ namespace scene
 			typedef core::SharedPointer<AnimatedMesh> Ptr;
 		private:
 			float applyStage(unsigned int stageindex,
-			                 std::vector<NodeAnimationInfo> &nodes,
+			                 NodeAnimationInfo *nodes,
 			                 float weightsum);
 			void applyAnimation(std::vector<Mesh::Node> &nodes);
 
