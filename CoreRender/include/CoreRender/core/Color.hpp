@@ -31,89 +31,88 @@ namespace core
 		public:
 			Color()
 			{
-				value = 0;
+				red = 0;
+				green = 0;
+				blue = 0;
+				alpha = 0;
 			}
 			Color(const Color &color)
 			{
-				value = color.value;
+				red = color.red;
+				green = color.green;
+				blue = color.blue;
+				alpha = color.alpha;
 			}
-			Color(unsigned int color)
+			Color(float red,
+			      float green,
+			      float blue,
+			      float alpha)
 			{
-				value = color;
-			}
-			Color(unsigned char red,
-			      unsigned char green,
-			      unsigned char blue,
-			      unsigned char alpha)
-			{
-				rgba.red = red;
-				rgba.green = green;
-				rgba.blue = blue;
-				rgba.alpha = alpha;
+				this->red = red;
+				this->green = green;
+				this->blue = blue;
+				this->alpha = alpha;
 			}
 
-			void set(unsigned int value)
+			void setRed(float red)
 			{
-				this->value = value;
+				this->red = red;
 			}
-			unsigned int get() const
+			float getRed() const
 			{
-				return value;
+				return red;
 			}
-			void setRed(unsigned char red)
+			void setBlue(float blue)
 			{
-				rgba.red = red;
+				this->blue = blue;
 			}
-			unsigned char getRed() const
+			float getBlue() const
 			{
-				return rgba.red;
+				return blue;
 			}
-			void setBlue(unsigned char blue)
+			void setGreen(float green)
 			{
-				rgba.blue = blue;
+				this->green = green;
 			}
-			unsigned char getBlue() const
+			float getGreen() const
 			{
-				return rgba.blue;
+				return green;
 			}
-			void setGreen(unsigned char green)
+			void setAlpha(float alpha)
 			{
-				rgba.green = green;
+				this->alpha = alpha;
 			}
-			unsigned char getGreen() const
+			float getAlpha() const
 			{
-				return rgba.green;
-			}
-			void setAlpha(unsigned char alpha)
-			{
-				rgba.alpha = alpha;
-			}
-			unsigned char getAlpha() const
-			{
-				return rgba.alpha;
+				return alpha;
 			}
 
 			Color &operator=(const Color &color)
 			{
-				value = color.value;
+				red = color.red;
+				green = color.green;
+				blue = color.blue;
+				alpha = color.alpha;
 				return *this;
 			}
 			bool operator==(const Color &color)
 			{
-				return value == color.value;
+				// TODO: Rounding errors
+				if (red != color.red)
+					return false;
+				if (green != color.green)
+					return false;
+				if (blue != color.blue)
+					return false;
+				if (alpha != color.alpha)
+					return false;
+				return true;
 			}
 		private:
-			union
-			{
-				unsigned int value;
-				struct
-				{
-					unsigned char red;
-					unsigned char blue;
-					unsigned char green;
-					unsigned char alpha;
-				} rgba;
-			};
+			float red;
+			float green;
+			float blue;
+			float alpha;
 	};
 }
 }
