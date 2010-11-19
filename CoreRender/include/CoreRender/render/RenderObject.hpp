@@ -68,10 +68,6 @@ namespace render
 			 * slow.
 			 */
 			void *prepareForUpload();
-			/**
-			 * Returns true if this object is scheduled for uploading.
-			 */
-			bool isUploading();
 
 			/**
 			 * Queues the object for uploading to the video driver. Shall be

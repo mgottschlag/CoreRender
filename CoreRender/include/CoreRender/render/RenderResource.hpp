@@ -77,10 +77,6 @@ namespace render
 			 * @todo This should probably be able to use MemoryPool.
 			 */
 			void *prepareForUpload();
-			/**
-			 * Returns true if this resource is scheduled for uploading.
-			 */
-			bool isUploading();
 
 			typedef core::SharedPointer<RenderResource> Ptr;
 		protected:
