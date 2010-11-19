@@ -25,10 +25,23 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <vector>
 #include <tbb/spin_mutex.h>
 
+// Use this to replace the garbage collector with normal malloc()/free() pairs
+// for every allocation to make memory debuggers like valgrind work properly
+//#define CR_MEMORY_DEBUGGING
+
+#ifdef CR_MEMORY_DEBUGGING
+#include <cstdlib>
+struct MallocEntry
+{
+	MallocEntry *next;
+};
+#endif
+
 namespace cr
 {
 namespace core
 {
+
 	/**
 	 * Memory pool class using simple garbage collection. This class can be used
 	 * if the life time of many dynamically allocated objects is known to end
@@ -62,6 +75,10 @@ namespace core
 				this->pagesize = pagesize;
 				// Allocate a single page
 				currentmemory = allocPage(pagesize);
+
+#ifdef CR_MEMORY_DEBUGGING
+				mallocmem = 0;
+#endif
 			}
 			/**
 			 * Destructor.
@@ -76,6 +93,16 @@ namespace core
 					freePage(usedmemory[i], pagesize);
 				for (unsigned int i = 0; i < freememory.size(); i++)
 					freePage(freememory[i], pagesize);
+#ifdef CR_MEMORY_DEBUGGING
+				MallocEntry *mallocentry = mallocmem;
+				while (mallocentry)
+				{
+					MallocEntry *next = mallocentry->next;
+					free(mallocentry);
+					mallocentry = next;
+				}
+				mallocmem = 0;
+#endif
 			}
 
 			/**
@@ -99,6 +126,16 @@ namespace core
 				usedmemory.clear();
 				// Start at the current page from the beginning
 				used = 0;
+#ifdef CR_MEMORY_DEBUGGING
+				MallocEntry *mallocentry = mallocmem;
+				while (mallocentry)
+				{
+					MallocEntry *next = mallocentry->next;
+					free(mallocentry);
+					mallocentry = next;
+				}
+				mallocmem = 0;
+#endif
 			}
 			/**
 			 * Frees the memory returned by all previous calls to allocate().
@@ -146,6 +183,16 @@ namespace core
 				}
 				// Reset current memory page
 				used = 0;
+#ifdef CR_MEMORY_DEBUGGING
+				MallocEntry *mallocentry = mallocmem;
+				while (mallocentry)
+				{
+					MallocEntry *next = mallocentry->next;
+					free(mallocentry);
+					mallocentry = next;
+				}
+				mallocmem = 0;
+#endif
 			}
 			/**
 			 * Frees the memory returned by all previous calls to allocate() and
@@ -176,6 +223,16 @@ namespace core
 					freememory[i] = allocPage(pagesize);
 				// Reset current memory page
 				used = 0;
+#ifdef CR_MEMORY_DEBUGGING
+				MallocEntry *mallocentry = mallocmem;
+				while (mallocentry)
+				{
+					MallocEntry *next = mallocentry->next;
+					free(mallocentry);
+					mallocentry = next;
+				}
+				mallocmem = 0;
+#endif
 			}
 
 			/**
@@ -186,6 +243,7 @@ namespace core
 			 */
 			void *allocate(unsigned int size)
 			{
+#ifndef CR_MEMORY_DEBUGGING
 				// TODO: Handle large allocations properly?
 				tbb::spin_mutex::scoped_lock lock(mutex);
 				if (used + size <= pagesize)
@@ -212,6 +270,17 @@ namespace core
 					used = size;
 					return currentmemory;
 				}
+#else
+				tbb::spin_mutex::scoped_lock lock(mutex);
+				void *ptr = malloc(size + sizeof(MallocEntry));
+				MallocEntry *mallocentry = (MallocEntry*)ptr;
+				if (!mallocmem)
+					mallocentry->next = 0;
+				else
+					mallocentry->next = mallocmem;
+				mallocmem = mallocentry;
+				return (char*)ptr + sizeof(MallocEntry);
+#endif
 			}
 		private:
 			struct DestructorEntry
@@ -319,6 +388,10 @@ namespace core
 			std::vector<void*> freememory;
 
 			tbb::spin_mutex mutex;
+
+#ifdef CR_MEMORY_DEBUGGING
+			MallocEntry *mallocmem;
+#endif
 	};
 }
 }
