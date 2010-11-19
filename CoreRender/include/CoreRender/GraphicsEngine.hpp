@@ -93,6 +93,7 @@ namespace cr
 			scene::Mesh::Ptr getMesh(const std::string name);
 			scene::Animation::Ptr getAnimation(const std::string name);
 			render::Pipeline::Ptr getPipeline(const std::string name);
+			render::Material::Ptr getMaterial(const std::string name);
 
 			/**
 			 * Sets a user-specified file system for the engine. This can be

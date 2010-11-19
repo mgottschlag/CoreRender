@@ -84,6 +84,22 @@ namespace render
 		return stages.size();
 	}
 
+	void Pipeline::resizeTargets(unsigned int width, unsigned int height)
+	{
+		for (unsigned int i = 0; i < framebuffers.size(); i++)
+		{
+			framebuffers[i].fb->setSize(width,
+			                            height,
+			                            framebuffers[i].fb->hasDepthBuffer());
+		}
+		for (unsigned int i = 0; i < targettextures.size(); i++)
+		{
+			targettextures[i].texture->set(width,
+			                               height,
+			                               targettextures[i].texture->getInternalFormat());
+		}
+	}
+
 	bool Pipeline::load()
 	{
 		std::string path = getPath();

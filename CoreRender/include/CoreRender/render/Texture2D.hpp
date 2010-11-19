@@ -133,6 +133,15 @@ namespace render
 				return currentdata.height;
 			}
 
+			/**
+			 * Returns the internal format of the texture.
+			 * @return Internal format of the texture.
+			 */
+			TextureFormat::List getInternalFormat()
+			{
+				return currentdata.internalformat;
+			}
+
 			virtual const char *getType()
 			{
 				return "Texture2D";

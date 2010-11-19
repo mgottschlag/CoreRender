@@ -287,6 +287,7 @@ namespace cr
 		{
 			driver->executeCommands(scenes[i]->getFirstCommand());
 		}
+		driver->endFrame();
 		// Delete resources which need to be deleted
 		uploadmgr.deleteResources(frame->getUploadLists());
 		// Delete frame data
@@ -320,6 +321,11 @@ namespace cr
 	{
 		res::Resource::Ptr res = rmgr->getOrLoad("Pipeline", name);
 		return render::Pipeline::Ptr((render::Pipeline*)res.get());
+	}
+	render::Material::Ptr GraphicsEngine::getMaterial(const std::string name)
+	{
+		res::Resource::Ptr res = rmgr->getOrLoad("Material", name);
+		return render::Material::Ptr((render::Material*)res.get());
 	}
 
 	void GraphicsEngine::setFileSystem(core::FileSystem::Ptr fs)
