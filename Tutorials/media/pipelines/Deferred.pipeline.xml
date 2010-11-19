@@ -23,7 +23,7 @@
 		<!-- Render scene into gbuffer -->
 		<Stage name="scenepass">
 			<SetTarget name="gbuffer" />
-			<ClearTarget cleardepth="true" clearcolor0="true" color="0.2, 0.2, 0.2, 1.0" />
+			<ClearTarget cleardepth="true" clearcolor2="true" color="0.2, 0.2, 0.2, 1.0" />
 			<DrawGeometry context="ATTRIBPASS" />
 		</Stage>
 		<!-- Compose the image on the screen, including deferred lighting -->
@@ -37,13 +37,13 @@
 			<BindTexture name="depthtex" texture="" />
 
 			<!-- Ambient lighting -->
-			<BindTexture name="source" texture="attribtex1" />
+			<BindTexture name="attribtex1" texture="attribtex1" />
 			<BindTexture name="attribtex2" texture="attribtex2" />
-			<FullscreenQuad material="/materials/Deferred.material.xml" context="AMBIENT" />
 			<BindTexture name="attribtex3" texture="attribtex3" />
+			<FullscreenQuad material="/materials/Deferred.material.xml" context="AMBIENT" />
+			<!-- Lights -->
+			<DoDeferredLightLoop/>
 		</Stage>
-		<!-- Lights -->
-		<DeferredLightLoop name="lights" />
 		<!-- Cleaning everything up -->
 		<Stage name="cleanup">
 			<UnbindTextures/>

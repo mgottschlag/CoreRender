@@ -450,8 +450,11 @@ namespace opengl
 
 	void VideoDriverOpenGL::drawQuad(float *vertices,
 	                                 ShaderCombination *shader,
-	                                 Material *material)
+	                                 Material *material,
+	                                 LightUniforms *light)
 	{
+		if (shader->programobject == 0)
+			return;
 		// Change blend mode if necessary
 		setBlendMode(shader->uploadeddata.blendmode);
 		// Change depth test
@@ -495,12 +498,40 @@ namespace opengl
 		}
 		// Apply textures
 		applyTextures(shader, material);
-		// TODO: Additionally bound textures (getBoundTextures())
 		// Uniforms
 		// TODO
 		UniformLocations &locations = shader->uniforms;
 		if (locations.framebufsize != -1)
 			glUniform2f(locations.framebufsize, targetwidth, targetheight);
+		if (light)
+		{
+			if (locations.lightpos != -1)
+				glUniform4f(locations.lightpos,
+				            light->position[0],
+				            light->position[1],
+				            light->position[2],
+				            light->position[3]);
+			if (locations.lightdir != -1)
+				glUniform3f(locations.lightdir,
+				            light->direction[0],
+				            light->direction[1],
+				            light->direction[2]);
+			if (locations.lightcolor != -1)
+				glUniform4f(locations.lightcolor,
+				            light->color[0],
+				            light->color[1],
+				            light->color[2],
+				            light->color[3]);
+			if (locations.shadowmat != -1)
+				glUniformMatrix4fv(locations.shadowmat, 1, GL_FALSE, light->shadowmat.m);
+			if (locations.shadowmap && light->shadowmap)
+			{
+				unsigned int texcount = shaderinfo->samplers.size();
+				glActiveTexture(GL_TEXTURE0 + texcount);
+				glBindTexture(GL_TEXTURE_2D, light->shadowmap->getHandle());
+				glUniform1i(locations.shadowmap, texcount);
+			}
+		}
 		// Draw a single quad
 		unsigned char indices[] = {
 			0, 1, 2,
@@ -606,6 +637,7 @@ namespace opengl
 	}
 	void VideoDriverOpenGL::forceDrawBuffers(unsigned int buffers)
 	{
+		currentdrawbuffers = buffers;
 		if (!currentfb)
 		{
 			if (buffers & 1)
@@ -634,7 +666,6 @@ namespace opengl
 			}
 			glDrawBuffers(buffercount, drawbuffers);
 		}
-		currentdrawbuffers = buffers;
 	}
 	void VideoDriverOpenGL::setBlendMode(BlendMode::List mode)
 	{

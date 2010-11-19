@@ -53,6 +53,9 @@ namespace scene
 				return radius;
 			}
 
+			virtual void getLightQuad(Camera::Ptr camera,
+			                          float *quad);
+
 			virtual void getLightInfo(render::LightUniforms *uniforms);
 
 			typedef core::SharedPointer<PointLight> Ptr;

@@ -102,6 +102,8 @@ namespace scene
 			                               Camera::Ptr camera,
 			                               math::Matrix4 *shadowmat,
 			                               render::LightUniforms *uniforms);
+			virtual void getLightQuad(Camera::Ptr camera,
+			                          float *quad) = 0;
 
 			virtual void getLightInfo(render::LightUniforms *uniforms);
 

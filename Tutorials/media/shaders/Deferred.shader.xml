@@ -2,11 +2,11 @@
 	<Text name="VS_FSQUAD">
 	<![CDATA[
 		attribute vec2 pos;
+		attribute vec2 texcoord0;
 		varying vec2 texcoord;
 		void main()
 		{
-			// Transformation
-			texcoord = pos * 0.5 + vec2(0.5, 0.5);
+			texcoord = (pos + vec2(1.0, 1.0)) * 0.5;
 			gl_Position = vec4(pos, 0.0, 1.0);
 		}
 	]]>
@@ -18,8 +18,86 @@
 		void main()
 		{
 			gl_FragColor = texture2D(source, texcoord);
-			//gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-			//gl_FragColor = vec4(texcoord, 0.0, 1.0);
+		}
+	]]>
+	</Text>
+	<Text name="FS_AMBIENT">
+	<![CDATA[
+		varying vec2 texcoord;
+		uniform sampler2D attribtex1;
+		uniform sampler2D attribtex2;
+		uniform sampler2D attribtex3;
+		void main()
+		{
+			gl_FragColor = texture2D(attribtex3, texcoord) * 0.2;
+		}
+	]]>
+	</Text>
+
+	<Text name="FS_POINTLIGHT">
+	<![CDATA[
+		varying vec2 texcoord;
+		uniform sampler2D attribtex1;
+		uniform sampler2D attribtex2;
+		uniform sampler2D attribtex3;
+		uniform vec4 lightPos;
+		uniform vec4 lightColor;
+		void main()
+		{
+			vec3 worldPos = texture2D(attribtex1, texcoord).xyz;
+			vec3 worldNormal = texture2D(attribtex2, texcoord).xyz;
+			vec3 color = texture2D(attribtex3, texcoord).xyz;
+			vec3 lightVec = lightPos.xyz - worldPos;
+			float lightDist = length(lightVec);
+			lightVec /= vec3(lightDist);
+			// Compute attenuation
+			lightDist = lightDist / lightPos.w;
+			float attenuation = max(dot(lightVec, normalize(worldNormal)), 0.0) * (1.0 - lightDist * lightDist);
+			gl_FragColor = vec4(color * lightColor.rgb * attenuation, 1.0);
+			//gl_FragColor.rgb = lightDist;
+		}
+	]]>
+	</Text>
+
+	<Text name="FS_SPOTLIGHT">
+	<![CDATA[
+		varying vec2 texcoord;
+		uniform sampler2D attribtex1;
+		uniform sampler2D attribtex2;
+		uniform sampler2D attribtex3;
+		uniform vec4 lightPos;
+		uniform vec4 lightColor;
+		uniform vec3 lightDir;
+		uniform sampler2DShadow shadowMap;
+		uniform mat4 shadowMat;
+
+		void main()
+		{
+			vec3 worldPos = texture2D(attribtex1, texcoord).xyz;
+			vec3 worldNormal = texture2D(attribtex2, texcoord).xyz;
+			vec3 color = texture2D(attribtex3, texcoord).xyz;
+			// Get light data
+			vec3 lightVec = lightPos.xyz - worldPos;
+			float lightDist = length(lightVec);
+			lightVec /= lightDist;
+			vec3 normal = normalize(worldNormal);
+
+			// Compute attenuation
+			lightDist = lightDist / lightPos.w;
+			float attenuation = max(dot(lightVec, normal), 0.0) * (1.0 - lightDist * lightDist);
+			float lightAngle = lightColor.w;
+			float angle = dot(lightVec, -lightDir);
+			attenuation *= clamp((angle - lightAngle) * 5.0, 0.0, 1.0);
+
+			// Get shadow
+			vec4 shadowPos = shadowMat * vec4(worldPos, 1.0);
+			shadowPos.z = lightDist;
+			shadowPos.xy /= shadowPos.w;
+
+			float shadow = shadow2D(shadowMap, shadowPos.xyz).r;
+
+			// Assemble result
+			gl_FragColor.rgb = color * lightColor.rgb * attenuation * shadow;
 		}
 	]]>
 	</Text>
@@ -27,9 +105,20 @@
 	<Attrib name="pos" />
 
 	<Texture name="source" />
+	<Texture name="attribtex1" />
+	<Texture name="attribtex2" />
+	<Texture name="attribtex3" />
 
-	<Context name="AMBIENT" vs="VS_FSQUAD" fs="FS_COPY">
+	<Context name="AMBIENT" vs="VS_FSQUAD" fs="FS_AMBIENT">
 		<Depth write="false" test="Always" />
+	</Context>
+	<Context name="POINTLIGHT" vs="VS_FSQUAD" fs="FS_POINTLIGHT">
+		<Depth write="false" test="Always" />
+		<Blend mode="Add" />
+	</Context>
+	<Context name="SPOTLIGHT" vs="VS_FSQUAD" fs="FS_SPOTLIGHT">
+		<Depth write="false" test="Always" />
+		<Blend mode="Add" />
 	</Context>
 	<Context name="COPY_DEPTH" vs="VS_FSQUAD" fs="FS_COPY">
 		<Depth write="false" test="Always" />

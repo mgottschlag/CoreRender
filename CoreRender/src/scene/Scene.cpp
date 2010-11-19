@@ -304,14 +304,58 @@ namespace scene
 					{
 						if (!lights[i]->getDeferredMaterial())
 							continue;
+						void *ptr = memory->allocate(sizeof(render::LightUniforms));
+						render::LightUniforms *light = (render::LightUniforms*)ptr;
+						light->shadowmap = 0;
+						lights[i]->getLightInfo(light);
+						math::Matrix4 shadowmat;
 						if (lights[i]->getShadowsEnabled()
 							&& lights[i]->getShadowContext() != -1)
 						{
-							// TODO: Shadow map queue
+							light->shadowmap = shadowmap.get();
+							unsigned int shadowmapcount = lights[i]->getShadowMapCount();
+							insertSetTarget(frame, shadowtarget, camera, memory);
+							void *ptr = memory->allocate(sizeof(render::RenderCommand));
+							render::RenderCommand *cmd = (render::RenderCommand*)ptr;
+							cmd->type = render::RenderCommandType::ClearTarget;
+							cmd->cleartarget.buffers = 1;
+							cmd->cleartarget.depth = 1.0f;
+							frame->addCommand(cmd);
+							lights[i]->prepareShadowMaps(frame,
+							                             &queue[queuecount],
+							                             camera,
+							                             &shadowmat,
+							                             light);
+							insertSetTarget(frame, currenttarget, camera, memory);
+							queuecount += shadowmapcount;
+							// The shadow matrix has to be modified to output
+							// texture coordinates (0..1 instead of -1..1)
+							shadowmat = math::Matrix4::TransMat(0.5f, 0.5f, 0.0f)
+							          * math::Matrix4::ScaleMat(0.5f, 0.5f, 1.0f)
+							          * shadowmat;
 							queuecount++;
 						}
+						light->shadowmat = shadowmat;
+						render::Material::Ptr material = lights[i]->getDeferredMaterial();
+						render::Shader::Ptr shader = material->getShader();
+						unsigned int context = lights[i]->getLightContext();
+						render::ShaderCombination::Ptr comb = shader->getCombination(context,
+						                                                             0,
+						                                                             0,
+						                                                             false,
+						                                                             false);
+						if (!comb)
+							continue;
+
 						// Light quad
-						// TODO
+						ptr = memory->allocate(sizeof(render::RenderCommand));
+						render::RenderCommand *cmd = (render::RenderCommand*)ptr;
+						cmd->type = render::RenderCommandType::DrawQuad;
+						lights[i]->getLightQuad(camera, cmd->drawquad.quad);
+						cmd->drawquad.material = material.get();
+						cmd->drawquad.shader = comb.get();
+						cmd->drawquad.light = light;
+						frame->addCommand(cmd);
 					}
 				}
 				else if (command->type == render::PipelineCommandType::ClearTarget)
@@ -396,6 +440,7 @@ namespace scene
 					cmd->drawquad.quad[2] = cmd->drawquad.quad[3] = 1.0f;
 					cmd->drawquad.material = mat;
 					cmd->drawquad.shader = comb.get();
+					cmd->drawquad.light = 0;
 					frame->addCommand(cmd);
 				}
 				else

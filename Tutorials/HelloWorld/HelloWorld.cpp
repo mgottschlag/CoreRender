@@ -77,8 +77,9 @@ int main(int argc, char **argv)
 	// Add a terrain
 	// TODO
 	// Add some lights
+	render::Material::Ptr lightmat = graphics.getMaterial("/materials/Deferred.material.xml");
 	scene::SpotLight::Ptr spotlight = new scene::SpotLight(names,
-	                                                       0,
+	                                                       lightmat,
 	                                                       "SPOTLIGHT",
 	                                                       "SHADOWMAP");
 	spotlight->setRadius(200.0f);
@@ -87,7 +88,7 @@ int main(int argc, char **argv)
 	spotlight->setDirection(math::Vector3F(0, -1, 0.5));
 	spotlight->setShadowsEnabled(true);
 	scene::PointLight::Ptr pointlight = new scene::PointLight(names,
-	                                                          0,
+	                                                          lightmat,
 	                                                          "POINTLIGHT",
 	                                                          "");
 	pointlight->setRadius(150.0f);
@@ -114,9 +115,14 @@ int main(int argc, char **argv)
 	camera->setProjMat(projmat);
 	camera->setViewMat(viewmat);*/
 
-
-	camera->setPipeline(graphics.getPipeline("/pipelines/Forward.pipeline.xml"));
-	camera->setViewport(0, 0, 1024, 768);
+	{
+		render::Pipeline::Ptr pipeline;
+		pipeline = graphics.getPipeline("/pipelines/Deferred.pipeline.xml");
+		camera->setPipeline(pipeline);
+		camera->setViewport(0, 0, 1024, 768);
+		pipeline->waitForLoading(false);
+		pipeline->resizeTargets(1024, 768);
+	}
 	// Add the camera and the lights to the scene
 	scene.addCamera(camera);
 	scene.addLight(spotlight);
@@ -168,6 +174,7 @@ int main(int argc, char **argv)
 		}
 	}
 	// Destroy ressources
+	lightmat = 0;
 	scene.destroy();
 	camera = 0;
 	spotlight = 0;

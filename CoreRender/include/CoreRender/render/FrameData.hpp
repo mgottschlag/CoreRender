@@ -163,6 +163,7 @@ namespace render
 				float quad[4];
 				ShaderCombination *shader;
 				Material *material;
+				LightUniforms *light;
 			} drawquad;
 		};
 		RenderCommand *next;

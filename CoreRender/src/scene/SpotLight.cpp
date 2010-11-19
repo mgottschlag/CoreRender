@@ -85,6 +85,22 @@ namespace scene
 		frame->addCommand(cmd);
 	}
 
+	void SpotLight::getLightQuad(Camera::Ptr camera,
+	                             float *quad)
+	{
+		// To find out the bounds of the light quad in screen space, we need
+		// to transform the bounding box of the light
+		// TODO: This is way too much
+		math::BoundingBox lightbb(getPosition() + math::Vector3F(-radius, -radius, -radius),
+		                          getPosition() + math::Vector3F(radius, radius, radius));
+		lightbb.transform(camera->getViewMat());
+		lightbb.transform(camera->getProjMat());
+		quad[0] = lightbb.min.x;
+		quad[1] = lightbb.min.y;
+		quad[2] = lightbb.max.x;
+		quad[3] = lightbb.max.y;
+	}
+
 	void SpotLight::getLightInfo(render::LightUniforms *uniforms)
 	{
 		Light::getLightInfo(uniforms);

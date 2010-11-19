@@ -70,7 +70,8 @@ namespace opengl
 
 			virtual void drawQuad(float *vertices,
 			                      ShaderCombination *shader,
-			                      Material *material);
+			                      Material *material,
+			                      LightUniforms *light);
 
 			virtual void endFrame();
 

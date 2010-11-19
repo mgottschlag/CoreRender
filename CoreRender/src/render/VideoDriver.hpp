@@ -165,10 +165,12 @@ namespace render
 			 * -1..1).
 			 * @param shader Shader used for rendering the quad.
 			 * @param material Material settings used for the quad.
+			 * @param light Current light setting. 0 If no light is active.
 			 */
 			virtual void drawQuad(float *vertices,
 			                      ShaderCombination *shader,
-			                      Material *material) = 0;
+			                      Material *material,
+			                      LightUniforms *light) = 0;
 
 			/**
 			 * Called at the end of the frame. This cleans up currently bound

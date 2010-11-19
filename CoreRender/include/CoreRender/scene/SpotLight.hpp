@@ -66,6 +66,9 @@ namespace scene
 			                               Camera::Ptr camera,
 			                               math::Matrix4 *shadowmat,
 			                               render::LightUniforms *uniforms);
+			virtual void getLightQuad(Camera::Ptr camera,
+			                          float *quad);
+
 			virtual void getLightInfo(render::LightUniforms *uniforms);
 
 			typedef core::SharedPointer<SpotLight> Ptr;

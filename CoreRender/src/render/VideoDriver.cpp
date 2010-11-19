@@ -62,7 +62,8 @@ namespace render
 			case RenderCommandType::DrawQuad:
 				drawQuad(command->drawquad.quad,
 				         command->drawquad.shader,
-				         command->drawquad.material);
+				         command->drawquad.material,
+				         command->drawquad.light);
 				break;
 			default:
 				// TODO: Warning here
