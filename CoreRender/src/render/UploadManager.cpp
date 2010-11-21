@@ -57,46 +57,52 @@ namespace render
 
 	void UploadManager::getLists(UploadLists &lists, core::MemoryPool *memory)
 	{
-		tbb::spin_mutex::scoped_lock lock(listmutex);
-		// Get resource upload list
-		unsigned int memsize = sizeof(UploadLists::ResourceUploadEntry) * resupload.size();
-		lists.resupload = (UploadLists::ResourceUploadEntry*)memory->allocate(memsize);
-		for (unsigned int i = 0; i < resupload.size(); i++)
 		{
-			lists.resupload[i].resource = resupload[i];
-			lists.resupload[i].data = resupload[i]->prepareForUpload();
+			tbb::spin_mutex::scoped_lock lock(listmutex);
+			// Get resource upload list
+			unsigned int memsize = sizeof(UploadLists::ResourceUploadEntry) * resupload.size();
+			lists.resupload = (UploadLists::ResourceUploadEntry*)memory->allocate(memsize);
+			for (unsigned int i = 0; i < resupload.size(); i++)
+			{
+				lists.resupload[i].resource = resupload[i];
+			}
+			lists.resuploadcount = resupload.size();
+			// Get resource deletion list
+			memsize = sizeof(RenderResource*) * resdeletion.size();
+			lists.resdeletion = (RenderResource**)memory->allocate(memsize);
+			for (unsigned int i = 0; i < resdeletion.size(); i++)
+			{
+				lists.resdeletion[i] = resdeletion[i];
+			}
+			lists.resdeletioncount = resdeletion.size();
+			// Get object upload list
+			memsize = sizeof(UploadLists::ObjectUploadEntry) * objupload.size();
+			lists.objupload = (UploadLists::ObjectUploadEntry*)memory->allocate(memsize);
+			for (unsigned int i = 0; i < objupload.size(); i++)
+			{
+				lists.objupload[i].object = objupload[i];
+			}
+			lists.objuploadcount = objupload.size();
+			// Get object deletion list
+			memsize = sizeof(RenderObject*) * objdeletion.size();
+			lists.objdeletion = (RenderObject**)memory->allocate(memsize);
+			for (unsigned int i = 0; i < objdeletion.size(); i++)
+			{
+				lists.objdeletion[i] = objdeletion[i];
+			}
+			lists.objdeletioncount = objdeletion.size();
+			// Reset lists
+			resupload.clear();
+			resdeletion.clear();
+			objupload.clear();
+			objdeletion.clear();
 		}
-		lists.resuploadcount = resupload.size();
-		// Get resource deletion list
-		memsize = sizeof(RenderResource*) * resdeletion.size();
-		lists.resdeletion = (RenderResource**)memory->allocate(memsize);
-		for (unsigned int i = 0; i < resdeletion.size(); i++)
-		{
-			lists.resdeletion[i] = resdeletion[i];
-		}
-		lists.resdeletioncount = resdeletion.size();
-		// Get object upload list
-		memsize = sizeof(UploadLists::ObjectUploadEntry) * objupload.size();
-		lists.objupload = (UploadLists::ObjectUploadEntry*)memory->allocate(memsize);
-		for (unsigned int i = 0; i < objupload.size(); i++)
-		{
-			lists.objupload[i].object = objupload[i];
-			lists.objupload[i].data = objupload[i]->prepareForUpload();
-		}
-		lists.objuploadcount = objupload.size();
-		// Get object deletion list
-		memsize = sizeof(RenderObject*) * objdeletion.size();
-		lists.objdeletion = (RenderObject**)memory->allocate(memsize);
-		for (unsigned int i = 0; i < objdeletion.size(); i++)
-		{
-			lists.objdeletion[i] = objdeletion[i];
-		}
-		lists.objdeletioncount = objdeletion.size();
-		// Reset lists
-		resupload.clear();
-		resdeletion.clear();
-		objupload.clear();
-		objdeletion.clear();
+		// We retrieve the upload data here to prevent deadlocks as the
+		// resource might be locked while it calls registerUpload().
+		for (unsigned int i = 0; i < lists.resuploadcount; i++)
+			lists.resupload[i].data = lists.resupload[i].resource->prepareForUpload();
+		for (unsigned int i = 0; i < lists.objuploadcount; i++)
+			lists.objupload[i].data = lists.objupload[i].object->prepareForUpload();
 	}
 	void UploadManager::uploadResources(UploadLists &lists)
 	{
