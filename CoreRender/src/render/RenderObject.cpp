@@ -41,15 +41,16 @@ namespace render
 		uploading = false;
 		return data;
 	}
+	bool RenderObject::isUploading()
+	{
+		tbb::mutex::scoped_lock lock(uploadmutex);
+		return uploading;
+	}
 
 	void RenderObject::registerUpload()
 	{
-		{
-			tbb::mutex::scoped_lock lock(uploadmutex);
-			if (uploading)
-				return;
-			uploading = true;
-		}
+		tbb::mutex::scoped_lock lock(uploadmutex);
+		uploading = true;
 		uploadmgr.registerUpload(this);
 	}
 	void RenderObject::onDelete()
