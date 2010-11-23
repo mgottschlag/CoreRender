@@ -498,6 +498,23 @@ namespace render
 				return handle;
 			}
 			/**
+			 * Returns whether the uploaded texture has mipmaps. Do not call
+			 * this directly, use getMipmapsEnabled() instead, this is for the
+			 * video driver.
+			 */
+			bool hasMipmaps()
+			{
+				return hasmipmaps;
+			}
+			/**
+			 * Returns the OpenGL type of the texture, for example
+			 * GL_TEXTURE_2D.
+			 */
+			unsigned int getOpenGLType()
+			{
+				return opengltype;
+			}
+			/**
 			 * Returns the texture type (2D, 3D, cube map).
 			 * @return Texture type.
 			 */
@@ -530,6 +547,8 @@ namespace render
 			virtual void *getUploadData();
 
 			unsigned int handle;
+			bool hasmipmaps;
+			unsigned int opengltype;
 		private:
 			bool set(TextureType::List type,
 			         unsigned int width,

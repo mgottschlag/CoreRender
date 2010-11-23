@@ -585,11 +585,16 @@ namespace opengl
 	{
 		for (unsigned int i = 0; i < fb->colorbuffers.size(); i++)
 		{
-			if (fb->colorbuffers[i])
-				glBindTexture(GL_TEXTURE_2D, fb->colorbuffers[i]->getHandle());
-			glGenerateMipmapEXT(GL_TEXTURE_2D);
+			if (fb->colorbuffers[i] && fb->colorbuffers[i]->hasMipmaps())
+			{
+				unsigned int type = fb->colorbuffers[i]->getOpenGLType();
+				glBindTexture(type, fb->colorbuffers[i]->getHandle());
+				glEnable(type);
+				glGenerateMipmapEXT(type);
+				glDisable(type);
+				glBindTexture(type, 0);
+			}
 		}
-		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	void VideoDriverOpenGL::setDepthWrite(bool depthwrite)
@@ -906,6 +911,7 @@ namespace opengl
 			glActiveTexture(GL_TEXTURE0 + i);
 			glBindTexture(opengltype, texture->getHandle());
 			glUniform1i(samplerhandle, i);
+			// TODO: Take care of unbinding textures later?
 		}
 	}
 }

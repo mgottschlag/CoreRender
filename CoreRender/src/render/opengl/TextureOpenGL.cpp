@@ -124,14 +124,31 @@ namespace opengl
 				component = GL_UNSIGNED_INT_24_8_EXT;
 				return true;
 			case TextureFormat::Depth16:
-				// TODO
-				return false;
+				openglfmt = GL_DEPTH_COMPONENT;
+				component = GL_FLOAT;
+				return true;
 			case TextureFormat::Depth24:
-				// TODO
-				return false;
+				openglfmt = GL_DEPTH_COMPONENT;
+				component = GL_FLOAT;
+				return true;
 			default:
 				// TODO: R/RG formats
 				return false;
+		}
+	}
+
+	static unsigned int translateTextureType(TextureType::List type)
+	{
+		switch (type)
+		{
+			case TextureType::Texture1D:
+				return GL_TEXTURE_1D;
+			case TextureType::Texture2D:
+				return GL_TEXTURE_2D;
+			case TextureType::Texture3D:
+				return GL_TEXTURE_3D;
+			case TextureType::TextureCube:
+				return GL_TEXTURE_CUBE_MAP;
 		}
 	}
 
@@ -151,22 +168,29 @@ namespace opengl
 	void TextureOpenGL::upload(void *data)
 	{
 		TextureData *uploaddata = (TextureData*)data;
+		unsigned int opengltype = translateTextureType(uploaddata->type);
 		// Create the texture object if necessary
 		if (handle == 0)
-		{
 			glGenTextures(1, &handle);
-			glBindTexture(GL_TEXTURE_2D, handle);
-			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-			glTexParameterf(GL_TEXTURE_2D,
-			                GL_TEXTURE_MIN_FILTER,
-			                GL_LINEAR_MIPMAP_NEAREST);
-			glTexParameterf(GL_TEXTURE_2D,
-			                GL_TEXTURE_MAG_FILTER,
-			                GL_LINEAR);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, true);
-			// TODO: Error checking
+		// Set texture filtering mode
+		glBindTexture(opengltype, handle);
+		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		glTexParameterf(opengltype, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameterf(opengltype, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		if (uploaddata->filtering == TextureFiltering::Linear)
+		{
+			if (uploaddata->mipmaps)
+				glTexParameterf(opengltype,
+				                GL_TEXTURE_MIN_FILTER,
+				                GL_LINEAR_MIPMAP_NEAREST);
+			else
+				glTexParameterf(opengltype, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameterf(opengltype, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		}
+		else
+		{
+			glTexParameterf(opengltype, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameterf(opengltype, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		}
 		// Check whether we actually support the format
 		if (!checkFormatSupport(uploaddata->internalformat,
@@ -178,16 +202,19 @@ namespace opengl
 			delete uploaddata;
 			return;
 		}
+		// We still need valid format information even if we do not want to
+		// upload any data to the texture, so just take a compatible format
+		if (!uploaddata->data)
+			uploaddata->format = uploaddata->internalformat;
 		// Translate formats to a form OpenGL understands
 		unsigned int internal = 0;
 		unsigned int format = 0;
 		unsigned int component = 0;
 		bool compressed = TextureFormat::isCompressed(uploaddata->format);
-		bool intcompressed = TextureFormat::isCompressed(uploaddata->internalformat);
+		bool isdepth = TextureFormat::isDepth(uploaddata->internalformat);
 		// Translate internal format
 		if (!translateInternalFormat(uploaddata->internalformat, internal)
-		    || (uploaddata->data
-		        && !translateFormat(uploaddata->format, format, component)))
+		    || !translateFormat(uploaddata->format, format, component))
 		{
 			core::Log::Ptr log = getManager()->getLog();
 			log->error("Error translating texture format (%d, %d).",
@@ -198,81 +225,101 @@ namespace opengl
 			return;
 		}
 		// Upload texture data
-		glBindTexture(GL_TEXTURE_2D, handle);
+		unsigned int width = uploaddata->width;
+		unsigned int height = uploaddata->height;
+		unsigned int depth = uploaddata->depth;
+		unsigned int datasize = uploaddata->datasize;
+		if (isdepth)
+		{
+			// TODO: Hack
+			//glTexParameteri(type, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+			glTexParameteri(opengltype, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+			glTexParameteri(opengltype, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+		}
+		switch (uploaddata->type)
+		{
+			case TextureType::Texture1D:
+				if (compressed)
+					glCompressedTexImage1D(GL_TEXTURE_1D, 0, internal, width, 0,
+						datasize, uploaddata->data);
+				else
+					glTexImage1D(GL_TEXTURE_2D, 0, internal, width, 0, format,
+						component, uploaddata->data);
+				break;
+			case TextureType::Texture2D:
+				if (compressed)
+					glCompressedTexImage2D(GL_TEXTURE_2D, 0, internal, width,
+						height, 0, datasize, uploaddata->data);
+				else
+					glTexImage2D(GL_TEXTURE_2D, 0, internal, width, height, 0,
+						format, component, uploaddata->data);
+				break;
+			case TextureType::Texture3D:
+				if (compressed)
+					glCompressedTexImage3D(GL_TEXTURE_3D, 0, internal, width,
+						height, depth, 0, datasize, uploaddata->data);
+				else
+					glTexImage3D(GL_TEXTURE_3D, 0, internal, width, height, 0,
+						format, depth, component, uploaddata->data);
+				break;
+			case TextureType::TextureCube:
+				if (compressed)
+				{
+					unsigned int facesize = datasize / 6;
+					glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0,
+						internal, width, height, 0, datasize,
+						(char*)uploaddata->data + facesize * 0);
+					glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0,
+						internal, width, height, 0, datasize,
+						(char*)uploaddata->data + facesize * 1);
+					glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0,
+						internal, width, height, 0, datasize,
+						(char*)uploaddata->data + facesize * 2);
+					glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0,
+						internal, width, height, 0, datasize,
+						(char*)uploaddata->data + facesize * 3);
+					glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0,
+						internal, width, height, 0, datasize,
+						(char*)uploaddata->data + facesize * 4);
+					glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0,
+						internal, width, height, 0, datasize,
+						(char*)uploaddata->data + facesize * 5);
+				}
+				else
+				{
+					unsigned int facesize = datasize / 6;
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, internal,
+						width, height, 0, format, component,
+						(char*)uploaddata->data + facesize * 0);
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, internal,
+						width, height, 0, format, component,
+						(char*)uploaddata->data + facesize * 1);
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, internal,
+						width, height, 0, format, component,
+						(char*)uploaddata->data + facesize * 2);
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, internal,
+						width, height, 0, format, component,
+						(char*)uploaddata->data + facesize * 3);
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, internal,
+						width, height, 0, format, component,
+						(char*)uploaddata->data + facesize * 4);
+					glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, internal,
+						width, height, 0, format, component,
+						(char*)uploaddata->data + facesize * 5);
+				}
+				break;
+		}
 		if (uploaddata->data)
-		{
-			// TODO
-			if (compressed)
-			{
-				unsigned int size = TextureFormat::getSize(uploaddata->format,
-				                                           uploaddata->width * uploaddata->height);
-				glCompressedTexImage2D(GL_TEXTURE_2D,
-				                       0,
-				                       internal,
-				                       uploaddata->width,
-				                       uploaddata->height,
-				                       0,
-				                       size,
-				                       uploaddata->data);
-			}
-			else
-			{
-				glTexImage2D(GL_TEXTURE_2D,
-				             0,
-				             internal,
-				             uploaddata->width,
-				             uploaddata->height,
-				             0,
-				             format,
-				             component,
-				             uploaddata->data);
-			}
 			free(uploaddata->data);
-		}
-		else
-		{
-			if (intcompressed)
-			{
-				// TODO: Does this make any sense?
-				glCompressedTexImage2D(GL_TEXTURE_2D,
-				                       0,
-				                       internal,
-				                       uploaddata->width,
-				                       uploaddata->height,
-				                       0,
-				                       0,
-				                       0);
-			}
-			else if (TextureFormat::isDepth(uploaddata->internalformat))
-			{
-				// TODO: Hack
-				//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-				glTexImage2D(GL_TEXTURE_2D,
-				             0,
-				             internal,
-				             uploaddata->width,
-				             uploaddata->height,
-				             0,
-				             GL_DEPTH_COMPONENT,
-				             GL_UNSIGNED_BYTE,
-				             0);
-			}
-			else
-			{
-				glTexImage2D(GL_TEXTURE_2D,
-				             0,
-				             internal,
-				             uploaddata->width,
-				             uploaddata->height,
-				             0,
-				             GL_RGBA,
-				             GL_UNSIGNED_BYTE,
-				             0);
-			}
-		}
 		delete uploaddata;
+		// Generate mipmaps
+		hasmipmaps = uploaddata->mipmaps;
+		if (hasmipmaps)
+		{
+			glEnable(opengltype);
+			glGenerateMipmapEXT(opengltype);
+			glDisable(opengltype);
+		}
 		// Error checking
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR)

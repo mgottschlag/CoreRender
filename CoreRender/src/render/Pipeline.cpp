@@ -207,6 +207,9 @@ namespace render
 			               + texture.abssize[1];
 			Texture::Ptr texres = getManager()->createResource<Texture>("Texture");
 			texres->set2D(texturesize[0], texturesize[1], format);
+			texres->setMipmapsEnabled(false);
+			// TODO: Configurable filtering
+			texres->setFiltering(TextureFiltering::Nearest);
 			texture.texture = texres;
 			// Add the texture to the texture list
 			targettextures.push_back(texture);
