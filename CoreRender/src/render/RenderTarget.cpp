@@ -44,7 +44,7 @@ namespace render
 		return framebuffer;
 	}
 
-	void RenderTarget::setDepthBuffer(Texture2D::Ptr texture)
+	void RenderTarget::setDepthBuffer(Texture::Ptr texture)
 	{
 		depthbuffer = texture;
 	}
@@ -53,11 +53,11 @@ namespace render
 		return depthbuffer;
 	}
 
-	void RenderTarget::addColorBuffer(Texture2D::Ptr texture)
+	void RenderTarget::addColorBuffer(Texture::Ptr texture)
 	{
 		colorbuffers.push_back(texture);
 	}
-	Texture2D::Ptr RenderTarget::getColorBuffer(unsigned int index)
+	Texture::Ptr RenderTarget::getColorBuffer(unsigned int index)
 	{
 		if (index >= colorbuffers.size())
 			return 0;

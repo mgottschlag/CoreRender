@@ -21,7 +21,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "CoreRender/render/Material.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
-#include "CoreRender/render/Texture2D.hpp"
+#include "CoreRender/render/Texture.hpp"
 #include "../3rdparty/tinyxml.h"
 
 #include <sstream>
@@ -196,8 +196,8 @@ namespace render
 			// TODO: Texture types
 			Texture::Ptr texture;
 			core::FileSystem::Ptr fs = getManager()->getFileSystem();
-			texture = getManager()->getOrLoad<Texture2D>("Texture2D",
-			                                             fs->getPath(file, directory));
+			texture = getManager()->getOrLoad<Texture>("Texture",
+			                                           fs->getPath(file, directory));
 			// Add texture
 			addTexture(name, texture);
 		}

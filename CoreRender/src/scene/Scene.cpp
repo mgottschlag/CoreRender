@@ -34,8 +34,8 @@ namespace scene
 {
 	Scene::Scene(res::ResourceManager *rmgr)
 	{
-		shadowmap = rmgr->createResource<render::Texture2D>("Texture2D");
-		shadowmap->set(512, 512, render::TextureFormat::Depth24);
+		shadowmap = rmgr->createResource<render::Texture>("Texture");
+		shadowmap->set2D(512, 512, render::TextureFormat::Depth24);
 		render::FrameBuffer::Ptr shadowfb;
 		shadowfb = rmgr->createResource<render::FrameBuffer>("FrameBuffer");
 		shadowfb->setSize(512, 512, false);

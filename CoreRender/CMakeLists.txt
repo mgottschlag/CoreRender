@@ -51,10 +51,6 @@ set(SRC
 	include/CoreRender/render/ShaderCombination.hpp
 	include/CoreRender/render/Shader.hpp
 	include/CoreRender/render/ShaderVariableType.hpp
-	include/CoreRender/render/Texture1D.hpp
-	include/CoreRender/render/Texture2D.hpp
-	include/CoreRender/render/Texture3D.hpp
-	include/CoreRender/render/TextureCube.hpp
 	include/CoreRender/render/Texture.hpp
 	include/CoreRender/render/TimerQuery.hpp
 	include/CoreRender/render/VertexBuffer.hpp
@@ -72,6 +68,8 @@ set(SRC
 	src/3rdparty/tinyxml.h
 	src/3rdparty/tinyxmlerror.cpp
 	src/3rdparty/tinyxmlparser.cpp
+	src/3rdparty/stb_image.h
+	src/3rdparty/stb_image.c
 	src/core/Log.cpp
 	src/core/MemoryPool.cpp
 	src/core/Semaphore.cpp
@@ -87,7 +85,7 @@ set(SRC
 	src/render/opengl/IndexBufferOpenGL.cpp
 	src/render/opengl/RenderCapsOpenGL.cpp
 	src/render/opengl/ShaderOpenGL.cpp
-	src/render/opengl/Texture2DOpenGL.cpp
+	src/render/opengl/TextureOpenGL.cpp
 	src/render/opengl/VertexBufferOpenGL.cpp
 	src/render/opengl/VideoDriverOpenGL.cpp
 	src/render/Pipeline.cpp
@@ -96,7 +94,6 @@ set(SRC
 	src/render/RenderTarget.cpp
 	src/render/Shader.cpp
 	src/render/ShaderCombination.cpp
-	src/render/Texture2D.cpp
 	src/render/Texture.cpp
 	src/render/UploadManager.cpp
 	src/render/VertexBuffer.cpp
@@ -115,12 +112,11 @@ set(SRC
 	src/scene/PointLight.cpp
 	src/scene/SpotLight.cpp
 	src/scene/Light.cpp
+	src/render/ImageSTB.cpp
 )
 
 set(LIB
 	tbb
-	freeimage
-	freeimageplus
 )
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")

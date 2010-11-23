@@ -41,9 +41,9 @@ namespace opengl
 			virtual bool init();
 			virtual bool shutdown();
 
-			virtual Texture2D::Ptr createTexture2D(UploadManager &uploadmgr,
-			                                       res::ResourceManager *rmgr,
-			                                       const std::string &name);
+			virtual Texture::Ptr createTexture(UploadManager &uploadmgr,
+			                                   res::ResourceManager *rmgr,
+			                                   const std::string &name);
 			virtual IndexBuffer::Ptr createIndexBuffer(UploadManager &uploadmgr,
 			                                           res::ResourceManager *rmgr,
 			                                           const std::string &name);

@@ -22,7 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_RENDERTARGET_HPP_INCLUDED_
 #define _CORERENDER_RENDER_RENDERTARGET_HPP_INCLUDED_
 
-#include "Texture2D.hpp"
+#include "Texture.hpp"
 #include "FrameBuffer.hpp"
 #include "../res/Resource.hpp"
 
@@ -52,11 +52,11 @@ namespace render
 			void setFrameBuffer(FrameBuffer::Ptr framebuffer);
 			FrameBuffer::Ptr getFrameBuffer();
 
-			void setDepthBuffer(Texture2D::Ptr texture);
+			void setDepthBuffer(Texture::Ptr texture);
 			Texture::Ptr getDepthBuffer();
 
-			void addColorBuffer(Texture2D::Ptr texture);
-			Texture2D::Ptr getColorBuffer(unsigned int index);
+			void addColorBuffer(Texture::Ptr texture);
+			Texture::Ptr getColorBuffer(unsigned int index);
 			void removeColorBuffer(unsigned int index);
 			unsigned int getColorBufferCount();
 
@@ -71,7 +71,7 @@ namespace render
 			typedef core::SharedPointer<RenderTarget> Ptr;
 		private:
 			FrameBuffer::Ptr framebuffer;
-			std::vector<Texture2D::Ptr> colorbuffers;
+			std::vector<Texture::Ptr> colorbuffers;
 			Texture::Ptr depthbuffer;
 	};
 }

@@ -20,17 +20,67 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "CoreRender/render/Texture.hpp"
+#include "CoreRender/res/ResourceManager.hpp"
+#include "CoreRender/render/RenderCaps.hpp"
+#include "ImageSTB.hpp"
+
+#include <cstring>
+#include <cstdlib>
 
 namespace cr
 {
 namespace render
 {
-	bool TextureFormat::supported(RenderCaps *caps,
+	bool TextureFormat::supported(const RenderCaps &caps,
 	                              TextureFormat::List internalformat,
-	                              TextureFormat::List format)
+	                              bool uploadingdata,
+	                              TextureFormat::List uploadformat)
 	{
 		// TODO
-		return false;
+		bool internalcompressed = TextureFormat::isCompressed(internalformat);
+		bool compressed = TextureFormat::isCompressed(uploadformat);
+		// Compressed textures need OpenGL extensions and have certain
+		// restrictions
+		if (internalcompressed)
+		{
+			// Not uploading anything to a compressed texture does not make much
+			// sense as we do not support rendering to a compressed texture
+			if (!uploadingdata)
+				return false;
+			// Converting between different compressed formats is not supported
+			if (compressed && (internalformat != uploadformat))
+				return false;
+			if (!caps.getFlag(RenderCaps::Flag::TextureCompression))
+			{
+				// We might support at least a subset of the texture compression
+				// extension, e.g. on mobile devices of open source drivers
+				if (caps.getFlag(RenderCaps::Flag::TextureDXT1))
+				{
+					// TextureDXT1 only supports some compressed formats
+					if (internalformat != TextureFormat::RGB_DXT1
+					 && internalformat != TextureFormat::RGBA_DXT1)
+						return false;
+					// TextureDXT1 does not support uploading uncompressed data
+					if (internalformat != uploadformat)
+						return false;
+				}
+				else
+					return false;
+			}
+		}
+		// We can not load compressed data into uncompressed textures
+		if (uploadingdata && compressed && !internalcompressed)
+			return false;
+		// Depth/stencil textures need an OpenGL extension
+		if (!caps.getFlag(RenderCaps::Flag::TextureDepthStencil)
+		 && internalformat == Depth24Stencil8)
+			return false;
+		// Float textures need an OpenGL extension
+		bool isfloat = isFloat(internalformat);
+		if (isfloat && !caps.getFlag(RenderCaps::Flag::TextureFloat))
+			return false;
+		// TODO: Additional constraints on depth and float textures
+		return true;
 	}
 
 	TextureFormat::List TextureFormat::fromString(const std::string &str)
@@ -110,14 +160,413 @@ namespace render
 
 	Texture::Texture(UploadManager &uploadmgr,
 	                 res::ResourceManager *rmgr,
-	                 const std::string &name,
-	                 TextureType::List type)
-		: RenderResource(uploadmgr, rmgr, name), handle(0), type(type)
+	                 const std::string &name)
+		: RenderResource(uploadmgr, rmgr, name), handle(0), discarddata(false)
 	{
+		currentdata.width = 0;
+		currentdata.height = 0;
+		currentdata.depth = 0;
+		currentdata.type = TextureType::Texture2D;
+		currentdata.internalformat = TextureFormat::Invalid;
+		currentdata.format = TextureFormat::Invalid;
+		currentdata.data = 0;
+		currentdata.datasize = 0;
+		currentdata.mipmaps = true;
+		currentdata.filtering = TextureFiltering::Linear;
 	}
 	Texture::~Texture()
 	{
+		if (currentdata.data)
+			free(currentdata.data);
 	}
 
+	bool Texture::set1D(unsigned int width,
+	                    TextureFormat::List internalformat,
+	                    TextureFormat::List format,
+	                    void *data,
+	                    bool copy)
+	{
+		unsigned int datasize = TextureFormat::getSize(format, width);
+		return set(TextureType::Texture1D,
+		           width,
+		           0,
+		           0,
+		           internalformat,
+		           format,
+		           datasize,
+		           data,
+		           copy);
+	}
+	bool Texture::update1D(unsigned int x,
+	                       unsigned int width,
+	                       void *data)
+	{
+		tbb::spin_mutex::scoped_lock lock(imagemutex);
+		if (currentdata.data == 0 || currentdata.type != TextureType::Texture1D)
+			return false;
+		if (x + width > currentdata.width)
+			return false;
+		TextureFormat::List format = currentdata.format;
+		unsigned int size = TextureFormat::getSize(format, width);
+		unsigned int dstoffset = TextureFormat::getSize(format, x);
+		char *src = (char*)data;
+		char *dst = (char*)currentdata.data + dstoffset;
+		memcpy(dst, src, size);
+		registerUpload();
+		return true;
+	}
+
+	bool Texture::set2D(unsigned int width,
+	                    unsigned int height,
+	                    TextureFormat::List internalformat,
+	                    TextureFormat::List format,
+	                    void *data,
+	                    bool copy)
+	{
+		unsigned int datasize = TextureFormat::getSize(format, width * height);
+		return set(TextureType::Texture2D,
+		           width,
+		           height,
+		           0,
+		           internalformat,
+		           format,
+		           datasize,
+		           data,
+		           copy);
+	}
+	bool Texture::update2D(unsigned int x,
+	                       unsigned int y,
+	                       unsigned int width,
+	                       unsigned int height,
+	                       void *data)
+	{
+		tbb::spin_mutex::scoped_lock lock(imagemutex);
+		if (currentdata.data == 0 || currentdata.type != TextureType::Texture2D)
+			return false;
+		if (x + width > currentdata.width || y + height > currentdata.height)
+			return false;
+		TextureFormat::List format = currentdata.format;
+		unsigned int srcstride = TextureFormat::getSize(format, width);
+		unsigned int dststride = TextureFormat::getSize(format,
+		                                                currentdata.width);
+		unsigned int dstoffset = TextureFormat::getSize(format, x)
+		                       + dststride * y;
+		char *src = (char*)data;
+		char *dst = (char*)currentdata.data + dstoffset;
+		if (srcstride == dststride)
+		{
+			memcpy(dst, src, srcstride * height);
+		}
+		else
+		{
+			for (unsigned int i = 0; i < height; i++)
+			{
+				memcpy(dst, src, srcstride);
+				src += srcstride;
+				dst += dststride;
+			}
+		}
+		registerUpload();
+		return true;
+	}
+
+	bool Texture::setCube(unsigned int width,
+	                      unsigned int height,
+	                      TextureFormat::List internalformat,
+	                      TextureFormat::List format,
+	                      void *data,
+	                      bool copy)
+	{
+		unsigned int datasize = TextureFormat::getSize(format,
+		                                               width * height * 6);
+		return set(TextureType::TextureCube,
+		           width,
+		           height,
+		           0,
+		           internalformat,
+		           format,
+		           datasize,
+		           data,
+		           copy);
+	}
+	bool Texture::updateCube(CubeSide::List side,
+	                      unsigned int x,
+	                      unsigned int y,
+	                      unsigned int width,
+	                      unsigned int height,
+	                      void *data)
+	{
+		tbb::spin_mutex::scoped_lock lock(imagemutex);
+		if (currentdata.data == 0
+			|| currentdata.type != TextureType::TextureCube)
+			return false;
+		if (x + width > currentdata.width || y + height > currentdata.height)
+			return false;
+		TextureFormat::List format = currentdata.format;
+		unsigned int srcstride = TextureFormat::getSize(format, width);
+		unsigned int dststride = TextureFormat::getSize(format,
+		                                                currentdata.width);
+		unsigned int dstoffset = TextureFormat::getSize(format, x)
+		                       + dststride * y;
+		dstoffset += (int)side * currentdata.height * dststride;
+		char *src = (char*)data;
+		char *dst = (char*)currentdata.data + dstoffset;
+		if (srcstride == dststride)
+		{
+			memcpy(dst, src, srcstride * height);
+		}
+		else
+		{
+			for (unsigned int i = 0; i < height; i++)
+			{
+				memcpy(dst, src, srcstride);
+				src += srcstride;
+				dst += dststride;
+			}
+		}
+		registerUpload();
+		return true;
+	}
+
+	bool Texture::set3D(unsigned int width,
+	                    unsigned int height,
+	                    unsigned int depth,
+	                    TextureFormat::List internalformat,
+	                    TextureFormat::List format,
+	                    void *data,
+	                    bool copy)
+	{
+		unsigned int datasize = TextureFormat::getSize(format,
+		                                               width * height * depth);
+		return set(TextureType::Texture3D,
+		           width,
+		           height,
+		           depth,
+		           internalformat,
+		           format,
+		           datasize,
+		           data,
+		           copy);
+	}
+	bool Texture::update3D(unsigned int x,
+	                       unsigned int y,
+	                       unsigned int z,
+	                       unsigned int width,
+	                       unsigned int height,
+	                       unsigned int depth,
+	                       void *data)
+	{
+		tbb::spin_mutex::scoped_lock lock(imagemutex);
+		if (currentdata.data == 0
+			|| currentdata.type != TextureType::TextureCube)
+			return false;
+		if (x + width > currentdata.width || y + height > currentdata.height)
+			return false;
+		TextureFormat::List format = currentdata.format;
+		unsigned int srcstride = TextureFormat::getSize(format, width);
+		unsigned int dststride = TextureFormat::getSize(format,
+		                                                currentdata.width);
+		unsigned int dstlayersize = dststride * currentdata.height;
+		unsigned int dstoffset = TextureFormat::getSize(format, x)
+		                       + dststride * y + z * dstlayersize;
+		char *src = (char*)data;
+		char *dst = (char*)currentdata.data + dstoffset;
+		if (srcstride == dststride)
+		{
+			for (unsigned int i = 0; i < depth; i++)
+			{
+				memcpy(dst, src, srcstride * height);
+				src += srcstride * height;
+				dstoffset += dstlayersize;
+				dst = (char*)currentdata.data + dstoffset;
+			}
+		}
+		else
+		{
+			for (unsigned int i = 0; i < depth; i++)
+			{
+				for (unsigned int j = 0; j < height; j++)
+				{
+					memcpy(dst, src, srcstride);
+					src += srcstride;
+					dst += dststride;
+				}
+				dstoffset += dstlayersize;
+				dst = (char*)currentdata.data + dstoffset;
+			}
+		}
+		registerUpload();
+		return true;
+	}
+
+	void Texture::setMipmapsEnabled(bool mipmaps)
+	{
+		{
+			tbb::spin_mutex::scoped_lock lock(imagemutex);
+			currentdata.mipmaps = mipmaps;
+		}
+		registerUpload();
+	}
+	bool Texture::getMipmapsEnabled()
+	{
+		tbb::spin_mutex::scoped_lock lock(imagemutex);
+		return currentdata.mipmaps;
+	}
+
+	void Texture::setFiltering(TextureFiltering::List filtering)
+	{
+		{
+			tbb::spin_mutex::scoped_lock lock(imagemutex);
+			currentdata.filtering = filtering;
+		}
+		registerUpload();
+	}
+	TextureFiltering::List Texture::getFiltering()
+	{
+		tbb::spin_mutex::scoped_lock lock(imagemutex);
+		return currentdata.filtering;
+	}
+
+	void Texture::discardImageData()
+	{
+		// We have to check whether the image data is still needed here before
+		// we delete it, and maybe only delete it later in getUploadData().
+		if (!isUploading())
+		{
+			discarddata = true;
+		}
+		else
+		{
+			tbb::spin_mutex::scoped_lock lock(imagemutex);
+			if (currentdata.data)
+			{
+				free(currentdata.data);
+				currentdata.data = 0;
+			}
+		}
+	}
+
+	bool Texture::load()
+	{
+		std::string path = getPath();
+		// Open file
+		core::FileSystem::Ptr fs = getManager()->getFileSystem();
+		core::File::Ptr file = fs->open(path, core::FileAccess::Read);
+		if (!file)
+		{
+			getManager()->getLog()->error("Could not open file \"%s\".",
+			                              path.c_str());
+			finishLoading(false);
+			return false;
+		}
+		// Read the file content
+		unsigned int filesize = file->getSize();
+		unsigned char *buffer = new unsigned char[filesize];
+		if (file->read(filesize, buffer) != (int)filesize)
+		{
+			getManager()->getLog()->error("%s: Could not read file content.",
+			                              getName().c_str());
+			delete[] buffer;
+			finishLoading(false);
+			return false;
+		}
+		// We have to check the extension of the file first as we have multiple
+		// image loaders for different formats
+		std::string extension = path.substr(path.rfind("."));
+		if (extension == ".dds")
+		{
+			finishLoading(false);
+			return false;
+		}
+		else
+		{
+			ImageSTB image;
+			if (!image.load(path.c_str(), filesize, buffer))
+			{
+				getManager()->getLog()->error("%s: Could not load image.",
+				                              getName().c_str());
+				finishLoading(false);
+				return false;
+			}
+			getManager()->getLog()->info("%s: Image: %d/%d.",
+			                              getName().c_str(), image.getWidth(), image.getHeight());
+			set(image.getType(),
+			    image.getWidth(),
+			    image.getHeight(),
+			    image.getDepth(),
+			    image.getFormat(),
+			    image.getFormat(),
+			    image.getImageSize(),
+			    image.getImageData(true),
+			    false);
+		}
+		finishLoading(true);
+		return true;
+	}
+	bool Texture::unload()
+	{
+		discardImageData();
+		return true;
+	}
+
+	void *Texture::getUploadData()
+	{
+		TextureData *uploaddata = new TextureData(currentdata);
+		if (currentdata.data)
+		{
+			uploaddata->data = malloc(currentdata.datasize);
+			memcpy(uploaddata->data, currentdata.data, currentdata.datasize);
+			if (discarddata == true)
+			{
+				free(currentdata.data);
+				currentdata.data = 0;
+				discarddata = false;
+			}
+		}
+		return uploaddata;
+	}
+
+	bool Texture::set(TextureType::List type,
+	                  unsigned int width,
+	                  unsigned int height,
+	                  unsigned int depth,
+	                  TextureFormat::List internalformat,
+	                  TextureFormat::List format,
+	                  unsigned int datasize,
+	                  void *data,
+	                  bool copy)
+	{
+		// Allocate image data
+		void *datacopy;
+		if (copy && data)
+		{
+			datacopy = malloc(datasize);
+			memcpy(datacopy, data, datasize);
+		}
+		else
+		{
+			datacopy = data;
+		}
+		void *prevdata = 0;
+		// Copy new texture information
+		{
+			tbb::spin_mutex::scoped_lock lock(imagemutex);
+			prevdata = currentdata.data;
+			currentdata.type = type;
+			currentdata.width = width;
+			currentdata.height = height;
+			currentdata.depth = depth;
+			currentdata.internalformat = internalformat;
+			currentdata.format = format;
+			currentdata.data = datacopy;
+			currentdata.datasize = datasize;
+		}
+		// Delete old data
+		if (prevdata)
+			free(prevdata);
+		// Register for uploading
+		registerUpload();
+		return true;
+	}
 }
 }

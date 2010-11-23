@@ -13,7 +13,7 @@
 		varying vec3 worldNormal;
 		void main()
 		{
-			texcoord = texcoord0;
+			texcoord = texcoord0 * vec2(1, -1);
 			vec4 vertexPos = getWorldPos(getSkinningPos(vec4(pos, 1.0)));
 			worldPos = vertexPos.xyz / vertexPos.w;
 			// TODO: Proper normal matrix

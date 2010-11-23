@@ -25,7 +25,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <iostream>
 #include <cstdio>
-#include <FreeImagePlus.h>
 
 #if defined(CORERENDER_WINDOWS)
 	#define snprintf sprintf_s
@@ -51,7 +50,6 @@ namespace res
 
 	bool ResourceManager::init()
 	{
-		FreeImage_Initialise(FALSE);
 		// Create default resources
 		// TODO
 		return true;
@@ -66,8 +64,6 @@ namespace res
 			log->error("Resource \"%s\" still referenced, expect crashes.",
 			           it->first.c_str());
 		}
-		// Deinitialize image loader
-		FreeImage_DeInitialise();
 		return true;
 	}
 

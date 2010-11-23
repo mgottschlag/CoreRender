@@ -19,7 +19,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Texture2DOpenGL.hpp"
+#include "TextureOpenGL.hpp"
 #include "../VideoDriver.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
 #include "CoreRender/render/UploadManager.hpp"
@@ -67,8 +67,37 @@ namespace opengl
 			case TextureFormat::Depth24:
 				internal = GL_DEPTH_COMPONENT24;
 				return true;
+			case TextureFormat::R8:
+				internal = GL_R8;
+				return true;
+			case TextureFormat::R16:
+				internal = GL_R16;
+				return true;
+			case TextureFormat::R32:
+				internal = GL_R32I;
+				return true;
+			case TextureFormat::R16F:
+				internal = GL_R16F;
+				return true;
+			case TextureFormat::R32F:
+				internal = GL_R32F;
+				return true;
+			case TextureFormat::RG8:
+				internal = GL_RG8;
+				return true;
+			case TextureFormat::RG16:
+				internal = GL_RG16;
+				return true;
+			case TextureFormat::RG32:
+				internal = GL_RG32I;
+				return true;
+			case TextureFormat::RG16F:
+				internal = GL_RG16F;
+				return true;
+			case TextureFormat::RG32F:
+				internal = GL_RG32F;
+				return true;
 			default:
-				// TODO: R/RG formats
 				return false;
 		}
 	}
@@ -106,20 +135,20 @@ namespace opengl
 		}
 	}
 
-	Texture2DOpenGL::Texture2DOpenGL(UploadManager &uploadmgr,
-	                                 res::ResourceManager *rmgr,
-	                                 const std::string &name)
-		: Texture2D(uploadmgr, rmgr, name)
+	TextureOpenGL::TextureOpenGL(UploadManager &uploadmgr,
+	                             res::ResourceManager *rmgr,
+	                             const std::string &name)
+		: Texture(uploadmgr, rmgr, name)
 	{
 	}
-	Texture2DOpenGL::~Texture2DOpenGL()
+	TextureOpenGL::~TextureOpenGL()
 	{
 		// Delete OpenGL texture object
 		if (handle != 0)
 			glDeleteTextures(1, &handle);
 	}
 
-	void Texture2DOpenGL::upload(void *data)
+	void TextureOpenGL::upload(void *data)
 	{
 		TextureData *uploaddata = (TextureData*)data;
 		// Create the texture object if necessary
@@ -139,96 +168,34 @@ namespace opengl
 			glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, true);
 			// TODO: Error checking
 		}
-		const RenderCaps &caps = *getUploadManager().getCaps();
+		// Check whether we actually support the format
+		if (!checkFormatSupport(uploaddata->internalformat,
+		                        uploaddata->format,
+		                        uploaddata->data != 0))
+		{
+			if (uploaddata->data)
+				free(uploaddata->data);
+			delete uploaddata;
+			return;
+		}
+		// Translate formats to a form OpenGL understands
 		unsigned int internal = 0;
-		unsigned int currentformat = 0;
+		unsigned int format = 0;
 		unsigned int component = 0;
 		bool compressed = TextureFormat::isCompressed(uploaddata->format);
 		bool intcompressed = TextureFormat::isCompressed(uploaddata->internalformat);
-		// Compression only works under certain circumstances
-		if (intcompressed)
-		{
-			if (compressed && uploaddata->format != uploaddata->internalformat)
-			{
-				core::Log::Ptr log = getManager()->getLog();
-				log->error("Cannot convert between different compressed formats.");
-				if (uploaddata->data)
-					free(uploaddata->data);
-				return;
-			}
-			if (!caps.getFlag(RenderCaps::Flag::TextureCompression))
-			{
-				if ((uploaddata->internalformat != TextureFormat::RGB_DXT1
-				    && uploaddata->internalformat != TextureFormat::RGBA_DXT1)
-				    || uploaddata->internalformat != uploaddata->format
-				    || !caps.getFlag(RenderCaps::Flag::TextureDXT1))
-				{
-					core::Log::Ptr log = getManager()->getLog();
-					log->error("Compressed texture not supported.");
-					if (uploaddata->data)
-						free(uploaddata->data);
-					delete uploaddata;
-					return;
-				}
-			}
-		}
-		else
-		{
-			if (compressed)
-			{
-				core::Log::Ptr log = getManager()->getLog();
-				log->error("Cannot load compressed data into uncompressed texture.");
-				if (uploaddata->data)
-					free(uploaddata->data);
-				delete uploaddata;
-				return;
-			}
-		}
-		// Check for float extension
-		if (TextureFormat::isFloat(uploaddata->internalformat)
-		    && !caps.getFlag(RenderCaps::Flag::TextureFloat))
-		{
-			core::Log::Ptr log = getManager()->getLog();
-			log->error("Floating point texture not supported.");
-			if (uploaddata->data)
-				free(uploaddata->data);
-			delete uploaddata;
-			return;
-		}
-		// Depth-stencil
-		if (uploaddata->internalformat == TextureFormat::Depth24Stencil8
-		    && !caps.getFlag(RenderCaps::Flag::TextureDepthStencil))
-		{
-			core::Log::Ptr log = getManager()->getLog();
-			log->error("Depth-stencil texture not supported.");
-			if (uploaddata->data)
-				free(uploaddata->data);
-			delete uploaddata;
-			return;
-		}
-		// TODO: Depth textures?
 		// Translate internal format
-		if (!translateInternalFormat(uploaddata->internalformat, internal))
+		if (!translateInternalFormat(uploaddata->internalformat, internal)
+		    || (uploaddata->data
+		        && !translateFormat(uploaddata->format, format, component)))
 		{
 			core::Log::Ptr log = getManager()->getLog();
-			log->error("Error translating internal texture format (%d).",
-			           uploaddata->internalformat);
+			log->error("Error translating texture format (%d, %d).",
+			           uploaddata->internalformat, uploaddata->format);
 			if (uploaddata->data)
 				free(uploaddata->data);
 			delete uploaddata;
 			return;
-		}
-		if (uploaddata->data)
-		{
-			if (!translateFormat(uploaddata->format, currentformat, component))
-			{
-				core::Log::Ptr log = getManager()->getLog();
-				log->error("Unsupported source format.");
-				if (uploaddata->data)
-					free(uploaddata->data);
-				delete uploaddata;
-				return;
-			}
 		}
 		// Upload texture data
 		glBindTexture(GL_TEXTURE_2D, handle);
@@ -256,7 +223,7 @@ namespace opengl
 				             uploaddata->width,
 				             uploaddata->height,
 				             0,
-				             currentformat,
+				             format,
 				             component,
 				             uploaddata->data);
 			}
@@ -314,6 +281,23 @@ namespace opengl
 			log->error("Uploading texture: %s", gluErrorString(error));
 		}
 		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+
+	bool TextureOpenGL::checkFormatSupport(TextureFormat::List internalformat,
+	                                       TextureFormat::List uploadformat,
+	                                       bool uploadingdata)
+	{
+		const RenderCaps &caps = *getUploadManager().getCaps();
+		if (!TextureFormat::supported(caps,
+		                              internalformat,
+		                              uploadingdata,
+		                              uploadformat))
+		{
+			core::Log::Ptr log = getManager()->getLog();
+			log->error("%s: Texture formats not supported.", getName().c_str());
+			return false;
+		}
+		return true;
 	}
 }
 }

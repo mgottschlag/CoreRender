@@ -19,29 +19,29 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_OPENGL_TEXTURE2DOPENGL_HPP_INCLUDED_
-#define _CORERENDER_RENDER_OPENGL_TEXTURE2DOPENGL_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_IMAGESTB_HPP_INCLUDED_
+#define _CORERENDER_RENDER_IMAGESTB_HPP_INCLUDED_
 
-#include "CoreRender/render/Texture2D.hpp"
+#include "Image.hpp"
 
 namespace cr
 {
+namespace core
+{
+	class Log;
+}
 namespace render
 {
-namespace opengl
-{
-	class Texture2DOpenGL : public Texture2D
+	class ImageSTB : public Image
 	{
 		public:
-			Texture2DOpenGL(UploadManager &uploadmgr,
-			                res::ResourceManager *rmgr,
-			                const std::string &name);
-			virtual ~Texture2DOpenGL();
+			ImageSTB();
+			virtual ~ImageSTB();
 
-			virtual void upload(void *data);
-		private:
+			virtual bool load(const char *filename,
+			                  unsigned int datasize,
+			                  unsigned char *data);
 	};
-}
 }
 }
 

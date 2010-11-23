@@ -25,7 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/VideoDriverType.hpp"
 #include "CoreRender/render/RenderCaps.hpp"
 #include "CoreRender/core/Color.hpp"
-#include "CoreRender/render/Texture2D.hpp"
+#include "CoreRender/render/Texture.hpp"
 #include "CoreRender/render/IndexBuffer.hpp"
 #include "CoreRender/render/VertexBuffer.hpp"
 #include "CoreRender/render/Shader.hpp"
@@ -86,12 +86,12 @@ namespace render
 			virtual bool shutdown() = 0;
 
 			/**
-			 * Creates a Texture2D resource. This is usually called by the
-			 * Texture2D resource factory.
+			 * Creates a Texture resource. This is usually called by the
+			 * Texture resource factory.
 			 */
-			virtual Texture2D::Ptr createTexture2D(UploadManager &uploadmgr,
-			                                       res::ResourceManager *rmgr,
-			                                       const std::string &name) = 0;
+			virtual Texture::Ptr createTexture(UploadManager &uploadmgr,
+			                                   res::ResourceManager *rmgr,
+			                                   const std::string &name) = 0;
 			/**
 			 * Creates a IndexBuffer resource. This is usually called by the
 			 * IndexBuffer resource factory.

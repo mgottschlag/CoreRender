@@ -94,9 +94,9 @@ namespace render
 		}
 		for (unsigned int i = 0; i < targettextures.size(); i++)
 		{
-			targettextures[i].texture->set(width,
-			                               height,
-			                               targettextures[i].texture->getInternalFormat());
+			targettextures[i].texture->set2D(width,
+			                                 height,
+			                                 targettextures[i].texture->getInternalFormat());
 		}
 	}
 
@@ -205,8 +205,8 @@ namespace render
 			               + texture.abssize[0];
 			texturesize[1] = (unsigned int)(texture.relsize[1] * targetsize[1])
 			               + texture.abssize[1];
-			Texture2D::Ptr texres = getManager()->createResource<Texture2D>("Texture2D");
-			texres->set(texturesize[0], texturesize[1], format);
+			Texture::Ptr texres = getManager()->createResource<Texture>("Texture");
+			texres->set2D(texturesize[0], texturesize[1], format);
 			texture.texture = texres;
 			// Add the texture to the texture list
 			targettextures.push_back(texture);
@@ -288,7 +288,7 @@ namespace render
 					                              getName().c_str());
 					continue;
 				}
-				Texture2D::Ptr texture = getTargetTexture(texname);
+				Texture::Ptr texture = getTargetTexture(texname);
 				if (!texture)
 				{
 					getManager()->getLog()->error("%s: DepthBuffer texture not found.",
@@ -309,7 +309,7 @@ namespace render
 					                              getName().c_str());
 					continue;
 				}
-				Texture2D::Ptr texture = getTargetTexture(texname);
+				Texture::Ptr texture = getTargetTexture(texname);
 				if (!texture)
 				{
 					getManager()->getLog()->error("%s: ColorBuffer texture not found.",
@@ -462,7 +462,7 @@ namespace render
 				command.stringparams.push_back(name);
 				if (strcmp(texture, ""))
 				{
-					Texture2D::Ptr textureres = getTargetTexture(texture);
+					Texture::Ptr textureres = getTargetTexture(texture);
 					if (!textureres)
 					{
 						getManager()->getLog()->error("%s: Texture \"%s\" not found.",
@@ -585,7 +585,7 @@ namespace render
 		}
 		return 0;
 	}
-	Texture2D::Ptr Pipeline::getTargetTexture(const std::string &name)
+	Texture::Ptr Pipeline::getTargetTexture(const std::string &name)
 	{
 		for (unsigned int i = 0; i < targettextures.size(); i++)
 		{

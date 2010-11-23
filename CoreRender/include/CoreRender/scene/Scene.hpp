@@ -84,7 +84,7 @@ namespace scene
 
 			res::ResourceManager *rmgr;
 
-			render::Texture2D::Ptr shadowmap;
+			render::Texture::Ptr shadowmap;
 			render::RenderTarget::Ptr shadowtarget;
 	};
 }

@@ -34,23 +34,23 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace cr
 {
-	class Texture2DFactory : public res::ResourceFactory
+	class TextureFactory : public res::ResourceFactory
 	{
 		public:
-			Texture2DFactory(render::VideoDriver *driver,
-			                 render::UploadManager &uploadmgr,
-			                 res::ResourceManager *rmgr)
+			TextureFactory(render::VideoDriver *driver,
+			               render::UploadManager &uploadmgr,
+			               res::ResourceManager *rmgr)
 				: res::ResourceFactory(rmgr), driver(driver),
 				uploadmgr(uploadmgr)
 			{
 			}
-			virtual ~Texture2DFactory()
+			virtual ~TextureFactory()
 			{
 			}
 
 			virtual res::Resource::Ptr create(const std::string &name)
 			{
-				return driver->createTexture2D(uploadmgr, getManager(), name);
+				return driver->createTexture(uploadmgr, getManager(), name);
 			}
 		private:
 			render::VideoDriver *driver;
@@ -211,8 +211,8 @@ namespace cr
 		rmgr->addFactory("Material", factory);
 		factory = new ShaderFactory(driver, uploadmgr, rmgr);
 		rmgr->addFactory("Shader", factory);
-		factory = new Texture2DFactory(driver, uploadmgr, rmgr);
-		rmgr->addFactory("Texture2D", factory);
+		factory = new TextureFactory(driver, uploadmgr, rmgr);
+		rmgr->addFactory("Texture", factory);
 		factory = new IndexBufferFactory(driver, uploadmgr, rmgr);
 		rmgr->addFactory("IndexBuffer", factory);
 		factory = new VertexBufferFactory(driver, uploadmgr, rmgr);

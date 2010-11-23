@@ -60,7 +60,7 @@ namespace render
 			void resizeTargets(unsigned int width, unsigned int height);
 
 			FrameBuffer::Ptr getFrameBuffer(const std::string &name);
-			Texture2D::Ptr getTargetTexture(const std::string &name);
+			Texture::Ptr getTargetTexture(const std::string &name);
 			RenderTarget::Ptr getRenderTarget(const std::string &name);
 
 			virtual bool load();
@@ -92,7 +92,7 @@ namespace render
 			struct TargetTextureInfo
 			{
 				std::string name;
-				Texture2D::Ptr texture;
+				Texture::Ptr texture;
 				float relsize[2];
 				int abssize[2];
 			};

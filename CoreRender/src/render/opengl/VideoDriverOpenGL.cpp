@@ -20,7 +20,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "VideoDriverOpenGL.hpp"
-#include "Texture2DOpenGL.hpp"
+#include "TextureOpenGL.hpp"
 #include "IndexBufferOpenGL.hpp"
 #include "VertexBufferOpenGL.hpp"
 #include "ShaderOpenGL.hpp"
@@ -89,11 +89,11 @@ namespace opengl
 		return true;
 	}
 
-	Texture2D::Ptr VideoDriverOpenGL::createTexture2D(UploadManager &uploadmgr,
-	                                                  res::ResourceManager *rmgr,
-	                                                  const std::string &name)
+	Texture::Ptr VideoDriverOpenGL::createTexture(UploadManager &uploadmgr,
+	                                              res::ResourceManager *rmgr,
+	                                              const std::string &name)
 	{
-		return new Texture2DOpenGL(uploadmgr, rmgr, name);
+		return new TextureOpenGL(uploadmgr, rmgr, name);
 	}
 	IndexBuffer::Ptr VideoDriverOpenGL::createIndexBuffer(UploadManager &uploadmgr,
 	                                           res::ResourceManager *rmgr,
