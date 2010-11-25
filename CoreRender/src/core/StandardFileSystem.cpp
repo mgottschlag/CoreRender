@@ -23,7 +23,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/core/StandardFile.hpp"
 #include "CoreRender/core/Platform.hpp"
 
-#include <iostream>
 #include <cstring>
 
 #if defined(CORERENDER_UNIX)
@@ -91,7 +90,6 @@ namespace core
 				&& ((mountinfo[i].mode & modecheck) == modecheck))
 			{
 				std::string abspath = mountinfo[i].src + path.substr(mountinfo[i].dest.size());
-				std::cout << path << " mapped to " << abspath << std::endl;
 				// Try to open the file
 				StandardFile *file = new StandardFile(path, abspath, mode);
 				if (!file->isOpen())

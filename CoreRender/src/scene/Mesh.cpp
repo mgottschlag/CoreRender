@@ -403,7 +403,6 @@ namespace scene
 				geometry[i].joints[j].node = -1;
 			}
 		}
-		std::cout << "Loading finished." << std::endl;
 		return true;
 	}
 	render::VertexLayout::Ptr Mesh::createVertexLayout(const GeometryFile::AttribInfo &attribs)

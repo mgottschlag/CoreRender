@@ -313,16 +313,11 @@ namespace render
 			return false;
 		}
 		// Load shader texts
-		for (TiXmlNode *node = root->FirstChild("Text");
-		     node != 0;
-		     node = root->IterateChildren("Text", node))
+		for (TiXmlElement *element = root->FirstChildElement("Text");
+		     element != 0;
+		     element = element->NextSiblingElement("Text"))
 		{
 			// TODO: Load texts directly from files
-			getManager()->getLog()->debug("%s: Text.",
-			                              getName().c_str());
-			TiXmlElement *element = node->ToElement();
-			if (!element)
-				continue;
 			// Read text
 			const char *name = element->Attribute("name");
 			if (!name)
@@ -338,18 +333,13 @@ namespace render
 				                                getName().c_str());
 				continue;
 			}
-			getManager()->getLog()->debug("%s: Adding text %s.",
-			                                getName().c_str(), name);
 			addText(name, content, true);
 		}
 		// Load contexts
-		for (TiXmlNode *node = root->FirstChild("Context");
-		     node != 0;
-		     node = root->IterateChildren("Context", node))
+		for (TiXmlElement *element = root->FirstChildElement("Context");
+		     element != 0;
+		     element = element->NextSiblingElement("Context"))
 		{
-			TiXmlElement *element = node->ToElement();
-			if (!element)
-				continue;
 			// Read context info
 			const char *name = element->Attribute("name");
 			const char *vsname = element->Attribute("vs");
@@ -435,13 +425,10 @@ namespace render
 			           depthtest);
 		}
 		// Add attribs
-		for (TiXmlNode *node = root->FirstChild("Attrib");
-		     node != 0;
-		     node = root->IterateChildren("Attrib", node))
+		for (TiXmlElement *element = root->FirstChildElement("Attrib");
+		     element != 0;
+		     element = element->NextSiblingElement("Attrib"))
 		{
-			TiXmlElement *element = node->ToElement();
-			if (!element)
-				continue;
 			// Read text
 			const char *name = element->Attribute("name");
 			if (!name)
