@@ -43,6 +43,53 @@ namespace opengl
 			bool checkFormatSupport(TextureFormat::List internalformat,
 			                        TextureFormat::List uploadformat,
 			                        bool uploadingdata);
+
+			void uploadCompressed(unsigned int target,
+			                      unsigned int mipmap,
+			                      unsigned int width,
+			                      unsigned int height,
+			                      unsigned int depth,
+			                      unsigned int datasize,
+			                      unsigned int internalformat,
+			                      void *data);
+			unsigned int uploadMipmapsCompressed(unsigned int target,
+			                                     unsigned int width,
+			                                     unsigned int height,
+			                                     unsigned int depth,
+			                                     TextureFormat::List format,
+			                                     unsigned int internalformat,
+			                                     void *data);
+			void upload(unsigned int target,
+			            unsigned int mipmap,
+			            unsigned int width,
+			            unsigned int height,
+			            unsigned int depth,
+			            unsigned int internalformat,
+			            unsigned int uploadformat,
+			            unsigned int component,
+			            void *data);
+			unsigned int uploadMipmaps(unsigned int target,
+			                           unsigned int width,
+			                           unsigned int height,
+			                           unsigned int depth,
+			                           TextureFormat::List format,
+			                           unsigned int internalformat,
+			                           unsigned int uploadformat,
+			                           unsigned int component,
+			                           void *data);
+
+			unsigned int upload(unsigned int target,
+			                    unsigned int width,
+			                    unsigned int height,
+			                    unsigned int depth,
+			                    TextureFormat::List format,
+			                    unsigned int internalformat,
+			                    unsigned int uploadformat,
+			                    unsigned int component,
+			                    void *data,
+			                    unsigned int datasize,
+			                    bool compressed,
+			                    bool mipmaps);
 	};
 }
 }

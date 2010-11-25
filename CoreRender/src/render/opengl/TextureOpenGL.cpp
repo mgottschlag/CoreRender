@@ -131,6 +131,15 @@ namespace opengl
 				openglfmt = GL_DEPTH_COMPONENT;
 				component = GL_FLOAT;
 				return true;
+			case TextureFormat::RGB_DXT1:
+			case TextureFormat::RGBA_DXT1:
+			case TextureFormat::RGBA_DXT3:
+			case TextureFormat::RGBA_DXT5:
+				// We never upload these via glTexImage*, so just pass some
+				// random format here
+				openglfmt = GL_RGBA;
+				component = GL_UNSIGNED_BYTE;
+				return true;
 			default:
 				// TODO: R/RG formats
 				return false;
@@ -229,6 +238,7 @@ namespace opengl
 		unsigned int height = uploaddata->height;
 		unsigned int depth = uploaddata->depth;
 		unsigned int datasize = uploaddata->datasize;
+		unsigned int texturetarget = translateTextureType(uploaddata->type);
 		if (isdepth)
 		{
 			// TODO: Hack
@@ -239,74 +249,39 @@ namespace opengl
 		switch (uploaddata->type)
 		{
 			case TextureType::Texture1D:
-				if (compressed)
-					glCompressedTexImage1D(GL_TEXTURE_1D, 0, internal, width, 0,
-						datasize, uploaddata->data);
-				else
-					glTexImage1D(GL_TEXTURE_2D, 0, internal, width, 0, format,
-						component, uploaddata->data);
-				break;
 			case TextureType::Texture2D:
-				if (compressed)
-					glCompressedTexImage2D(GL_TEXTURE_2D, 0, internal, width,
-						height, 0, datasize, uploaddata->data);
-				else
-					glTexImage2D(GL_TEXTURE_2D, 0, internal, width, height, 0,
-						format, component, uploaddata->data);
-				break;
 			case TextureType::Texture3D:
-				if (compressed)
-					glCompressedTexImage3D(GL_TEXTURE_3D, 0, internal, width,
-						height, depth, 0, datasize, uploaddata->data);
-				else
-					glTexImage3D(GL_TEXTURE_3D, 0, internal, width, height, 0,
-						format, depth, component, uploaddata->data);
+				upload(texturetarget,
+					width, height, depth, uploaddata->format, internal,
+					format, component, uploaddata->data, datasize,
+					compressed, !uploaddata->createmipmaps);
 				break;
 			case TextureType::TextureCube:
-				if (compressed)
-				{
-					unsigned int facesize = datasize / 6;
-					glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0,
-						internal, width, height, 0, datasize,
-						(char*)uploaddata->data + facesize * 0);
-					glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0,
-						internal, width, height, 0, datasize,
-						(char*)uploaddata->data + facesize * 1);
-					glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0,
-						internal, width, height, 0, datasize,
-						(char*)uploaddata->data + facesize * 2);
-					glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0,
-						internal, width, height, 0, datasize,
-						(char*)uploaddata->data + facesize * 3);
-					glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0,
-						internal, width, height, 0, datasize,
-						(char*)uploaddata->data + facesize * 4);
-					glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0,
-						internal, width, height, 0, datasize,
-						(char*)uploaddata->data + facesize * 5);
-				}
-				else
-				{
-					unsigned int facesize = datasize / 6;
-					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, internal,
-						width, height, 0, format, component,
-						(char*)uploaddata->data + facesize * 0);
-					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, internal,
-						width, height, 0, format, component,
-						(char*)uploaddata->data + facesize * 1);
-					glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, internal,
-						width, height, 0, format, component,
-						(char*)uploaddata->data + facesize * 2);
-					glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, internal,
-						width, height, 0, format, component,
-						(char*)uploaddata->data + facesize * 3);
-					glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, internal,
-						width, height, 0, format, component,
-						(char*)uploaddata->data + facesize * 4);
-					glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, internal,
-						width, height, 0, format, component,
-						(char*)uploaddata->data + facesize * 5);
-				}
+				char *currentface = (char*)uploaddata->data;
+				currentface += upload(GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+					width, height, 1, uploaddata->format, internal,
+					format, component, currentface, datasize, compressed,
+					!uploaddata->createmipmaps);
+				currentface += upload(GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+					width, height, 1, uploaddata->format, internal,
+					format, component, currentface, datasize, compressed,
+					!uploaddata->createmipmaps);
+				currentface += upload(GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+					width, height, 1, uploaddata->format, internal,
+					format, component, currentface, datasize, compressed,
+					!uploaddata->createmipmaps);
+				currentface += upload(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+					width, height, 1, uploaddata->format, internal,
+					format, component, currentface, datasize, compressed,
+					!uploaddata->createmipmaps);
+				currentface += upload(GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+					width, height, 1, uploaddata->format, internal,
+					format, component, currentface, datasize, compressed,
+					!uploaddata->createmipmaps);
+				currentface += upload(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+					width, height, 1, uploaddata->format, internal,
+					format, component, currentface, datasize, compressed,
+					!uploaddata->createmipmaps);
 				break;
 		}
 		if (uploaddata->data)
@@ -314,7 +289,7 @@ namespace opengl
 		delete uploaddata;
 		// Generate mipmaps
 		hasmipmaps = uploaddata->mipmaps;
-		if (hasmipmaps)
+		if (hasmipmaps && uploaddata->createmipmaps)
 		{
 			glEnable(opengltype);
 			glGenerateMipmapEXT(opengltype);
@@ -345,6 +320,168 @@ namespace opengl
 			return false;
 		}
 		return true;
+	}
+
+	void TextureOpenGL::uploadCompressed(unsigned int target,
+	                                     unsigned int mipmap,
+	                                     unsigned int width,
+	                                     unsigned int height,
+	                                     unsigned int depth,
+	                                     unsigned int datasize,
+	                                     unsigned int internalformat,
+	                                     void *data)
+	{
+		if (target == GL_TEXTURE_1D)
+		{
+			glCompressedTexImage1D(GL_TEXTURE_1D, mipmap, internalformat, width,
+				0, datasize, data);
+		}
+		else if (target == GL_TEXTURE_3D)
+		{
+			glCompressedTexImage3D(GL_TEXTURE_3D, mipmap, internalformat, width,
+				height, depth, 0, datasize, data);
+		}
+		else
+		{
+			glCompressedTexImage2D(target, mipmap, internalformat, width,
+				height, 0, datasize, data);
+		}
+	}
+	unsigned int TextureOpenGL::uploadMipmapsCompressed(unsigned int target,
+	                                                    unsigned int width,
+	                                                    unsigned int height,
+	                                                    unsigned int depth,
+	                                                    TextureFormat::List format,
+	                                                    unsigned int internalformat,
+	                                                    void *data)
+	{
+		unsigned int currentwidth = width;
+		unsigned int currentheight = height;
+		unsigned int currentdepth = depth;
+		unsigned int pixelcount = 0;
+		char *currentmipmap = (char*)data;
+		unsigned int mipmapindex = 0;
+		unsigned int sizeread = 0;
+		while (pixelcount != 1)
+		{
+			pixelcount = currentwidth * currentheight * currentdepth;
+			unsigned int datasize = TextureFormat::getSize(format,
+			                                               currentwidth,
+			                                               currentheight,
+			                                               currentdepth);
+			uploadCompressed(target, mipmapindex, currentwidth, currentheight,
+				currentdepth, datasize, internalformat, currentmipmap);
+			sizeread += datasize;
+			mipmapindex++;
+			currentmipmap = currentmipmap + datasize;
+			currentwidth = std::max(currentwidth / 2, 1u);
+			currentheight = std::max(currentheight / 2, 1u);
+			currentdepth = std::max(currentdepth / 2, 1u);
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, mipmapindex - 1);
+		return sizeread;
+	}
+	void TextureOpenGL::upload(unsigned int target,
+	                           unsigned int mipmap,
+	                           unsigned int width,
+	                           unsigned int height,
+	                           unsigned int depth,
+	                           unsigned int internalformat,
+	                           unsigned int uploadformat,
+	                           unsigned int component,
+	                           void *data)
+	{
+		if (target == GL_TEXTURE_1D)
+			glTexImage1D(target, 0, internalformat, width, 0, uploadformat,
+				component, data);
+		else if (target == GL_TEXTURE_3D)
+			glTexImage3D(target, 0, internalformat, width, height, 0,
+				uploadformat, depth, component, data);
+		else
+			glTexImage2D(target, mipmap, internalformat, width, height, 0,
+				uploadformat, component, data);
+	}
+	unsigned int TextureOpenGL::uploadMipmaps(unsigned int target,
+	                                          unsigned int width,
+	                                          unsigned int height,
+	                                          unsigned int depth,
+	                                          TextureFormat::List format,
+	                                          unsigned int internalformat,
+	                                          unsigned int uploadformat,
+	                                          unsigned int component,
+	                                          void *data)
+	{
+		unsigned int currentwidth = width;
+		unsigned int currentheight = height;
+		unsigned int currentdepth = depth;
+		unsigned int pixelcount = 0;
+		char *currentmipmap = (char*)data;
+		unsigned int mipmapindex = 0;
+		unsigned int sizeread = 0;
+		while (pixelcount != 1)
+		{
+			pixelcount = currentwidth * currentheight * currentdepth;
+			unsigned int datasize = TextureFormat::getSize(format,
+			                                               currentwidth,
+			                                               currentheight,
+			                                               currentdepth);
+			upload(target, mipmapindex, currentwidth, currentheight,
+				currentdepth, internalformat, uploadformat, component,
+				currentmipmap);
+			sizeread += datasize;
+			mipmapindex++;
+			currentmipmap = currentmipmap + datasize;
+			currentwidth = std::max(currentwidth / 2, 1u);
+			currentheight = std::max(currentheight / 2, 1u);
+			currentdepth = std::max(currentdepth / 2, 1u);
+		}
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, mipmapindex - 1);
+		return sizeread;
+	}
+
+	unsigned int TextureOpenGL::upload(unsigned int target,
+	                                   unsigned int width,
+	                                   unsigned int height,
+	                                   unsigned int depth,
+	                                   TextureFormat::List format,
+	                                   unsigned int internalformat,
+	                                   unsigned int uploadformat,
+	                                   unsigned int component,
+	                                   void *data,
+	                                   unsigned int datasize,
+	                                   bool compressed,
+	                                   bool mipmaps)
+	{
+		if (compressed)
+		{
+			if (mipmaps)
+			{
+				return uploadMipmapsCompressed(target, width, height, depth,
+					format, internalformat, data);
+			}
+			else
+			{
+				uploadCompressed(target, 0, width, height, depth, datasize,
+					internalformat, data);
+				return TextureFormat::getSize(format, width, height, depth);
+			}
+		}
+		else
+		{
+			if (mipmaps)
+			{
+				return uploadMipmaps(target, width, height, depth, format,
+					internalformat, uploadformat, component, data);
+			}
+			else
+			{
+				upload(target, 0, width, height, depth, internalformat,
+					uploadformat, component, data);
+				return TextureFormat::getSize(format, width, height, depth);
+			}
+		}
 	}
 }
 }

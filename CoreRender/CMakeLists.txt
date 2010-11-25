@@ -113,6 +113,7 @@ set(SRC
 	src/scene/SpotLight.cpp
 	src/scene/Light.cpp
 	src/render/ImageSTB.cpp
+	src/render/ImageDDS.cpp
 )
 
 set(LIB

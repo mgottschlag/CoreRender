@@ -19,8 +19,8 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_IMAGESTB_HPP_INCLUDED_
-#define _CORERENDER_RENDER_IMAGESTB_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_IMAGEDDS_HPP_INCLUDED_
+#define _CORERENDER_RENDER_IMAGEDDS_HPP_INCLUDED_
 
 #include "Image.hpp"
 
@@ -28,11 +28,11 @@ namespace cr
 {
 namespace render
 {
-	class ImageSTB : public Image
+	class ImageDDS : public Image
 	{
 		public:
-			ImageSTB();
-			virtual ~ImageSTB();
+			ImageDDS();
+			virtual ~ImageDDS();
 
 			virtual bool load(const char *filename,
 			                  unsigned int datasize,

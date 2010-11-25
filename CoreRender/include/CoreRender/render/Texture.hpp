@@ -85,7 +85,9 @@ namespace render
 		 * @return Size of the texture data in bytes.
 		 */
 		static unsigned int getSize(TextureFormat::List format,
-		                            unsigned int texels);
+		                            unsigned int width,
+		                            unsigned int height,
+		                            unsigned int depth = 1);
 		/**
 		 * Returns whether a format is compressed.
 		 * @return True if the format is compressed.
@@ -202,10 +204,10 @@ namespace render
 		enum List
 		{
 			PositiveX,
-			PositiveY,
-			PositiveZ,
 			NegativeX,
+			PositiveY,
 			NegativeY,
+			PositiveZ,
 			NegativeZ
 		};
 	};
@@ -542,6 +544,7 @@ namespace render
 				void *data;
 				TextureFiltering::List filtering;
 				bool mipmaps;
+				bool createmipmaps;
 			};
 
 			virtual void *getUploadData();
@@ -558,7 +561,8 @@ namespace render
 			         TextureFormat::List format,
 			         unsigned int datasize,
 			         void *data,
-			         bool copy);
+			         bool copy,
+			         bool createmipmaps = true);
 
 			bool discarddata;
 

@@ -26,6 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <cstring>
 #include <cstdlib>
+#include "ImageDDS.hpp"
 
 namespace cr
 {
@@ -129,8 +130,24 @@ namespace render
 	}
 
 	unsigned int TextureFormat::getSize(TextureFormat::List format,
-	                                     unsigned int texels)
+	                                    unsigned int width,
+	                                    unsigned int height,
+	                                    unsigned int depth)
 	{
+		switch (format)
+		{
+			case TextureFormat::RGBA_DXT1:
+			case TextureFormat::RGBA_DXT3:
+			case TextureFormat::RGBA_DXT5:
+				if (width < 4)
+					width = 4;
+				if (height < 4)
+					height = 4;
+				break;
+			default:
+				break;
+		}
+		unsigned int texels = width * height * depth;
 		switch (format)
 		{
 			case TextureFormat::Invalid:
@@ -186,7 +203,7 @@ namespace render
 	                    void *data,
 	                    bool copy)
 	{
-		unsigned int datasize = TextureFormat::getSize(format, width);
+		unsigned int datasize = TextureFormat::getSize(format, width, 1);
 		return set(TextureType::Texture1D,
 		           width,
 		           0,
@@ -207,8 +224,8 @@ namespace render
 		if (x + width > currentdata.width)
 			return false;
 		TextureFormat::List format = currentdata.format;
-		unsigned int size = TextureFormat::getSize(format, width);
-		unsigned int dstoffset = TextureFormat::getSize(format, x);
+		unsigned int size = TextureFormat::getSize(format, width, 1);
+		unsigned int dstoffset = TextureFormat::getSize(format, x, 1);
 		char *src = (char*)data;
 		char *dst = (char*)currentdata.data + dstoffset;
 		memcpy(dst, src, size);
@@ -223,7 +240,7 @@ namespace render
 	                    void *data,
 	                    bool copy)
 	{
-		unsigned int datasize = TextureFormat::getSize(format, width * height);
+		unsigned int datasize = TextureFormat::getSize(format, width, height);
 		return set(TextureType::Texture2D,
 		           width,
 		           height,
@@ -246,10 +263,10 @@ namespace render
 		if (x + width > currentdata.width || y + height > currentdata.height)
 			return false;
 		TextureFormat::List format = currentdata.format;
-		unsigned int srcstride = TextureFormat::getSize(format, width);
+		unsigned int srcstride = TextureFormat::getSize(format, width, 1);
 		unsigned int dststride = TextureFormat::getSize(format,
-		                                                currentdata.width);
-		unsigned int dstoffset = TextureFormat::getSize(format, x)
+		                                                currentdata.width, 1);
+		unsigned int dstoffset = TextureFormat::getSize(format, x, 1)
 		                       + dststride * y;
 		char *src = (char*)data;
 		char *dst = (char*)currentdata.data + dstoffset;
@@ -278,7 +295,7 @@ namespace render
 	                      bool copy)
 	{
 		unsigned int datasize = TextureFormat::getSize(format,
-		                                               width * height * 6);
+		                                               width, height) * 6;
 		return set(TextureType::TextureCube,
 		           width,
 		           height,
@@ -303,10 +320,10 @@ namespace render
 		if (x + width > currentdata.width || y + height > currentdata.height)
 			return false;
 		TextureFormat::List format = currentdata.format;
-		unsigned int srcstride = TextureFormat::getSize(format, width);
+		unsigned int srcstride = TextureFormat::getSize(format, width, 1);
 		unsigned int dststride = TextureFormat::getSize(format,
-		                                                currentdata.width);
-		unsigned int dstoffset = TextureFormat::getSize(format, x)
+		                                                currentdata.width, 1);
+		unsigned int dstoffset = TextureFormat::getSize(format, x, 1)
 		                       + dststride * y;
 		dstoffset += (int)side * currentdata.height * dststride;
 		char *src = (char*)data;
@@ -337,7 +354,7 @@ namespace render
 	                    bool copy)
 	{
 		unsigned int datasize = TextureFormat::getSize(format,
-		                                               width * height * depth);
+		                                               width, height, depth);
 		return set(TextureType::Texture3D,
 		           width,
 		           height,
@@ -363,11 +380,11 @@ namespace render
 		if (x + width > currentdata.width || y + height > currentdata.height)
 			return false;
 		TextureFormat::List format = currentdata.format;
-		unsigned int srcstride = TextureFormat::getSize(format, width);
+		unsigned int srcstride = TextureFormat::getSize(format, width, 1);
 		unsigned int dststride = TextureFormat::getSize(format,
-		                                                currentdata.width);
+		                                                currentdata.width, 1);
 		unsigned int dstlayersize = dststride * currentdata.height;
-		unsigned int dstoffset = TextureFormat::getSize(format, x)
+		unsigned int dstoffset = TextureFormat::getSize(format, x, 1)
 		                       + dststride * y + z * dstlayersize;
 		char *src = (char*)data;
 		char *dst = (char*)currentdata.data + dstoffset;
@@ -473,33 +490,30 @@ namespace render
 		// We have to check the extension of the file first as we have multiple
 		// image loaders for different formats
 		std::string extension = path.substr(path.rfind("."));
+		Image *image = 0;
 		if (extension == ".dds")
+			image = new ImageDDS;
+		else
+			image = new ImageSTB;
+		if (!image->load(path.c_str(), filesize, buffer))
 		{
+			getManager()->getLog()->error("%s: Could not load image.",
+			                              getName().c_str());
+			delete image;
 			finishLoading(false);
 			return false;
 		}
-		else
-		{
-			ImageSTB image;
-			if (!image.load(path.c_str(), filesize, buffer))
-			{
-				getManager()->getLog()->error("%s: Could not load image.",
-				                              getName().c_str());
-				finishLoading(false);
-				return false;
-			}
-			getManager()->getLog()->info("%s: Image: %d/%d.",
-			                              getName().c_str(), image.getWidth(), image.getHeight());
-			set(image.getType(),
-			    image.getWidth(),
-			    image.getHeight(),
-			    image.getDepth(),
-			    image.getFormat(),
-			    image.getFormat(),
-			    image.getImageSize(),
-			    image.getImageData(true),
-			    false);
-		}
+		set(image->getType(),
+		    image->getWidth(),
+		    image->getHeight(),
+		    image->getDepth(),
+		    image->getFormat(),
+		    image->getFormat(),
+		    image->getImageSize(),
+		    image->getImageData(true),
+		    false,
+		    !image->hasMipmaps());
+		delete image;
 		finishLoading(true);
 		return true;
 	}
@@ -534,7 +548,8 @@ namespace render
 	                  TextureFormat::List format,
 	                  unsigned int datasize,
 	                  void *data,
-	                  bool copy)
+	                  bool copy,
+	                  bool createmipmaps)
 	{
 		// Allocate image data
 		void *datacopy;
@@ -560,6 +575,7 @@ namespace render
 			currentdata.format = format;
 			currentdata.data = datacopy;
 			currentdata.datasize = datasize;
+			currentdata.createmipmaps = createmipmaps;
 		}
 		// Delete old data
 		if (prevdata)

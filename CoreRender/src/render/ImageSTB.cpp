@@ -20,7 +20,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "ImageSTB.hpp"
-#include "CoreRender/core/Log.hpp"
 
 #include "../3rdparty/stb_image.h"
 

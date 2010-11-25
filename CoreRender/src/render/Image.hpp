@@ -36,7 +36,7 @@ namespace render
 			Image()
 				: width(0), height(0), depth(0), type(TextureType::Texture2D),
 				format(TextureFormat::Invalid), deletedata(true), imagedata(0),
-				imagesize(0)
+				imagesize(0), hasmipmaps(false)
 			{
 			}
 			virtual ~Image()
@@ -79,6 +79,10 @@ namespace render
 			{
 				return imagesize;
 			}
+			bool hasMipmaps()
+			{
+				return hasmipmaps;
+			}
 		protected:
 			unsigned int width;
 			unsigned int height;
@@ -88,6 +92,7 @@ namespace render
 			bool deletedata;
 			void *imagedata;
 			unsigned int imagesize;
+			bool hasmipmaps;
 	};
 }
 }
