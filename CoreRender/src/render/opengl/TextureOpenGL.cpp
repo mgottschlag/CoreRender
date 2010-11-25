@@ -113,7 +113,8 @@ namespace opengl
 				component = GL_UNSIGNED_BYTE;
 				return true;
 			case TextureFormat::RGBA16F:
-				// TODO
+				openglfmt = GL_RGBA;
+				component = GL_HALF_FLOAT_ARB;
 				return false;
 			case TextureFormat::RGBA32F:
 				openglfmt = GL_RGBA;
@@ -233,27 +234,30 @@ namespace opengl
 			delete uploaddata;
 			return;
 		}
+		// Depth textures have to be set up differently in OpenGL if they are
+		// used as shadow maps for depth comparisons (sampler2DShadow) to work
+		// correctly
+		if (isdepth && uploaddata->depthcompare)
+		{
+			glTexParameteri(opengltype, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+			glTexParameteri(opengltype, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+		}
+		else if (isdepth)
+		{
+			glTexParameteri(opengltype, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+		}
 		// Upload texture data
 		unsigned int width = uploaddata->width;
 		unsigned int height = uploaddata->height;
 		unsigned int depth = uploaddata->depth;
 		unsigned int datasize = uploaddata->datasize;
-		unsigned int texturetarget = translateTextureType(uploaddata->type);
-		if (isdepth)
-		{
-			// TODO: Hack
-			//glTexParameteri(type, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-			glTexParameteri(opengltype, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-			glTexParameteri(opengltype, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-		}
 		switch (uploaddata->type)
 		{
 			case TextureType::Texture1D:
 			case TextureType::Texture2D:
 			case TextureType::Texture3D:
-				upload(texturetarget,
-					width, height, depth, uploaddata->format, internal,
-					format, component, uploaddata->data, datasize,
+				upload(opengltype, width, height, depth, uploaddata->format,
+					internal, format, component, uploaddata->data, datasize,
 					compressed, !uploaddata->createmipmaps);
 				break;
 			case TextureType::TextureCube:

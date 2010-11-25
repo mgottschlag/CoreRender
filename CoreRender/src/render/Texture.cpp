@@ -190,6 +190,7 @@ namespace render
 		currentdata.datasize = 0;
 		currentdata.mipmaps = true;
 		currentdata.filtering = TextureFiltering::Linear;
+		currentdata.depthcompare = false;
 	}
 	Texture::~Texture()
 	{
@@ -428,6 +429,20 @@ namespace render
 	{
 		tbb::spin_mutex::scoped_lock lock(imagemutex);
 		return currentdata.mipmaps;
+	}
+
+	void Texture::setDepthCompare(bool depthcompare)
+	{
+		{
+			tbb::spin_mutex::scoped_lock lock(imagemutex);
+			currentdata.depthcompare = depthcompare;
+		}
+		registerUpload();
+	}
+	bool Texture::getDepthCompare()
+	{
+		tbb::spin_mutex::scoped_lock lock(imagemutex);
+		return currentdata.depthcompare;
 	}
 
 	void Texture::setFiltering(TextureFiltering::List filtering)

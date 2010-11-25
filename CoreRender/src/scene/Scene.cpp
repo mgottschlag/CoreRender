@@ -38,6 +38,7 @@ namespace scene
 		shadowmap->set2D(512, 512, render::TextureFormat::Depth24);
 		shadowmap->setFiltering(render::TextureFiltering::Nearest);
 		shadowmap->setMipmapsEnabled(false);
+		shadowmap->setDepthCompare(true);
 		render::FrameBuffer::Ptr shadowfb;
 		shadowfb = rmgr->createResource<render::FrameBuffer>("FrameBuffer");
 		shadowfb->setSize(512, 512, false);

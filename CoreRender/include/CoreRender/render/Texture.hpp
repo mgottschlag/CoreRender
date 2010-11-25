@@ -426,6 +426,23 @@ namespace render
 			bool getMipmapsEnabled();
 
 			/**
+			 * Sets whether this texture is used for depth comparisons or not.
+			 * This has to be set to true if you use the texture as a
+			 * sampler2DShadow or similar in a shader. This has to be set to
+			 * false if you just want to read the data from the texture, which
+			 * is the default value.
+			 * @param depthcompare If set to true, this texture is used for
+			 * depth comparisons.
+			 */
+			void setDepthCompare(bool depthcompare);
+			/**
+			 * Returns whether this texture is set up for depth comparisons
+			 * (sampler2DShadow) or for reading texture data.
+			 * @return True if the texture is set up for depth comparisons.
+			 */
+			bool getDepthCompare();
+
+			/**
 			 * Sets the filtering which is done when data is fetched from the
 			 * texture in shaders.
 			 * @param filtering New filtering mode.
@@ -545,6 +562,7 @@ namespace render
 				TextureFiltering::List filtering;
 				bool mipmaps;
 				bool createmipmaps;
+				bool depthcompare;
 			};
 
 			virtual void *getUploadData();
