@@ -151,7 +151,7 @@ target_link_libraries(CoreRender ${LIB})
 
 # Installation of files
 
-install(DIRECTORY include/CoreRender DESTINATION include/CoreRender FILES_MATCHING PATTERN *.hpp)
+install(DIRECTORY include/CoreRender DESTINATION include FILES_MATCHING PATTERN *.hpp)
 install(FILES include/CoreRender.hpp DESTINATION include)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
