@@ -288,9 +288,6 @@ namespace opengl
 					!uploaddata->createmipmaps);
 				break;
 		}
-		if (uploaddata->data)
-			free(uploaddata->data);
-		delete uploaddata;
 		// Generate mipmaps
 		hasmipmaps = uploaddata->mipmaps;
 		if (hasmipmaps && uploaddata->createmipmaps)
@@ -299,6 +296,9 @@ namespace opengl
 			glGenerateMipmapEXT(opengltype);
 			glDisable(opengltype);
 		}
+		if (uploaddata->data)
+			free(uploaddata->data);
+		delete uploaddata;
 		// Error checking
 		GLenum error = glGetError();
 		if (error != GL_NO_ERROR)
