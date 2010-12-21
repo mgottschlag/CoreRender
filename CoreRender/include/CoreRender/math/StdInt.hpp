@@ -17,7 +17,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef _CORERENDER_MATH_STDINT_HPP_INCLUDED_
 #define _CORERENDER_MATH_STDINT_HPP_INCLUDED_
 
-#if defined(_MSC_VER) || defined(_WINDOWS_) || defined(_WIN32)
+#include "../core/Platform.hpp"
+
+#ifdef CORERENDER_MSVC
 typedef unsigned __int8 uint8_t;
 typedef unsigned __int16 uint16_t;
 typedef unsigned __int32 uint32_t;
