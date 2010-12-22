@@ -1,0 +1,83 @@
+
+Coding style
+============
+
+All code in the repository follows a quite strict coding style. This has several
+reasons, with the least important one being that it just looks better. More
+important is that everything looks the same so that surprises are kept at a
+minimum and the time needed to learn about the classes in the engine is
+minimized by keeping everything (names, style of the code itself) consistent.
+
+
+Indentation:
+
+Indentation is done via tabs, additional formatting (e.g. to align function
+parameters) is done via spaces. { and } are put each into its own line and not
+directly after if/else, and the block between them is indented with one tab.
+Notice that no tab width is given as using this style it should not matter, if
+it does, you did something wrong.
+
+When multiple namespaces are contained within each other, only the last is
+indented in order to minimize unnecessary indentation.
+
+case itself is indented, as well as private/public/protected etc.
+
+
+Names/capitalization:
+
+Type names and enum values start with a capital letter and use camel case.
+Functions use camel case, but start with a small letter. Variables are all
+written in small letters. No prefixes are used anywhere.
+
+
+Header files:
+
+Usually each header holds one class/struct/type, exceptions are where two types
+are only used together.
+
+Including other files is done in the following order: First, if in a .cpp,
+the header belonging to the file (in order to guarantee that headers are
+freestanding), then headers from the project, and then external headers. Note
+that forward declarations are used in headers whenever possible/viable.
+
+
+Example:
+
+namespace cr
+{
+namespace render
+{
+	class SomeClass : public SomeOtherClass
+	{
+		public:
+			SomeClass();
+			SomeClass(unsigned int param1,
+			          unsigned int param2,
+			          unsigned int param3)
+			{
+				if (a == b)
+				{
+					switch (c)
+					{
+						case 1:
+							return;
+						case 2:
+							printf("wtf");
+						default:
+							break;
+					}
+				}
+			}
+
+			float setSomeParam(float param)
+			{
+				this->param = param;
+			}
+		private:
+			float param;
+
+			unsigned int a;
+			unsigned int b;
+	};
+}
+}
