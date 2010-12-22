@@ -22,6 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_MATH_MATH_HPP_INCLUDED_
 #define _CORERENDER_MATH_MATH_HPP_INCLUDED_
 
+#include "StdInt.hpp"
+
 namespace cr
 {
 namespace math
@@ -39,6 +41,22 @@ namespace math
 		{
 			return radians * (180.0f / pi);
 		}
+
+
+		static int ftoi(const float val)
+		{
+			union
+			{
+				uint64_t i;
+				double d;
+			} conversion;
+
+			static const double xs_doublemagic = (6755399441055744.0); // 2^52 * 1.5
+			conversion.d = val + xs_doublemagic;
+			// Cast to grab the bottom bits
+			return (int)conversion.i;
+		}
+
 	};
 }
 }

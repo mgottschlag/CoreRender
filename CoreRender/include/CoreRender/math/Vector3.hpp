@@ -249,6 +249,10 @@ namespace math
 			{
 				return Vector3<T>((T)(x - v.x), (T)(y - v.y), (T)(z - v.z));
 			}
+			template<typename T2> Vector3<T> operator*(const Vector3<T2> &v) const
+			{
+				return Vector3<T>((T)(x * v.x), (T)(y * v.y), (T)(z * v.z));
+			}
 			template<typename T2> Vector3<T> &operator=(const Vector3<T2> &v)
 			{
 				x = (T)v.x;
