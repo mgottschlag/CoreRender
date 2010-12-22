@@ -281,6 +281,7 @@ namespace cr
 		// Upload resources which need to be uploaded
 		uploadmgr.uploadResources(frame->getUploadLists());
 		// Render frame
+		driver->beginFrame();
 		const std::vector<render::SceneFrameData*> &scenes = frame->getScenes();
 		for (unsigned int i = 0; i < scenes.size(); i++)
 		{

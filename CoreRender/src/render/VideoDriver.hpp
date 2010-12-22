@@ -173,6 +173,12 @@ namespace render
 			                      LightUniforms *light) = 0;
 
 			/**
+			 * Called at the beginning of a frame. This initializes the needed
+			 * OpenGL states. Note that these states are not cleaned up
+			 * afterwards.
+			 */
+			virtual void beginFrame() = 0;
+			/**
 			 * Called at the end of the frame. This cleans up currently bound
 			 * resources.
 			 */

@@ -73,11 +73,6 @@ namespace opengl
 			log->error("Could not initialize capabilities.");
 			return false;
 		}
-		// Init static OpenGL states
-		glCullFace(GL_BACK);
-		glEnable(GL_CULL_FACE);
-		glDepthFunc(GL_LESS);
-		glEnable(GL_DEPTH_TEST);
 		// Initialize instancing transMat buffer object
 		// TODO: This is a hack, but using plain vertex arrays hits a slow path
 		// at least here
@@ -550,6 +545,15 @@ namespace opengl
 		}
 	}
 
+	void VideoDriverOpenGL::beginFrame()
+	{
+		// Init static OpenGL states
+		glCullFace(GL_BACK);
+		glEnable(GL_CULL_FACE);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_DEPTH_TEST);
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
 	void VideoDriverOpenGL::endFrame()
 	{
 		// Unbind render target

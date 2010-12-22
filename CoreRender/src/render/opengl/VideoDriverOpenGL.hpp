@@ -73,6 +73,7 @@ namespace opengl
 			                      Material *material,
 			                      LightUniforms *light);
 
+			virtual void beginFrame();
 			virtual void endFrame();
 
 			virtual void setMatrices(math::Matrix4 projmat,
