@@ -114,6 +114,7 @@ set(SRC
 	src/scene/Light.cpp
 	src/render/ImageSTB.cpp
 	src/render/ImageDDS.cpp
+	src/scene/Terrain.cpp
 )
 
 set(LIB

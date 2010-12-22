@@ -227,6 +227,8 @@ namespace cr
 		rmgr->addFactory("Model", factory);
 		factory = new res::DefaultResourceFactory<scene::Animation>(rmgr);
 		rmgr->addFactory("Animation", factory);
+		factory = new res::DefaultResourceFactory<scene::Terrain>(rmgr);
+		rmgr->addFactory("Terrain", factory);
 		// Create default resources
 		// TODO
 		return true;
@@ -316,6 +318,11 @@ namespace cr
 	{
 		res::Resource::Ptr res = rmgr->getOrLoad("Animation", name);
 		return scene::Animation::Ptr((scene::Animation*)res.get());
+	}
+	scene::Terrain::Ptr GraphicsEngine::getTerrain(const std::string name)
+	{
+		res::Resource::Ptr res = rmgr->getOrLoad("Terrain", name);
+		return scene::Terrain::Ptr((scene::Terrain*)res.get());
 	}
 	render::Pipeline::Ptr GraphicsEngine::getPipeline(const std::string name)
 	{

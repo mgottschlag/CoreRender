@@ -65,6 +65,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/scene/SpotLight.hpp"
 #include "CoreRender/scene/Animation.hpp"
 #include "CoreRender/scene/PointLight.hpp"
+#include "CoreRender/scene/Terrain.hpp"
 
 /**
  * Main namespace containing the CoreRender classes.

@@ -1,0 +1,5 @@
+<Material>
+	<Shader file="/shaders/Terraintest.shader.xml" />
+
+	<Texture name="colorTex" file="/textures/color.jpg" />
+</Material>

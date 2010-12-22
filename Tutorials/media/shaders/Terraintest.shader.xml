@@ -1,0 +1,48 @@
+<Shader>
+	<Text name="VS_GENERAL">
+	<![CDATA[
+		#include "utility/vsCommon.glsl"
+		attribute vec3 pos;
+		varying vec3 color;
+		uniform sampler2D displacementMap;
+		uniform vec4 terrainOffsetScale;
+		uniform vec4 texCoordOffsetScale;
+		varying vec2 texCoord;
+		void main()
+		{
+			vec2 terrainPos = pos.xz * terrainOffsetScale.zw + terrainOffsetScale.xy;
+			vec2 texCoords = terrainPos * texCoordOffsetScale.zw + texCoordOffsetScale.xy;
+			texCoord = texCoords;
+			color = vec3(terrainPos.x, pos.y + 1.0, terrainPos.y);
+			vec4 vertexPos = getWorldPos(getSkinningPos(vec4(vec3(terrainPos.x, pos.y * 0.1, terrainPos.y)
+			                                               + texture2D(displacementMap, texCoords).rgb, 1.0)));
+			gl_Position = viewProjMat * vertexPos;
+		}
+	]]>
+	</Text>
+	<Text name="FS_AMBIENT">
+	<![CDATA[
+		varying vec3 color;
+		uniform sampler2D displacementMap;
+		uniform sampler2D colorTex;
+		varying vec2 texCoord;
+		void main()
+		{
+			gl_FragColor.rgb = texture2D(colorTex, texCoord * vec2(1, -1)).rgb;
+		}
+	]]>
+	</Text>
+
+	<Attrib name="pos" />
+
+	<Uniform name="terrainOffsetScale" type="float4">
+		0.0, 0.0, 1.0, 1.0
+	</Uniform>
+	<Uniform name="texCoordOffsetScale" type="float4">
+		0.0, 0.0, 1.0, 1.0
+	</Uniform>
+	<Texture name="displacementMap" />
+	<Texture name="colorTex" />
+
+	<Context name="AMBIENT" vs="VS_GENERAL" fs="FS_AMBIENT" />
+</Shader>

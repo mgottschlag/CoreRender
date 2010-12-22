@@ -29,6 +29,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "render/UploadManager.hpp"
 #include "scene/Model.hpp"
 #include "scene/Animation.hpp"
+#include "scene/Terrain.hpp"
 
 namespace cr
 {
@@ -92,6 +93,7 @@ namespace cr
 
 			scene::Model::Ptr getModel(const std::string name);
 			scene::Animation::Ptr getAnimation(const std::string name);
+			scene::Terrain::Ptr getTerrain(const std::string name);
 			render::Pipeline::Ptr getPipeline(const std::string name);
 			render::Material::Ptr getMaterial(const std::string name);
 
