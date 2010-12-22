@@ -29,27 +29,27 @@ namespace cr
 {
 namespace scene
 {
-	AnimatedMesh::AnimatedMesh(Mesh::Ptr mesh)
-		: mesh(mesh)
+	AnimatedMesh::AnimatedMesh(Model::Ptr model)
+		: model(model)
 	{
 	}
 	AnimatedMesh::~AnimatedMesh()
 	{
 	}
 
-	void AnimatedMesh::setMesh(Mesh::Ptr mesh)
+	void AnimatedMesh::setModel(Model::Ptr model)
 	{
-		this->mesh = mesh;
+		this->model = model;
 		// Update animation bindings
 		for (unsigned int i = 0; i < animstages.size(); i++)
 		{
 			animstages[i].binding = AnimationBinding(animstages[i].animation,
-			                                         mesh);
+			                                         model);
 		}
 	}
-	Mesh::Ptr AnimatedMesh::getMesh()
+	Model::Ptr AnimatedMesh::getModel()
 	{
-		return mesh;
+		return model;
 	}
 
 	unsigned int AnimatedMesh::addAnimation(Animation::Ptr animation,
@@ -62,7 +62,7 @@ namespace scene
 		newstage.animation = animation;
 		newstage.weight = weight;
 		newstage.additive = additive;
-		newstage.binding = AnimationBinding(animation, mesh);
+		newstage.binding = AnimationBinding(animation, model);
 		newstage.time = 0.0f;
 		return oldanimcount;
 	}
@@ -87,22 +87,22 @@ namespace scene
 	                          math::Matrix4 transmat)
 	{
 		// Compute animation data for all nodes
-		std::vector<Mesh::Node> animatednodes = mesh->getNodes();
+		std::vector<Model::Node> animatednodes = model->getNodes();
 		applyAnimation(animatednodes);
 		// Render mesh
-		const std::vector<Mesh::Batch> &batches = mesh->getBatches();
-		const std::vector<Mesh::BatchGeometry> &geometry = mesh->getGeometry();
+		const std::vector<Model::Batch> &batches = model->getBatches();
+		const std::vector<Model::BatchGeometry> &geometry = model->getGeometry();
 		// TODO: Culling
 		core::MemoryPool *memory = queue.memory;
 		for (unsigned int i = 0; i < batches.size(); i++)
 		{
-			render::Batch *batch = mesh->prepareBatch(queue, i, false, true);
+			render::Batch *batch = model->prepareBatch(queue, i, false, true);
 			if (!batch)
 				continue;
 			// Skinning
 			if (batch->shader->skinning)
 			{
-				const Mesh::BatchGeometry *geom = &geometry[batches[i].geometry];
+				const Model::BatchGeometry *geom = &geometry[batches[i].geometry];
 				unsigned int jointcount = geom->joints.size();
 				void *ptr = memory->allocate(sizeof(float) * 16 * jointcount);
 				float *skinmatrices = (float*)ptr;
@@ -146,21 +146,21 @@ namespace scene
 		for (unsigned int i = 0; i < instancecount; i++)
 			matrices[i] = transmat[i];
 		// Compute animation data for all nodes
-		std::vector<Mesh::Node> animatednodes = mesh->getNodes();
+		std::vector<Model::Node> animatednodes = model->getNodes();
 		applyAnimation(animatednodes);
 			// Render mesh
-		const std::vector<Mesh::Batch> &batches = mesh->getBatches();
-		const std::vector<Mesh::BatchGeometry> &geometry = mesh->getGeometry();
+		const std::vector<Model::Batch> &batches = model->getBatches();
+		const std::vector<Model::BatchGeometry> &geometry = model->getGeometry();
 		// TODO: Culling
 		for (unsigned int i = 0; i < batches.size(); i++)
 		{
-			render::Batch *batch = mesh->prepareBatch(queue, i, true, true);
+			render::Batch *batch = model->prepareBatch(queue, i, true, true);
 			if (!batch)
 				continue;
 			// Skinning
 			if (batch->shader->skinning)
 			{
-				const Mesh::BatchGeometry *geom = &geometry[batches[i].geometry];
+				const Model::BatchGeometry *geom = &geometry[batches[i].geometry];
 				unsigned int jointcount = geom->joints.size();
 				void *ptr = memory->allocate(sizeof(float) * 16 * jointcount);
 				float *skinmatrices = (float*)ptr;
@@ -254,7 +254,7 @@ namespace scene
 		}
 	}
 
-	void AnimatedMesh::applyAnimation(std::vector<Mesh::Node> &nodes)
+	void AnimatedMesh::applyAnimation(std::vector<Model::Node> &nodes)
 	{
 		unsigned int nodecount = nodes.size();
 		NodeAnimationInfo *animationinfo = new NodeAnimationInfo[nodecount];
@@ -269,7 +269,7 @@ namespace scene
 		for (unsigned int i = 0; i < nodecount; i++)
 		{
 			NodeAnimationInfo &animinfo = animationinfo[i];
-			Mesh::Node &node = nodes[i];
+			Model::Node &node = nodes[i];
 			if (animinfo.updated)
 			{
 				node.transmat = math::Matrix4::TransMat(animinfo.trans)

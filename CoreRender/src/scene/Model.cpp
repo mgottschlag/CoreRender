@@ -19,27 +19,27 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "CoreRender/scene/Mesh.hpp"
+#include "CoreRender/scene/Model.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
 #include "../3rdparty/tinyxml.h"
 #include "CoreRender/render/FrameData.hpp"
+#include "CoreRender/core/MemoryPool.hpp"
 
 #include <sstream>
-#include <CoreRender/core/MemoryPool.hpp>
 
 namespace cr
 {
 namespace scene
 {
-	Mesh::Mesh(cr::res::ResourceManager *rmgr, const std::string &name)
+	Model::Model(cr::res::ResourceManager *rmgr, const std::string &name)
 		: Resource(rmgr, name), changecounter(0)
 	{
 	}
-	Mesh::~Mesh()
+	Model::~Model()
 	{
 	}
 
-	void Mesh::render(render::RenderQueue &queue,
+	void Model::render(render::RenderQueue &queue,
 	                  math::Matrix4 transmat)
 	{
 		// TODO: Culling
@@ -55,7 +55,7 @@ namespace scene
 			queue.batches.push_back(batch);
 		}
 	}
-	void Mesh::render(render::RenderQueue &queue,
+	void Model::render(render::RenderQueue &queue,
 	                  unsigned int instancecount,
 	                  math::Matrix4 *transmat)
 	{
@@ -82,7 +82,7 @@ namespace scene
 		}
 	}
 
-	render::Batch *Mesh::prepareBatch(render::RenderQueue &queue,
+	render::Batch *Model::prepareBatch(render::RenderQueue &queue,
 	                                  unsigned int batchindex,
 	                                  bool instancing,
 	                                  bool skinning)
@@ -102,7 +102,7 @@ namespace scene
 		unsigned int shaderflagmask;
 		unsigned int shaderflagvalue;
 		material->getShaderFlags(shaderflagmask,
-		                                    shaderflagvalue);
+		                         shaderflagvalue);
 		render::ShaderCombination *shader;
 		shader = material->getShader()->getCombination(queue.context,
 		                                               shaderflagmask,
@@ -132,7 +132,6 @@ namespace scene
 		batch->basevertex = geom->basevertex;
 		batch->vertexoffset = geom->vertexoffset;
 		batch->indextype = geom->indextype;
-		batch->indextype = geom->indextype;
 		// Custom uniforms
 		const std::vector<render::Material::UniformInfo> &uniforms = material->getUniforms();
 		batch->customuniformcount = uniforms.size();
@@ -157,7 +156,7 @@ namespace scene
 		return batch;
 	}
 
-	bool Mesh::load()
+	bool Model::load()
 	{
 		std::string path = getPath();
 		std::string directory = core::FileSystem::getDirectory(path);
@@ -270,7 +269,7 @@ namespace scene
 		return true;
 	}
 
-	bool Mesh::waitForLoading(bool recursive,
+	bool Model::waitForLoading(bool recursive,
 	                          bool highpriority)
 	{
 		if (!Resource::waitForLoading(recursive, highpriority))
@@ -286,7 +285,7 @@ namespace scene
 		return success;
 	}
 
-	bool Mesh::loadGeometryFile(std::string filename)
+	bool Model::loadGeometryFile(std::string filename)
 	{
 		// Open file
 		core::FileSystem::Ptr fs = getManager()->getFileSystem();
@@ -405,7 +404,7 @@ namespace scene
 		}
 		return true;
 	}
-	render::VertexLayout::Ptr Mesh::createVertexLayout(const GeometryFile::AttribInfo &attribs)
+	render::VertexLayout::Ptr Model::createVertexLayout(const GeometryFile::AttribInfo &attribs)
 	{
 		if (attribs.texcoordcount > GeometryFile::maxtexcoords)
 			return 0;
@@ -524,7 +523,7 @@ namespace scene
 		return layout;
 	}
 
-	bool Mesh::parseNode(TiXmlElement *xml, int parent)
+	bool Model::parseNode(TiXmlElement *xml, int parent)
 	{
 		// Get name
 		const char *name = xml->Attribute("name");

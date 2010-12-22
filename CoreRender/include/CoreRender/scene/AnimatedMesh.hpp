@@ -23,7 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_SCENE_ANIMATEDMESH_HPP_INCLUDED_
 
 #include "../core/ReferenceCounted.hpp"
-#include "Mesh.hpp"
+#include "Model.hpp"
 #include "Animation.hpp"
 #include "AnimationBinding.hpp"
 
@@ -34,11 +34,11 @@ namespace scene
 	class AnimatedMesh : public core::ReferenceCounted
 	{
 		public:
-			AnimatedMesh(Mesh::Ptr mesh = 0);
+			AnimatedMesh(Model::Ptr model = 0);
 			virtual ~AnimatedMesh();
 
-			void setMesh(Mesh::Ptr mesh);
-			Mesh::Ptr getMesh();
+			void setModel(Model::Ptr model);
+			Model::Ptr getModel();
 
 			struct AnimationStage
 			{
@@ -79,9 +79,9 @@ namespace scene
 			float applyStage(unsigned int stageindex,
 			                 NodeAnimationInfo *nodes,
 			                 float weightsum);
-			void applyAnimation(std::vector<Mesh::Node> &nodes);
+			void applyAnimation(std::vector<Model::Node> &nodes);
 
-			Mesh::Ptr mesh;
+			Model::Ptr model;
 			std::vector<AnimationStage> animstages;
 	};
 }

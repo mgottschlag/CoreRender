@@ -27,7 +27,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "render/Pipeline.hpp"
 #include "render/RenderStats.hpp"
 #include "render/UploadManager.hpp"
-#include "scene/Mesh.hpp"
+#include "scene/Model.hpp"
 #include "scene/Animation.hpp"
 
 namespace cr
@@ -90,7 +90,7 @@ namespace cr
 			void render(render::FrameData *frame);
 			void discard(render::FrameData *frame);
 
-			scene::Mesh::Ptr getMesh(const std::string name);
+			scene::Model::Ptr getModel(const std::string name);
 			scene::Animation::Ptr getAnimation(const std::string name);
 			render::Pipeline::Ptr getPipeline(const std::string name);
 			render::Material::Ptr getMaterial(const std::string name);

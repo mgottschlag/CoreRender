@@ -60,7 +60,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/scene/Scene.hpp"
 #include "CoreRender/scene/Camera.hpp"
 #include "CoreRender/scene/Light.hpp"
-#include "CoreRender/scene/Mesh.hpp"
+#include "CoreRender/scene/Model.hpp"
 #include "CoreRender/scene/AnimatedMesh.hpp"
 #include "CoreRender/scene/SpotLight.hpp"
 #include "CoreRender/scene/Animation.hpp"

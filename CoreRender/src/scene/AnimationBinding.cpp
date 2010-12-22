@@ -25,8 +25,8 @@ namespace cr
 {
 namespace scene
 {
-	AnimationBinding::AnimationBinding(Animation::Ptr animation, Mesh::Ptr mesh)
-		: animation(animation), mesh(mesh)
+	AnimationBinding::AnimationBinding(cr::scene::Animation::Ptr animation, cr::scene::Model::Ptr model)
+		: animation(animation), model(model)
 	{
 		forceUpdate();
 	}
@@ -37,14 +37,14 @@ namespace scene
 	void AnimationBinding::update()
 	{
 		tbb::mutex::scoped_lock lock(mutex);
-		if (!animation || !mesh)
+		if (!animation || !model)
 			return;
 		if (animchangecounter == animation->getChangeCounter()
-			&& meshchangecounter == mesh->getChangeCounter())
+			&& modelchangecounter == model->getChangeCounter())
 			return;
 		forceUpdate();
 		animchangecounter = animation->getChangeCounter();
-		meshchangecounter = mesh->getChangeCounter();
+		modelchangecounter = model->getChangeCounter();
 	}
 
 	const std::vector<int> &AnimationBinding::getNodes()
@@ -54,18 +54,18 @@ namespace scene
 
 	void AnimationBinding::forceUpdate()
 	{
-		if (!animation || !mesh)
+		if (!animation || !model)
 			return;
 		unsigned int jointcount = animation->getChannelCount();
-		std::vector<Mesh::Node> &meshnodes = mesh->getNodes();
+		std::vector<Model::Node> &modelnodes = model->getNodes();
 		mapping.resize(jointcount);
 		for (unsigned int i = 0; i < jointcount; i++)
 		{
 			std::string name = animation->getChannelNode(i);
 			mapping[i] = -1;
-			for (unsigned int j = 0; j < meshnodes.size(); j++)
+			for (unsigned int j = 0; j < modelnodes.size(); j++)
 			{
-				if (meshnodes[j].name == name)
+				if (modelnodes[j].name == name)
 				{
 					mapping[i] = j;
 					break;

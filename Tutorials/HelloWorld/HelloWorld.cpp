@@ -57,9 +57,9 @@ int main(int argc, char **argv)
 	// Create scene
 	scene::Scene scene(rmgr);
 	// Add some models
-	scene::Mesh::Ptr jeep = graphics.getMesh("/models/jeep.model.xml");
-	scene::Mesh::Ptr dwarf = graphics.getMesh("/models/dwarf.model.xml");
-	scene::Mesh::Ptr plane = graphics.getMesh("/models/plane.model.xml");
+	scene::Model::Ptr jeep = graphics.getModel("/models/jeep.model.xml");
+	scene::Model::Ptr dwarf = graphics.getModel("/models/dwarf.model.xml");
+	scene::Model::Ptr plane = graphics.getModel("/models/plane.model.xml");
 	scene::AnimatedMesh::Ptr dwarf2 = new scene::AnimatedMesh(dwarf);
 	scene::Animation::Ptr dwarfanim = graphics.getAnimation("/models/dwarf.anim");
 	dwarf2->addAnimation(dwarfanim, 1.0f);
@@ -78,6 +78,7 @@ int main(int argc, char **argv)
 	// TODO
 	// Add some lights
 	render::Material::Ptr lightmat = graphics.getMaterial("/materials/Deferred.material.xml");
+	lightmat->waitForLoading(true);
 	scene::SpotLight::Ptr spotlight = new scene::SpotLight(names,
 	                                                       lightmat,
 	                                                       "SPOTLIGHT",
@@ -100,21 +101,7 @@ int main(int argc, char **argv)
 	math::Matrix4 viewmat = math::Matrix4::TransMat(0.0f, 0.0f, -200.0f)
 	                      * math::Quaternion(math::Vector3F(30.0f, 0.0f, 0.0f)).toMatrix();
 	camera->setViewMat(viewmat);
-
-
-	/*float lightangle = 90.0f;
-	math::Vector3F position(0, 100, 0);
-	math::Vector3F direction(0, -1, 0.5);
-	math::Matrix4 projmat = math::Matrix4::PerspectiveFOV(lightangle,
-	                                                      1.0f,
-	                                                      1.0f,
-	                                                      300.0f);
-	math::Vector3F rotation = (-direction).getAngle();
-	math::Matrix4 viewmat = math::Quaternion(rotation).toMatrix()
-	                      * math::Matrix4::TransMat(-position);
-	camera->setProjMat(projmat);
-	camera->setViewMat(viewmat);*/
-
+	// Setup render pipeline
 	{
 		render::Pipeline::Ptr pipeline;
 		pipeline = graphics.getPipeline("/pipelines/Deferred.pipeline.xml");

@@ -23,7 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_RENDER_ANIMATIONBINDING_HPP_INCLUDED_
 
 #include "Animation.hpp"
-#include "Mesh.hpp"
+#include "Model.hpp"
 
 namespace cr
 {
@@ -40,7 +40,7 @@ namespace scene
 			 * @param animation Animation from which joints are taken from.
 			 * @param mesh Mesh from which nodes are taken from.
 			 */
-			AnimationBinding(Animation::Ptr animation, Mesh::Ptr mesh);
+			AnimationBinding(Animation::Ptr animation, Model::Ptr model);
 			/**
 			 * Destructor.
 			 */
@@ -65,11 +65,11 @@ namespace scene
 			void forceUpdate();
 
 			Animation::Ptr animation;
-			Mesh::Ptr mesh;
+			Model::Ptr model;
 			tbb::mutex mutex;
 			std::vector<int> mapping;
 			unsigned int animchangecounter;
-			unsigned int meshchangecounter;
+			unsigned int modelchangecounter;
 	};
 }
 }

@@ -19,8 +19,8 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_SCENE_MESH_HPP_INCLUDED_
-#define _CORERENDER_SCENE_MESH_HPP_INCLUDED_
+#ifndef _CORERENDER_SCENE_MODEL_HPP_INCLUDED_
+#define _CORERENDER_SCENE_MODEL_HPP_INCLUDED_
 
 #include "../res/Resource.hpp"
 #include "../math/Matrix4.hpp"
@@ -43,11 +43,11 @@ namespace render
 }
 namespace scene
 {
-	class Mesh : public res::Resource
+	class Model : public res::Resource
 	{
 		public:
-			Mesh(cr::res::ResourceManager* rmgr, const std::string& name);
-			virtual ~Mesh();
+			Model(cr::res::ResourceManager* rmgr, const std::string& name);
+			virtual ~Model();
 
 			void render(render::RenderQueue &queue,
 			            math::Matrix4 transmat);
@@ -162,7 +162,7 @@ namespace scene
 				return "Mesh";
 			}
 
-			typedef core::SharedPointer<Mesh> Ptr;
+			typedef core::SharedPointer<Model> Ptr;
 		private:
 			bool loadGeometryFile(std::string filename);
 			render::VertexLayout::Ptr createVertexLayout(const GeometryFile::AttribInfo &attribs);

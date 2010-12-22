@@ -105,7 +105,7 @@ set(SRC
 	src/scene/Scene.cpp
 	src/scene/AnimatedMesh.cpp
 	src/scene/Animation.cpp
-	src/scene/Mesh.cpp
+	src/scene/Model.cpp
 	src/scene/Camera.cpp
 	src/scene/Animation.cpp
 	src/scene/AnimationBinding.cpp

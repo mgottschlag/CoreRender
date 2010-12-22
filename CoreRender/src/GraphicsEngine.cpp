@@ -223,11 +223,10 @@ namespace cr
 		rmgr->addFactory("RenderTarget", factory);
 		factory = new res::DefaultResourceFactory<render::Pipeline>(rmgr);
 		rmgr->addFactory("Pipeline", factory);
-		factory = new res::DefaultResourceFactory<scene::Mesh>(rmgr);
-		rmgr->addFactory("Mesh", factory);
+		factory = new res::DefaultResourceFactory<scene::Model>(rmgr);
+		rmgr->addFactory("Model", factory);
 		factory = new res::DefaultResourceFactory<scene::Animation>(rmgr);
 		rmgr->addFactory("Animation", factory);
-		// TODO: Scene resources
 		// Create default resources
 		// TODO
 		return true;
@@ -307,10 +306,10 @@ namespace cr
 		delete memory;
 	}
 
-	scene::Mesh::Ptr GraphicsEngine::getMesh(const std::string name)
+	scene::Model::Ptr GraphicsEngine::getModel(const std::string name)
 	{
-		res::Resource::Ptr res = rmgr->getOrLoad("Mesh", name);
-		return scene::Mesh::Ptr((scene::Mesh*)res.get());
+		res::Resource::Ptr res = rmgr->getOrLoad("Model", name);
+		return scene::Model::Ptr((scene::Model*)res.get());
 	}
 	scene::Animation::Ptr GraphicsEngine::getAnimation(const std::string name)
 	{
