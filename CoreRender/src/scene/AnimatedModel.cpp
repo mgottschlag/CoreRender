@@ -19,7 +19,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "CoreRender/scene/AnimatedMesh.hpp"
+#include "CoreRender/scene/AnimatedModel.hpp"
 #include "CoreRender/render/FrameData.hpp"
 #include "CoreRender/core/MemoryPool.hpp"
 
@@ -29,15 +29,15 @@ namespace cr
 {
 namespace scene
 {
-	AnimatedMesh::AnimatedMesh(Model::Ptr model)
+	AnimatedModel::AnimatedModel(Model::Ptr model)
 		: model(model)
 	{
 	}
-	AnimatedMesh::~AnimatedMesh()
+	AnimatedModel::~AnimatedModel()
 	{
 	}
 
-	void AnimatedMesh::setModel(Model::Ptr model)
+	void AnimatedModel::setModel(Model::Ptr model)
 	{
 		this->model = model;
 		// Update animation bindings
@@ -47,12 +47,12 @@ namespace scene
 			                                         model);
 		}
 	}
-	Model::Ptr AnimatedMesh::getModel()
+	Model::Ptr AnimatedModel::getModel()
 	{
 		return model;
 	}
 
-	unsigned int AnimatedMesh::addAnimation(Animation::Ptr animation,
+	unsigned int AnimatedModel::addAnimation(Animation::Ptr animation,
 	                                        float weight,
 	                                        bool additive)
 	{
@@ -66,24 +66,24 @@ namespace scene
 		newstage.time = 0.0f;
 		return oldanimcount;
 	}
-	void AnimatedMesh::setAnimation(unsigned int index, float time)
+	void AnimatedModel::setAnimation(unsigned int index, float time)
 	{
 		if (index >= animstages.size())
 			return;
 		animstages[index].time = time;
 	}
-	void AnimatedMesh::removeAnimation(unsigned int index)
+	void AnimatedModel::removeAnimation(unsigned int index)
 	{
 		if (index >= animstages.size())
 			return;
 		animstages.erase(animstages.begin() + index);
 	}
-	unsigned int AnimatedMesh::getAnimationCount()
+	unsigned int AnimatedModel::getAnimationCount()
 	{
 		return animstages.size();
 	}
 
-	void AnimatedMesh::render(render::RenderQueue &queue,
+	void AnimatedModel::render(render::RenderQueue &queue,
 	                          math::Matrix4 transmat)
 	{
 		// Compute animation data for all nodes
@@ -135,7 +135,7 @@ namespace scene
 			queue.batches.push_back(batch);
 		}
 	}
-	void AnimatedMesh::render(render::RenderQueue &queue,
+	void AnimatedModel::render(render::RenderQueue &queue,
 	                          unsigned int instancecount,
 	                          math::Matrix4 *transmat)
 	{
@@ -196,8 +196,8 @@ namespace scene
 		}
 	}
 
-	float AnimatedMesh::applyStage(unsigned int stageindex,
-	                               AnimatedMesh::NodeAnimationInfo *nodes,
+	float AnimatedModel::applyStage(unsigned int stageindex,
+	                               AnimatedModel::NodeAnimationInfo *nodes,
 	                               float weightsum)
 	{
 		float remainingweight = 1.0f - weightsum;
@@ -254,7 +254,7 @@ namespace scene
 		}
 	}
 
-	void AnimatedMesh::applyAnimation(std::vector<Model::Node> &nodes)
+	void AnimatedModel::applyAnimation(std::vector<Model::Node> &nodes)
 	{
 		unsigned int nodecount = nodes.size();
 		NodeAnimationInfo *animationinfo = new NodeAnimationInfo[nodecount];

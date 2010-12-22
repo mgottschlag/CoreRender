@@ -19,8 +19,8 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_SCENE_ANIMATEDMESH_HPP_INCLUDED_
-#define _CORERENDER_SCENE_ANIMATEDMESH_HPP_INCLUDED_
+#ifndef _CORERENDER_SCENE_ANIMATEDMODEL_HPP_INCLUDED_
+#define _CORERENDER_SCENE_ANIMATEDMODEL_HPP_INCLUDED_
 
 #include "../core/ReferenceCounted.hpp"
 #include "Model.hpp"
@@ -31,11 +31,11 @@ namespace cr
 {
 namespace scene
 {
-	class AnimatedMesh : public core::ReferenceCounted
+	class AnimatedModel : public core::ReferenceCounted
 	{
 		public:
-			AnimatedMesh(Model::Ptr model = 0);
-			virtual ~AnimatedMesh();
+			AnimatedModel(Model::Ptr model = 0);
+			virtual ~AnimatedModel();
 
 			void setModel(Model::Ptr model);
 			Model::Ptr getModel();
@@ -74,7 +74,7 @@ namespace scene
 			            unsigned int instancecount,
 			            math::Matrix4 *transmat);
 
-			typedef core::SharedPointer<AnimatedMesh> Ptr;
+			typedef core::SharedPointer<AnimatedModel> Ptr;
 		private:
 			float applyStage(unsigned int stageindex,
 			                 NodeAnimationInfo *nodes,

@@ -60,7 +60,7 @@ int main(int argc, char **argv)
 	scene::Model::Ptr jeep = graphics.getModel("/models/jeep.model.xml");
 	scene::Model::Ptr dwarf = graphics.getModel("/models/dwarf.model.xml");
 	scene::Model::Ptr plane = graphics.getModel("/models/plane.model.xml");
-	scene::AnimatedMesh::Ptr dwarf2 = new scene::AnimatedMesh(dwarf);
+	scene::AnimatedModel::Ptr dwarf2 = new scene::AnimatedModel(dwarf);
 	scene::Animation::Ptr dwarfanim = graphics.getAnimation("/models/dwarf.anim");
 	dwarf2->addAnimation(dwarfanim, 1.0f);
 	math::Matrix4 dwarf2positions[256];

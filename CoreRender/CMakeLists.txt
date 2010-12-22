@@ -103,7 +103,7 @@ set(SRC
 	src/res/Resource.cpp
 	src/res/ResourceManager.cpp
 	src/scene/Scene.cpp
-	src/scene/AnimatedMesh.cpp
+	src/scene/AnimatedModel.cpp
 	src/scene/Animation.cpp
 	src/scene/Model.cpp
 	src/scene/Camera.cpp
