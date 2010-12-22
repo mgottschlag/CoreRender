@@ -19,14 +19,19 @@ set(SRC
 	include/CoreRender/core/Semaphore.hpp
 	include/CoreRender/core/StandardFile.hpp
 	include/CoreRender/core/StandardFileSystem.hpp
+	include/CoreRender/core/StringTable.hpp
 	include/CoreRender/core/StructPacking.hpp
 	include/CoreRender/core/Thread.hpp
 	include/CoreRender/core/Time.hpp
+	include/CoreRender/GraphicsEngine.hpp
 	include/CoreRender.hpp
 	include/CoreRender/math/Alignment.hpp
+	include/CoreRender/math/BoundingBox.hpp
+	include/CoreRender/math/Frustum.hpp
 	include/CoreRender/math/Math.hpp
 	include/CoreRender/math/Matrix3.hpp
 	include/CoreRender/math/Matrix4.hpp
+	include/CoreRender/math/Plane.hpp
 	include/CoreRender/math/Quaternion.hpp
 	include/CoreRender/math/ScreenPosition.hpp
 	include/CoreRender/math/StdInt.hpp
@@ -34,42 +39,54 @@ set(SRC
 	include/CoreRender/math/Vector3.hpp
 	include/CoreRender/math/Vector4.hpp
 	include/CoreRender/render/BlendMode.hpp
+	include/CoreRender/render/DepthTest.hpp
 	include/CoreRender/render/FrameBuffer.hpp
 	include/CoreRender/render/FrameData.hpp
 	include/CoreRender/render/GeometryManager.hpp
-	include/CoreRender/GraphicsEngine.hpp
 	include/CoreRender/render/IndexBuffer.hpp
 	include/CoreRender/render/Material.hpp
 	include/CoreRender/render/OcclusionQuery.hpp
 	include/CoreRender/render/Pipeline.hpp
+	include/CoreRender/render/PipelineStage.hpp
 	include/CoreRender/render/RenderCaps.hpp
+	include/CoreRender/render/RenderObject.hpp
 	include/CoreRender/render/RenderQuery.hpp
 	include/CoreRender/render/RenderResource.hpp
 	include/CoreRender/render/RenderStats.hpp
 	include/CoreRender/render/RenderTarget.hpp
-	include/CoreRender/render/RenderObject.hpp
 	include/CoreRender/render/ShaderCombination.hpp
 	include/CoreRender/render/Shader.hpp
 	include/CoreRender/render/ShaderVariableType.hpp
+	include/CoreRender/render/SpatialRenderable.hpp
 	include/CoreRender/render/Texture.hpp
 	include/CoreRender/render/TimerQuery.hpp
+	include/CoreRender/render/UploadManager.hpp
 	include/CoreRender/render/VertexBuffer.hpp
 	include/CoreRender/render/VertexLayout.hpp
 	include/CoreRender/render/VideoDriverType.hpp
 	include/CoreRender/res/DefaultResourceFactory.hpp
 	include/CoreRender/res/LoadingThread.hpp
+	include/CoreRender/res/NameRegistry.hpp
 	include/CoreRender/res/ResourceFactory.hpp
 	include/CoreRender/res/Resource.hpp
 	include/CoreRender/res/ResourceManager.hpp
+	include/CoreRender/scene/AnimatedModel.hpp
+	include/CoreRender/scene/AnimationBinding.hpp
+	include/CoreRender/scene/AnimationFile.hpp
 	include/CoreRender/scene/Animation.hpp
+	include/CoreRender/scene/Camera.hpp
+	include/CoreRender/scene/GeometryFile.hpp
+	include/CoreRender/scene/Light.hpp
+	include/CoreRender/scene/Model.hpp
+	include/CoreRender/scene/PointLight.hpp
+	include/CoreRender/scene/Scene.hpp
+	include/CoreRender/scene/SpotLight.hpp
+	include/CoreRender/scene/Terrain.hpp
+	src/3rdparty/stb_image.c
 	src/3rdparty/tinystr.cpp
-	src/3rdparty/tinystr.h
 	src/3rdparty/tinyxml.cpp
-	src/3rdparty/tinyxml.h
 	src/3rdparty/tinyxmlerror.cpp
 	src/3rdparty/tinyxmlparser.cpp
-	src/3rdparty/stb_image.h
-	src/3rdparty/stb_image.c
 	src/core/Log.cpp
 	src/core/MemoryPool.cpp
 	src/core/Semaphore.cpp
@@ -77,8 +94,10 @@ set(SRC
 	src/core/StandardFileSystem.cpp
 	src/core/Thread.cpp
 	src/core/Time.cpp
-	src/render/FrameBuffer.cpp
 	src/GraphicsEngine.cpp
+	src/render/FrameBuffer.cpp
+	src/render/ImageDDS.cpp
+	src/render/ImageSTB.cpp
 	src/render/IndexBuffer.cpp
 	src/render/Material.cpp
 	src/render/opengl/FrameBufferOpenGL.cpp
@@ -89,31 +108,27 @@ set(SRC
 	src/render/opengl/VertexBufferOpenGL.cpp
 	src/render/opengl/VideoDriverOpenGL.cpp
 	src/render/Pipeline.cpp
-	src/render/RenderResource.cpp
 	src/render/RenderObject.cpp
+	src/render/RenderResource.cpp
 	src/render/RenderTarget.cpp
-	src/render/Shader.cpp
 	src/render/ShaderCombination.cpp
+	src/render/Shader.cpp
 	src/render/Texture.cpp
 	src/render/UploadManager.cpp
 	src/render/VertexBuffer.cpp
 	src/render/VideoDriver.cpp
-	src/render/VideoDriver.hpp
 	src/res/LoadingThread.cpp
 	src/res/Resource.cpp
 	src/res/ResourceManager.cpp
-	src/scene/Scene.cpp
 	src/scene/AnimatedModel.cpp
-	src/scene/Animation.cpp
-	src/scene/Model.cpp
-	src/scene/Camera.cpp
-	src/scene/Animation.cpp
 	src/scene/AnimationBinding.cpp
-	src/scene/PointLight.cpp
-	src/scene/SpotLight.cpp
+	src/scene/Animation.cpp
+	src/scene/Camera.cpp
 	src/scene/Light.cpp
-	src/render/ImageSTB.cpp
-	src/render/ImageDDS.cpp
+	src/scene/Model.cpp
+	src/scene/PointLight.cpp
+	src/scene/Scene.cpp
+	src/scene/SpotLight.cpp
 	src/scene/Terrain.cpp
 )
 
