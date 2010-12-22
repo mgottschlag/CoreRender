@@ -1,3 +1,4 @@
 /build
 /CoreRender/docs/html
-*.*~
+*~
+*.kdev4
