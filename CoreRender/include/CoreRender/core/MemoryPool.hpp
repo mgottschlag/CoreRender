@@ -29,10 +29,23 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // for every allocation to make memory debuggers like valgrind work properly
 //#define CR_MEMORY_DEBUGGING
 
+// Use this to enable heap tail checks on windows.
+// This only works on Windows and only works when CR_MEMORY_DEBUGGING is
+// enabled and uses tons of memory as for every allocation a guard page is
+// created.
+//#define CR_MEMORY_TAIL_CHECKING
+
 #ifdef CR_MEMORY_DEBUGGING
-#include <cstdlib>
+	#include <cstdlib>
+	#ifdef CR_MEMORY_TAIL_CHECKING
+		#include <Windows.h>
+	#endif
 struct MallocEntry
 {
+#ifdef CR_MEMORY_TAIL_CHECKING
+	unsigned int pagecount;
+	void *address;
+#endif
 	MallocEntry *next;
 };
 #endif
@@ -94,14 +107,7 @@ namespace core
 				for (unsigned int i = 0; i < freememory.size(); i++)
 					freePage(freememory[i], pagesize);
 #ifdef CR_MEMORY_DEBUGGING
-				MallocEntry *mallocentry = mallocmem;
-				while (mallocentry)
-				{
-					MallocEntry *next = mallocentry->next;
-					free(mallocentry);
-					mallocentry = next;
-				}
-				mallocmem = 0;
+				freeAllocatedMemory();
 #endif
 			}
 
@@ -127,14 +133,7 @@ namespace core
 				// Start at the current page from the beginning
 				used = 0;
 #ifdef CR_MEMORY_DEBUGGING
-				MallocEntry *mallocentry = mallocmem;
-				while (mallocentry)
-				{
-					MallocEntry *next = mallocentry->next;
-					free(mallocentry);
-					mallocentry = next;
-				}
-				mallocmem = 0;
+				freeAllocatedMemory();
 #endif
 			}
 			/**
@@ -184,14 +183,7 @@ namespace core
 				// Reset current memory page
 				used = 0;
 #ifdef CR_MEMORY_DEBUGGING
-				MallocEntry *mallocentry = mallocmem;
-				while (mallocentry)
-				{
-					MallocEntry *next = mallocentry->next;
-					free(mallocentry);
-					mallocentry = next;
-				}
-				mallocmem = 0;
+				freeAllocatedMemory();
 #endif
 			}
 			/**
@@ -224,15 +216,9 @@ namespace core
 				// Reset current memory page
 				used = 0;
 #ifdef CR_MEMORY_DEBUGGING
-				MallocEntry *mallocentry = mallocmem;
-				while (mallocentry)
-				{
-					MallocEntry *next = mallocentry->next;
-					free(mallocentry);
-					mallocentry = next;
-				}
-				mallocmem = 0;
+				freeAllocatedMemory();
 #endif
+
 			}
 
 			/**
@@ -270,10 +256,35 @@ namespace core
 					used = size;
 					return currentmemory;
 				}
-#else
+#elif defined(CR_MEMORY_TAIL_CHECKING)
+				unsigned int pagecount = (size + 0xfff) / 0x1000;
+				// We have to align the allocated memory at the end of the page to
+				// catch tail overwriting errors
+				unsigned int pageoffset = pagecount * 0x1000 - size;
+				char *pages = (char*)VirtualAlloc(0,
+				                     (pagecount + 1) * 0x1000,
+				                     MEM_RESERVE,
+				                     PAGE_NOACCESS);
+				// The last page is not filled with physical memory
+				VirtualAlloc(pages,
+				             pagecount * 0x1000,
+				             MEM_COMMIT,
+				             PAGE_READWRITE);
+				void *ptr = malloc(sizeof(MallocEntry));
+				MallocEntry *mallocentry = (MallocEntry*)ptr;
+				mallocentry->address = pages;
+				mallocentry->pagecount = pagecount + 1;
 				tbb::spin_mutex::scoped_lock lock(mutex);
+				if (!mallocmem)
+					mallocentry->next = 0;
+				else
+					mallocentry->next = mallocmem;
+				mallocmem = mallocentry;
+				return pages + pageoffset;
+#else
 				void *ptr = malloc(size + sizeof(MallocEntry));
 				MallocEntry *mallocentry = (MallocEntry*)ptr;
+				tbb::spin_mutex::scoped_lock lock(mutex);
 				if (!mallocmem)
 					mallocentry->next = 0;
 				else
@@ -321,18 +332,7 @@ namespace core
 				destructor->callDestructor = callDestructor<T>;
 				destructor->ptr = (char*)ptr + sizeof(DestructorEntry);
 				destructor->next = 0;
-				// Insert destructor into the destructor list
-				tbb::spin_mutex::scoped_lock lock(mutex);
-				if (!lastdestructor)
-				{
-					firstdestructor = destructor;
-					lastdestructor = destructor;
-				}
-				else
-				{
-					lastdestructor->next = destructor;
-					lastdestructor = destructor;
-				}
+				insertDestructor(destructor);
 				// Return memory
 				return (char*)ptr + sizeof(DestructorEntry);
 			}
@@ -345,6 +345,14 @@ namespace core
 				destructor->callDestructor = callDestructor<T>;
 				destructor->ptr = object;
 				destructor->next = 0;
+				insertDestructor(destructor);
+			}
+		private:
+			static void *allocPage(unsigned int size);
+			static void freePage(void *page, unsigned int size);
+
+			void insertDestructor(DestructorEntry *destructor)
+			{
 				// Insert destructor into the destructor list
 				tbb::spin_mutex::scoped_lock lock(mutex);
 				if (!lastdestructor)
@@ -358,9 +366,6 @@ namespace core
 					lastdestructor = destructor;
 				}
 			}
-		private:
-			static void *allocPage(unsigned int size);
-			static void freePage(void *page, unsigned int size);
 
 			void callDestructors()
 			{
@@ -391,6 +396,23 @@ namespace core
 
 #ifdef CR_MEMORY_DEBUGGING
 			MallocEntry *mallocmem;
+
+			void freeAllocatedMemory()
+			{
+				MallocEntry *mallocentry = mallocmem;
+				while (mallocentry)
+				{
+					MallocEntry *next = mallocentry->next;
+	#ifdef CR_MEMORY_TAIL_CHECKING
+					VirtualFree(mallocentry->address,
+					            mallocentry->pagecount * 0x1000,
+					            MEM_RELEASE);
+	#endif
+					free(mallocentry);
+					mallocentry = next;
+				}
+				mallocmem = 0;
+			}
 #endif
 	};
 }
