@@ -106,9 +106,12 @@ namespace scene
 		// Create render queues
 		core::MemoryPool *memory = frame->getMemory();
 		void *ptr = memory->allocate(sizeof(render::RenderQueue) * queuecount);
-		render::RenderQueue *queues = new(ptr) render::RenderQueue[queuecount];
+		render::RenderQueue *queues = (render::RenderQueue*)ptr;
 		for (int i = queuecount - 1; i >= 0; i--)
+		{
+			new(&queues[i])render::RenderQueue;
 			memory->registerDestructor(&queues[i]);
+		}
 		for (unsigned int i = 0; i < queuecount; i++)
 			queues[i].memory = memory;
 		// Create scene frame data
@@ -336,7 +339,6 @@ namespace scene
 							shadowmat = math::Matrix4::TransMat(0.5f, 0.5f, 0.0f)
 							          * math::Matrix4::ScaleMat(0.5f, 0.5f, 1.0f)
 							          * shadowmat;
-							queuecount++;
 						}
 						light->shadowmat = shadowmat;
 						render::Material::Ptr material = lights[i]->getDeferredMaterial();
