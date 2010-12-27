@@ -52,10 +52,10 @@ namespace core
 		else
 		{
 			// Split time
-			unsigned int hours = duration / 3600000000000;
-			int64_t remaining = duration % 3600000000000;
-			unsigned int minutes = remaining / 60000000000;
-			remaining = remaining % 60000000000;
+			unsigned int hours = duration / 3600000000000LL;
+			int64_t remaining = duration % 3600000000000LL;
+			unsigned int minutes = remaining / 60000000000LL;
+			remaining = remaining % 60000000000LL;
 			double seconds = remaining;
 			seconds /= 60000000000.0;
 			// Create string
@@ -81,7 +81,7 @@ namespace core
 		return t;
 #elif defined(CORERENDER_WINDOWS)
 		Time t;
-		t.time = (int64_t)GetTickCount() * 1000;
+		t.time = (int64_t)GetTickCount() * 1000000;
 		return t;
 #else
 	#error Unimplemented!
@@ -98,6 +98,7 @@ namespace core
 
 	void Time::sleep(const Duration &duration)
 	{
+		sleep(duration.getNanoseconds());
 	}
 	void Time::sleep(uint64_t nanoseconds)
 	{

@@ -119,7 +119,7 @@ namespace core
 			 * Returns the value of the time span in nanoseconds.
 			 * @return Value of the time span.
 			 */
-			int64_t getNanoseconds()
+			int64_t getNanoseconds() const
 			{
 				return duration;
 			}
@@ -127,7 +127,7 @@ namespace core
 			 * Returns the value of the time span in microseconds.
 			 * @return Value of the time span.
 			 */
-			int64_t getMicroseconds()
+			int64_t getMicroseconds() const
 			{
 				return duration / 1000;
 			}
@@ -135,7 +135,7 @@ namespace core
 			 * Returns the value of the time span in milliseconds.
 			 * @return Value of the time span.
 			 */
-			int64_t getMilliseconds()
+			int64_t getMilliseconds() const
 			{
 				return duration / 1000000;
 			}
@@ -143,7 +143,7 @@ namespace core
 			 * Returns the value of the time span in seconds.
 			 * @return Value of the time span.
 			 */
-			int64_t getSeconds()
+			int64_t getSeconds() const
 			{
 				return duration / 1000000000LL;
 			}
@@ -151,7 +151,7 @@ namespace core
 			 * Returns the value of the time span in minutes.
 			 * @return Value of the time span.
 			 */
-			int64_t getMinutes()
+			int64_t getMinutes() const
 			{
 				return duration / 60000000000LL;
 			}
@@ -159,7 +159,7 @@ namespace core
 			 * Returns the value of the time span in hours.
 			 * @return Value of the time span.
 			 */
-			int64_t getHours()
+			int64_t getHours() const
 			{
 				return duration / 3600000000000LL;
 			}
@@ -189,27 +189,27 @@ namespace core
 				return *this;
 			}
 
-			bool operator>(const Duration &d)
+			bool operator>(const Duration &d) const
 			{
 				return duration > d.duration;
 			}
-			bool operator>=(const Duration &d)
+			bool operator>=(const Duration &d) const
 			{
 				return duration >= d.duration;
 			}
-			bool operator<(const Duration &d)
+			bool operator<(const Duration &d) const
 			{
 				return duration < d.duration;
 			}
-			bool operator<=(const Duration &d)
+			bool operator<=(const Duration &d) const
 			{
 				return duration <= d.duration;
 			}
-			bool operator==(const Duration &d)
+			bool operator==(const Duration &d) const
 			{
 				return duration == d.duration;
 			}
-			bool operator!=(const Duration &d)
+			bool operator!=(const Duration &d) const
 			{
 				return duration != d.duration;
 			}
