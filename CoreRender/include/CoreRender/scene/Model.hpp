@@ -38,8 +38,8 @@ namespace cr
 {
 namespace render
 {
-	class RenderQueue;
-	class Batch;
+	struct RenderQueue;
+	struct Batch;
 }
 namespace scene
 {

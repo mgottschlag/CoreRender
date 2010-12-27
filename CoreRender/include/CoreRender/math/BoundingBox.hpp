@@ -41,18 +41,18 @@ namespace math
 			 * of the coordinate system.
 			 */
 			BoundingBox()
-				: min(0, 0, 0), max(0, 0, 0)
+				: minCorner(0, 0, 0), maxCorner(0, 0, 0)
 			{
 			}
 			/**
 			 * Constructor.
-			 * @param min Point with the smallest values for all components
+			 * @param minCorner Point with the smallest values for all components
 			 * which is still in the box.
-			 * @param min Point with the largest values for all components which
+			 * @param minCorner Point with the largest values for all components which
 			 * is still in the box.
 			 */
-			BoundingBox(const Vector3F &min, const Vector3F &max)
-				: min(min), max(max)
+			BoundingBox(const Vector3F &minCorner, const Vector3F &maxCorner)
+				: minCorner(minCorner), maxCorner(maxCorner)
 			{
 			}
 			/**
@@ -60,7 +60,7 @@ namespace math
 			 * @param center Center of the bounding box.
 			 */
 			BoundingBox(const Vector3F &center)
-				: min(center), max(center)
+				: minCorner(center), maxCorner(center)
 			{
 			}
 
@@ -69,21 +69,21 @@ namespace math
 				switch (index)
 				{
 					case 0:
-						return Vector3F(min.x, min.y, min.z);
+						return Vector3F(minCorner.x, minCorner.y, minCorner.z);
 					case 1:
-						return Vector3F(max.x, min.y, min.z);
+						return Vector3F(maxCorner.x, minCorner.y, minCorner.z);
 					case 2:
-						return Vector3F(max.x, max.y, min.z);
+						return Vector3F(maxCorner.x, maxCorner.y, minCorner.z);
 					case 3:
-						return Vector3F(min.x, max.y, min.z);
+						return Vector3F(minCorner.x, maxCorner.y, minCorner.z);
 					case 4:
-						return Vector3F(min.x, min.y, max.z);
+						return Vector3F(minCorner.x, minCorner.y, maxCorner.z);
 					case 5:
-						return Vector3F(max.x, min.y, max.z);
+						return Vector3F(maxCorner.x, minCorner.y, maxCorner.z);
 					case 6:
-						return Vector3F(max.x, max.y, max.z);
+						return Vector3F(maxCorner.x, maxCorner.y, maxCorner.z);
 					case 7:
-						return Vector3F(min.x, max.y, max.z);
+						return Vector3F(minCorner.x, maxCorner.y, maxCorner.z);
 					default:
 						return Vector3F(0, 0, 0);
 				}
@@ -94,7 +94,7 @@ namespace math
 			 */
 			Vector3F getCenter()
 			{
-				return (min + max) * 0.5f;
+				return (minCorner + maxCorner) * 0.5f;
 			}
 			/**
 			 * Returns the size of the bounding box.
@@ -102,7 +102,7 @@ namespace math
 			 */
 			Vector3F getSize()
 			{
-				return max - min;
+				return maxCorner - minCorner;
 			}
 
 			/**
@@ -111,18 +111,18 @@ namespace math
 			 */
 			void insert(const Vector3F &point)
 			{
-				if (min.x < point.x)
-					min.x = point.x;
-				if (max.x > point.x)
-					max.x = point.x;
-				if (min.y < point.y)
-					min.y = point.y;
-				if (max.y > point.y)
-					max.y = point.y;
-				if (min.z < point.z)
-					min.z = point.z;
-				if (max.z > point.z)
-					max.z = point.z;
+				if (minCorner.x < point.x)
+					minCorner.x = point.x;
+				if (maxCorner.x > point.x)
+					maxCorner.x = point.x;
+				if (minCorner.y < point.y)
+					minCorner.y = point.y;
+				if (maxCorner.y > point.y)
+					maxCorner.y = point.y;
+				if (minCorner.z < point.z)
+					minCorner.z = point.z;
+				if (maxCorner.z > point.z)
+					maxCorner.z = point.z;
 			}
 			/**
 			 * Inserts another bounding box into the bounding box and enlarges
@@ -130,8 +130,8 @@ namespace math
 			 */
 			void insert(const BoundingBox &box)
 			{
-				insert(box.min);
-				insert(box.max);
+				insert(box.minCorner);
+				insert(box.maxCorner);
 			}
 
 			/**
@@ -161,17 +161,17 @@ namespace math
 			{
 				// TODO: This function uses a different notation compared to
 				// the frustum functions
-				if (point.x < min.x)
+				if (point.x < minCorner.x)
 					return false;
-				if (point.y < min.y)
+				if (point.y < minCorner.y)
 					return false;
-				if (point.z < min.z)
+				if (point.z < minCorner.z)
 					return false;
-				if (point.x > max.x)
+				if (point.x > maxCorner.x)
 					return false;
-				if (point.y > max.y)
+				if (point.y > maxCorner.y)
 					return false;
-				if (point.z > max.z)
+				if (point.z > maxCorner.z)
 					return false;
 				return true;
 			}
@@ -179,11 +179,11 @@ namespace math
 			/**
 			 * Minimum coordinates of all points in the bounding box.
 			 */
-			Vector3F min;
+			Vector3F minCorner;
 			/**
 			 * Maximum coordinates of all points in the bounding box.
 			 */
-			Vector3F max;
+			Vector3F maxCorner;
 	};
 }
 }

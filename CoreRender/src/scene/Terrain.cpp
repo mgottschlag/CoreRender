@@ -131,7 +131,7 @@ namespace scene
 		}
 		// Compute a fitting patch size
 		if (sizex < patchsize || sizez < patchsize)
-			patchsize = std::min(sizex, sizez);
+			patchsize = std::min<unsigned int>(sizex, sizez);
 		else if (patchsize < 3 || !isPowerOfTwo(sizex - 1))
 		{
 			getManager()->getLog()->error("%s: Invalid patch size: %d",
@@ -192,9 +192,12 @@ namespace scene
 	                              unsigned int z,
 	                              float height)
 	{
+		// TODO
 	}
 	math::Vector3F Terrain::getDisplacement(int x, int z)
 	{
+		// TODO
+		return math::Vector3F(0, 0, 0);
 	}
 
 	bool Terrain::load()
@@ -595,7 +598,7 @@ namespace scene
 		}
 		else
 		{
-			unsigned int lodcount = patches.size();
+			int lodcount = patches.size();
 			// TODO: Faster conversion
 			int lodindex = math::Math::ftoi(cameradist / offsetscale[2]) - 1;
 			if (lodindex < 0)

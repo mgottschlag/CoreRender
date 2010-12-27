@@ -378,9 +378,9 @@ namespace opengl
 			sizeread += datasize;
 			mipmapindex++;
 			currentmipmap = currentmipmap + datasize;
-			currentwidth = std::max(currentwidth / 2, 1u);
-			currentheight = std::max(currentheight / 2, 1u);
-			currentdepth = std::max(currentdepth / 2, 1u);
+			currentwidth = std::max<unsigned int>(currentwidth / 2, 1u);
+			currentheight = std::max<unsigned int>(currentheight / 2, 1u);
+			currentdepth = std::max<unsigned int>(currentdepth / 2, 1u);
 		}
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, mipmapindex - 1);
@@ -436,9 +436,9 @@ namespace opengl
 			sizeread += datasize;
 			mipmapindex++;
 			currentmipmap = currentmipmap + datasize;
-			currentwidth = std::max(currentwidth / 2, 1u);
-			currentheight = std::max(currentheight / 2, 1u);
-			currentdepth = std::max(currentdepth / 2, 1u);
+			currentwidth = std::max<unsigned int>(currentwidth / 2, 1u);
+			currentheight = std::max<unsigned int>(currentheight / 2, 1u);
+			currentdepth = std::max<unsigned int>(currentdepth / 2, 1u);
 		}
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, mipmapindex - 1);

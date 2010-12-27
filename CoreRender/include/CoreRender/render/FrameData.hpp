@@ -39,7 +39,7 @@ namespace render
 {
 	class RenderResource;
 	class RenderObject;
-	class ShaderCombination;
+	struct ShaderCombination;
 	class VertexBuffer;
 	class IndexBuffer;
 	class RenderTarget;

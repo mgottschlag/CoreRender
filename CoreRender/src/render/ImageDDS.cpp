@@ -210,9 +210,9 @@ namespace render
 			                                    currentheight,
 			                                    currentdepth);
 			pixelcount = currentwidth * currentheight * currentdepth;
-			currentwidth = std::max(currentwidth / 2, 1u);
-			currentheight = std::max(currentheight / 2, 1u);
-			currentdepth = std::max(currentdepth / 2, 1u);
+			currentwidth = std::max<unsigned int>(currentwidth / 2, 1u);
+			currentheight = std::max<unsigned int>(currentheight / 2, 1u);
+			currentdepth = std::max<unsigned int>(currentdepth / 2, 1u);
 		}
 		// We only support loading mipmaps from the file if all mipmaps down to
 		// 1*1*1 are available
@@ -256,7 +256,7 @@ namespace render
 				float *pixels = (float*)imagedata;
 				for (unsigned int i = 0; i < imagesize / 16; i++)
 				{
-					unsigned int tmp = pixels[i * 4];
+					float tmp = pixels[i * 4];
 					pixels[i * 4] = pixels[i * 4 + 3];
 					pixels[i * 4 + 3] = tmp;
 					tmp = pixels[i * 4 + 1];

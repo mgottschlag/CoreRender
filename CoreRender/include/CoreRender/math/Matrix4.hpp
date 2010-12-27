@@ -151,34 +151,34 @@ namespace math
 			}
 			static Matrix4 PerspectiveFOV(float fov,
 			                              float aspectratio,
-			                              float near,
-			                              float far)
+			                              float znear,
+			                              float zfar)
 			{
-				float radians = fov / 180.0 * 3.1415;
+				float radians = fov / 180.0f * 3.1415f;
 				float t = tan(radians / 2);
-				return Perspective(2 * t * near * aspectratio,
-				                   2 * t * near,
-				                   near,
-				                   far);
+				return Perspective(2 * t * znear * aspectratio,
+				                   2 * t * znear,
+				                   znear,
+				                   zfar);
 			}
 			static Matrix4 Perspective(float width,
 			                           float height,
-			                           float near,
-			                           float far)
+			                           float znear,
+			                           float zfar)
 			{
 				return Perspective(-width / 2,
 				                   width / 2,
 				                   -height / 2,
 				                   height / 2,
-				                   near,
-				                   far);
+				                   znear,
+				                   zfar);
 			}
 			static Matrix4 Perspective(float left,
 			                           float right,
 			                           float bottom,
 			                           float top,
-			                           float near,
-			                           float far)
+			                           float znear,
+			                           float zfar)
 			{
 				float w = right - left;
 				float h = top - bottom;
@@ -186,8 +186,8 @@ namespace math
 				float l = left;
 				float t = top;
 				float b = bottom;
-				float n = near;
-				float f = far;
+				float n = znear;
+				float f = zfar;
 				return Matrix4(2*n/w, 0,     (r+l)/w,       0,
 				               0,     2*n/h, (t+b)/h,       0,
 				               0,     0,     -(f+n)/(f-n),  -2*f*n/(f-n),
@@ -195,22 +195,22 @@ namespace math
 			}
 			static Matrix4 Ortho(float width,
 			                     float height,
-			                     float near,
-			                     float far)
+			                     float znear,
+			                     float zfar)
 			{
 				return Ortho(-width / 2,
 				             width / 2,
 				             -height / 2,
 				             height / 2,
-				             near,
-				             far);
+				             znear,
+				             zfar);
 			}
 			static Matrix4 Ortho(float left,
 			                     float right,
 			                     float bottom,
 			                     float top,
-			                     float near,
-			                     float far)
+			                     float znear,
+			                     float zfar)
 			{
 				float w = right - left;
 				float h = top - bottom;
@@ -218,8 +218,8 @@ namespace math
 				float l = left;
 				float t = top;
 				float b = bottom;
-				float n = near;
-				float f = far;
+				float n = znear;
+				float f = zfar;
 				return Matrix4(2/w, 0,   0,        -(r+l)/w,
 				               0,   2/h, 0,        -(t+b)/h,
 				               0,   0,   -2/(f-n), -(f+n)/(f-n),

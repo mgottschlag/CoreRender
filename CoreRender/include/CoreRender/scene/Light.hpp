@@ -34,7 +34,7 @@ namespace render
 {
 	struct LightUniforms;
 	class SceneFrameData;
-	class RenderQueue;
+	struct RenderQueue;
 }
 namespace scene
 {

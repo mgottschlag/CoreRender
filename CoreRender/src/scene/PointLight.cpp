@@ -66,10 +66,10 @@ namespace scene
 		math::BoundingBox lightbb(getPosition() + math::Vector3F(-radius, -radius, -radius),
 		                          getPosition() + math::Vector3F(radius, radius, radius));
 		lightbb = lightbb.transform(camera->getViewMat()).transform(camera->getProjMat());
-		quad[0] = lightbb.min.x;
-		quad[1] = lightbb.min.y;
-		quad[2] = lightbb.max.x;
-		quad[3] = lightbb.max.y;
+		quad[0] = lightbb.minCorner.x;
+		quad[1] = lightbb.minCorner.y;
+		quad[2] = lightbb.maxCorner.x;
+		quad[3] = lightbb.maxCorner.y;
 	}
 
 	void PointLight::getLightInfo(render::LightUniforms *uniforms)

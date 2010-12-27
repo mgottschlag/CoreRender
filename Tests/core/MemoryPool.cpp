@@ -45,11 +45,12 @@ unsigned int TestClass::destructorcalls = 0;
 
 int main(int argc, char **argv)
 {
+	static const unsigned int TEST_RUNS = 500000;
 	MemoryPool memory;
 	for (unsigned int i = 0; i < 2; i++)
 	{
 		// Create a million instances of TestClass
-		for (unsigned int j = 0; j < 1000000; j++)
+		for (unsigned int j = 0; j < TEST_RUNS; j++)
 		{
 			void *ptr = memory.allocate<TestClass>();
 			TestClass *obj = new(ptr) TestClass;
@@ -63,16 +64,16 @@ int main(int argc, char **argv)
 	unsigned int destructorcalls;
 	TestClass::getStats(constructorcalls, wrongdata, destructorcalls);
 	unsigned int errorcount = 0;
-	if (constructorcalls != 2000000)
+	if (constructorcalls != TEST_RUNS * 2)
 	{
 		std::cout << "Constructor called " << constructorcalls
-			<< " times, expected 2000000." << std::endl;
+			<< " times, expected " << TEST_RUNS * 2 << "." << std::endl;
 		errorcount++;
 	}
-	if (destructorcalls != 2000000)
+	if (destructorcalls != TEST_RUNS * 2)
 	{
 		std::cout << "Destructor called " << destructorcalls
-			<< " times, expected 2000000." << std::endl;
+			<< " times, expected " << TEST_RUNS * 2 << "." << std::endl;
 		errorcount++;
 	}
 	if (wrongdata != 0)

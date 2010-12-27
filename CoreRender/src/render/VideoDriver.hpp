@@ -48,7 +48,7 @@ namespace render
 	struct Batch;
 	class Material;
 	struct TextureBinding;
-	class LightUniforms;
+	struct LightUniforms;
 
 	/**
 	 * Render system backend. This is used to create backend-specific classes

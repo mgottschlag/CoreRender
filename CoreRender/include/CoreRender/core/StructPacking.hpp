@@ -26,9 +26,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef CORERENDER_MSVC
 	#define CORERENDER_PACK_BEGIN() ;\
-	__pragma(push, 1)\
+	__pragma(pack(push, 1))\
 	;
-	#define CORERENDER_PACK_END() __pragma(pop)
+	#define CORERENDER_PACK_END() __pragma(pack(pop))
 #else
 	#define CORERENDER_PACK_BEGIN()
 	#define CORERENDER_PACK_END() __attribute__((packed))

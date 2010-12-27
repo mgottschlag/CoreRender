@@ -376,7 +376,7 @@ namespace render
 				float depth = 1.0f;
 				const char *depthattrib = element->Attribute("depth");
 				if (depthattrib)
-					depth = strtof(depthattrib, 0);
+					depth = (float)strtod(depthattrib, 0);
 				float color[4] = {0.0, 0.0, 0.0, 1.0};
 				const char *colorattrib = element->Attribute("color");
 				if (colorattrib)
@@ -556,7 +556,7 @@ namespace render
 			}
 			else
 			{
-				relsize[0] = strtof(relsizestr, 0);
+				relsize[0] = (float)strtod(relsizestr, 0);
 				relsize[1] = relsize[0];
 			}
 		}

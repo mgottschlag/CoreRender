@@ -45,7 +45,7 @@ namespace core
 #if defined(CORERENDER_UNIX)
 		munmap(page, size);
 #else
-		free(size);
+		free(page);
 #endif
 	}
 }

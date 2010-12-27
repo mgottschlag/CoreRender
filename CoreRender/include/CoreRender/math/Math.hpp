@@ -24,6 +24,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "StdInt.hpp"
 
+#define CR_PI 3.14159f
+
 namespace cr
 {
 namespace math
@@ -31,15 +33,14 @@ namespace math
 	struct Math
 	{
 		// TODO: Fast float functions go here
-		static const float pi = 3.14159f;
 
 		static float degToRad(float degrees)
 		{
-			return degrees * (pi / 180.0f);
+			return degrees * (CR_PI / 180.0f);
 		}
 		static float radToDeg(float radians)
 		{
-			return radians * (180.0f / pi);
+			return radians * (180.0f / CR_PI);
 		}
 
 

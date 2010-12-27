@@ -178,7 +178,7 @@ namespace core
 	filetime.dwLowDateTime = windowstime.LowPart;
 	filetime.dwHighDateTime = windowstime.HighPart;
 	SYSTEMTIME systemtime;
-	if (!FileTimeToSystemTime(filetime, systemtime))
+	if (!FileTimeToSystemTime(&filetime, &systemtime))
 		return "";
 	// Print date and time
 	std::ostringstream stream;
@@ -192,7 +192,7 @@ namespace core
 	{
 		stream << std::setfill('0') << std::setw(2) << systemtime.wHour << ":";
 		stream << std::setfill('0') << std::setw(2) << systemtime.wMinute << ":";
-		stream << std::setfill('0') << std::setw(2) << systemtime.mSecond;
+		stream << std::setfill('0') << std::setw(2) << systemtime.wSecond;
 		// Print sub-second time
 		if (subsecond)
 			stream << "." << std::setfill('0') << std::setw(3) << systemtime.wMilliseconds;
