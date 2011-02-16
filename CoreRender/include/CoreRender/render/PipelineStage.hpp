@@ -57,7 +57,7 @@ namespace render
 			bool success = true;
 			for (unsigned int i = 0; i < resources.size(); i++)
 			{
-				if (!resources[i]->waitForLoading(recursive, highpriority))
+				if (resources[i] && !resources[i]->waitForLoading(recursive, highpriority))
 					success = false;
 			}
 			return success;
