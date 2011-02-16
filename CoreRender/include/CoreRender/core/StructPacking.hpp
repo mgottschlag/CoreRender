@@ -28,7 +28,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	#define CORERENDER_PACK_BEGIN() ;\
 	__pragma(pack(push, 1))\
 	;
-	#define CORERENDER_PACK_END() __pragma(pack(pop))
+	#define CORERENDER_PACK_END() ;__pragma(pack(pop))
 #else
 	#define CORERENDER_PACK_BEGIN()
 	#define CORERENDER_PACK_END() __attribute__((packed))
