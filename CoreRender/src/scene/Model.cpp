@@ -312,6 +312,15 @@ namespace scene
 			                              getName().c_str());
 			return false;
 		}
+		// Read the global bounding box
+		// TODO: The resulting box is way too large if multiple models are
+		// packed into one model file
+		boundingbox.minCorner.x = header.boundingbox[0];
+		boundingbox.minCorner.y = header.boundingbox[1];
+		boundingbox.minCorner.z = header.boundingbox[2];
+		boundingbox.maxCorner.x = header.boundingbox[3];
+		boundingbox.maxCorner.y = header.boundingbox[4];
+		boundingbox.maxCorner.z = header.boundingbox[5];
 		// Read vertex and index data
 		void *vertexdata = malloc(header.vertexdatasize);
 		if (file->read(header.vertexdatasize, vertexdata) != (int)header.vertexdatasize)
@@ -367,7 +376,7 @@ namespace scene
 			batchdata[i].jointmatrices = std::vector<float>(geom.jointcount * 16);
 			if (file->read(jointsize, &batchdata[i].jointmatrices[0]) != jointsize)
 			{
-				getManager()->getLog()->error("%s: Could not joint matrices.",
+				getManager()->getLog()->error("%s: Could not read joint matrices.",
 				                              getName().c_str());
 				return false;
 			}

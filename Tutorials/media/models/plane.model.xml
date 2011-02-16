@@ -1,8 +1,7 @@
 <?xml version="1.0" ?>
 <Model geometry="plane.geo">
-    <Node name="&lt;3DSDummyRoot&gt;">
-        <Transformation>1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1</Transformation>
-        <Node name="3DSMesh_0">
+    <Node name="plane.obj">
+        <Node name="">
             <Mesh index="0" material="plane.material.xml" />
         </Node>
     </Node>

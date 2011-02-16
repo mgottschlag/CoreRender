@@ -45,6 +45,7 @@ namespace scene
 			unsigned int vertexdatasize;
 			unsigned int indexdatasize;
 			unsigned int batchcount;
+			float boundingbox[6];
 		}
 		CORERENDER_PACK_END();
 
@@ -100,6 +101,7 @@ namespace scene
 			AttribInfo attribs;
 			GeometryInfo geom;
 			std::vector<float> jointmatrices;
+			float boundingbox[6];
 		};
 	};
 }

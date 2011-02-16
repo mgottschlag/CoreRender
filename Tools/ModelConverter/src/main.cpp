@@ -10,6 +10,7 @@
 #include <fstream>
 #include <queue>
 #include <sstream>
+#include <CoreRender/math/Matrix4.hpp>
 
 using namespace cr;
 using namespace scene;
@@ -64,6 +65,7 @@ struct OutputInfo
 	void *vertexdata;
 	unsigned int indexdatasize;
 	void *indexdata;
+	float boundingbox[6];
 };
 
 void writeNode(const aiScene *scene,
@@ -251,6 +253,47 @@ AnimationFile::Frame getAnimationFrame(aiNodeAnim *channel, unsigned int time)
 	return frame;
 }
 
+void computeBoundingBox(const aiScene *scene, const aiNode *node,
+	aiMatrix4x4 transmat, bool swapxy, float *boundingbox)
+{
+	transmat = transmat * node->mTransformation;
+	math::Matrix4 matrix;
+	memcpy(matrix.m, &transmat.a1, 16 * sizeof(float));
+	for (unsigned int i = 0; i < node->mNumMeshes; i++)
+	{
+		aiMesh *mesh = scene->mMeshes[node->mMeshes[i]];
+		if (!mesh->HasPositions())
+			continue;
+		for (unsigned int j = 0; j < mesh->mNumVertices; j++)
+		{
+			math::Vector3F pos(mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z);
+			pos = matrix.transposed().transformPoint(pos);
+			if (pos.x < boundingbox[0])
+				boundingbox[0] = pos.x;
+			if (pos.y < boundingbox[1])
+				boundingbox[1] = pos.y;
+			if (pos.z < boundingbox[2])
+				boundingbox[2] = pos.z;
+			if (pos.x > boundingbox[3])
+				boundingbox[3] = pos.x;
+			if (pos.y > boundingbox[4])
+				boundingbox[4] = pos.y;
+			if (pos.z > boundingbox[5])
+				boundingbox[5] = pos.z;
+		}
+	}
+	for (unsigned int i = 0; i < node->mNumChildren; i++)
+	{
+		computeBoundingBox(scene, node->mChildren[i], transmat, swapxy, boundingbox);
+	}
+}
+void computeBoundingBox(const aiScene *scene, bool swapxy, float *boundingbox)
+{
+	for (unsigned int i = 0; i < 6; i++)
+		boundingbox[i] = 0;
+	computeBoundingBox(scene, scene->mRootNode, aiMatrix4x4(), swapxy, boundingbox);
+}
+
 int main(int argc, char **argv)
 {
 	// TODO: Make this a switchable setting
@@ -387,6 +430,9 @@ int main(int argc, char **argv)
 		unsigned int size = meshsrc->mNumVertices * attribs.stride;
 		batch.geom.vertexoffset = output.allocateVertexData(size);
 		batch.geom.vertexsize = size;
+		// Reset the bounding box
+		for (unsigned int i = 0; i < 6; i++)
+			batch.boundingbox[i] = 0;
 		// Fill data in
 		float *vertices = (float*)((char*)output.vertexdata + batch.geom.vertexoffset);
 		if (meshsrc->HasPositions())
@@ -404,6 +450,13 @@ int main(int argc, char **argv)
 				{
 					pos[1] = meshsrc->mVertices[j].y;
 					pos[2] = meshsrc->mVertices[j].z;
+				}
+				for (unsigned int i = 0; i < 3; i++)
+				{
+					if (pos[i] < batch.boundingbox[i])
+						batch.boundingbox[i] = pos[i];
+					if (pos[i] > batch.boundingbox[i + 3])
+						batch.boundingbox[i + 3] = pos[i];
 				}
 				pos = (float*)((char*)pos + batch.attribs.stride);
 			}
@@ -611,6 +664,9 @@ int main(int argc, char **argv)
 		// Add mesh to file
 		output.batches.push_back(batch);
 	}
+	// Compute the global bounding box
+	computeBoundingBox(scene, swapyz, output.boundingbox);
+	// TODO
 	// Get base file name
 	std::string filename = argv[1];
 	if (filename.rfind(".") != std::string::npos)
@@ -633,6 +689,10 @@ int main(int argc, char **argv)
 		header.vertexdatasize = output.vertexdatasize;
 		header.indexdatasize = output.indexdatasize;
 		header.batchcount = output.batches.size();
+		for (unsigned int i = 0; i < 6; i++)
+		{
+			header.boundingbox[i] = output.boundingbox[i];
+		}
 		file.write((char*)&header, sizeof(header));
 		std::cout << "Written:" << std::endl;
 		std::cout << output.vertexdatasize << " bytes vertices, ";

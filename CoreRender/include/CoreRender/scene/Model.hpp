@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "../res/Resource.hpp"
 #include "../math/Matrix4.hpp"
+#include "../math/BoundingBox.hpp"
 #include "../render/VertexBuffer.hpp"
 #include "../render/IndexBuffer.hpp"
 #include "../render/VertexLayout.hpp"
@@ -121,6 +122,15 @@ namespace scene
 				return -1;
 			}
 
+			void setBoundingBox(const math::BoundingBox &boundingbox)
+			{
+				this->boundingbox = boundingbox;
+			}
+			math::BoundingBox getBoundingBox()
+			{
+				return boundingbox;
+			}
+
 			std::vector<BatchGeometry> &getGeometry()
 			{
 				return geometry;
@@ -133,9 +143,17 @@ namespace scene
 			{
 				return batches;
 			}
+			void setVertices(render::VertexBuffer::Ptr vertices)
+			{
+				this->vertices = vertices;
+			}
 			render::VertexBuffer::Ptr getVertices()
 			{
 				return vertices;
+			}
+			void setIndices(render::IndexBuffer::Ptr indices)
+			{
+				this->indices = indices;
 			}
 			render::IndexBuffer::Ptr getIndices()
 			{
@@ -174,6 +192,8 @@ namespace scene
 			std::vector<Batch> batches;
 			render::VertexBuffer::Ptr vertices;
 			render::IndexBuffer::Ptr indices;
+
+			math::BoundingBox boundingbox;
 
 			unsigned int changecounter;
 	};
