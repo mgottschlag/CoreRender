@@ -215,6 +215,12 @@ namespace scene
 		if (!pipeline)
 			return 0;
 		core::MemoryPool *memory = queue->memory;
+		// Initialize camera uniforms
+		void *ptr = memory->allocate(sizeof(render::CameraUniforms));
+		render::CameraUniforms *camerauniforms = (render::CameraUniforms*)ptr;
+		camerauniforms->projmat = camera->getProjMat();
+		camerauniforms->viewmat = camera->getViewMat();
+		camerauniforms->viewer = camera->getViewMat().inverse().transformPoint(math::Vector3F(0, 0, 0));
 		// Only lights which are visible need to be drawn
 		std::vector<Light::Ptr> lights;
 		clipLights(camera, lights);
@@ -235,8 +241,7 @@ namespace scene
 					prepareTextures(frame, boundtextures, preparedtextures, memory);
 					// DrawGeometry commands render using only the camera itself
 					queue[queuecount].context = command->uintparams[0];
-					queue[queuecount].projmat = camera->getProjMat();
-					queue[queuecount].viewmat = camera->getViewMat();
+					queue[queuecount].camera = camerauniforms;
 					queue[queuecount].light = 0;
 					// TODO: Clipping
 					// Add draw command to the queue
@@ -289,8 +294,7 @@ namespace scene
 						// Light pass using the current camera and the light
 						// context
 						queue[queuecount].context = lights[i]->getLightContext();
-						queue[queuecount].projmat = camera->getProjMat();
-						queue[queuecount].viewmat = camera->getViewMat();
+						queue[queuecount].camera = camerauniforms;
 						queue[queuecount].light = light;
 						// TODO: Clipping
 						// Add draw command to the queue
@@ -359,6 +363,7 @@ namespace scene
 						lights[i]->getLightQuad(camera, cmd->drawquad.quad);
 						cmd->drawquad.material = material.get();
 						cmd->drawquad.shader = comb.get();
+						cmd->drawquad.camera = camerauniforms;
 						cmd->drawquad.light = light;
 						frame->addCommand(cmd);
 					}
@@ -445,6 +450,7 @@ namespace scene
 					cmd->drawquad.quad[2] = cmd->drawquad.quad[3] = 1.0f;
 					cmd->drawquad.material = mat;
 					cmd->drawquad.shader = comb.get();
+					cmd->drawquad.camera = camerauniforms;
 					cmd->drawquad.light = 0;
 					frame->addCommand(cmd);
 				}
@@ -477,7 +483,7 @@ namespace scene
 		cmd->bindtextures.texturecount = textures.size();
 		cmd->bindtextures.textures = prepared;
 		frame->addCommand(cmd);
-		
+
 	}
 
 	void Scene::insertSetTarget(render::SceneFrameData *frame,

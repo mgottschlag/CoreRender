@@ -77,7 +77,8 @@ namespace opengl
 			virtual void endFrame();
 
 			virtual void setMatrices(math::Matrix4 projmat,
-			                         math::Matrix4 viewmat);
+			                         math::Matrix4 viewmat,
+			                         math::Vector3F viewer);
 
 			virtual VideoDriverType::List getType()
 			{
@@ -117,7 +118,7 @@ namespace opengl
 			ShaderCombination *currentshader;
 			VertexBuffer *currentvertices;
 			IndexBuffer *currentindices;
-			
+
 			BlendMode::List currentblendmode;
 			bool currentdepthwrite;
 			DepthTest::List currentdepthtest;
@@ -127,6 +128,7 @@ namespace opengl
 			math::Matrix4 viewmat;
 			math::Matrix4 viewmatinv;
 			math::Matrix4 viewprojmat;
+			math::Vector3F viewer;
 
 			unsigned int targetwidth;
 			unsigned int targetheight;

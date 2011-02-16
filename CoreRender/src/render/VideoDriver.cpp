@@ -60,6 +60,10 @@ namespace render
 				            command->bindtextures.texturecount);
 				break;
 			case RenderCommandType::DrawQuad:
+				if (command->drawquad.camera)
+					setMatrices(command->drawquad.camera->projmat,
+					            command->drawquad.camera->viewmat,
+					            command->drawquad.camera->viewer);
 				drawQuad(command->drawquad.quad,
 				         command->drawquad.shader,
 				         command->drawquad.material,
@@ -74,7 +78,9 @@ namespace render
 	void VideoDriver::renderQueue(RenderQueue *queue)
 	{
 		// Setup common data
-		setMatrices(queue->projmat, queue->viewmat);
+		setMatrices(queue->camera->projmat,
+		            queue->camera->viewmat,
+		            queue->camera->viewer);
 		setLightUniforms(queue->light);
 		// Render batches
 		for (unsigned int i = 0; i < queue->batches.size(); i++)

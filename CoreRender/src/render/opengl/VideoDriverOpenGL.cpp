@@ -380,6 +380,8 @@ namespace opengl
 				glUniformMatrix4fv(locations.viewmatinv, 1, GL_FALSE, viewmatinv.m);
 			if (locations.viewprojmat != -1)
 				glUniformMatrix4fv(locations.viewprojmat, 1, GL_FALSE, viewprojmat.m);
+			if (locations.viewerpos != -1)
+				glUniform3f(locations.viewerpos, viewer.x, viewer.y, viewer.z);
 			if (batch->shader->skinning && locations.skinmat != -1)
 				glUniformMatrix4fv(locations.skinmat,
 				                   batch->skinmatcount,
@@ -498,6 +500,16 @@ namespace opengl
 		UniformLocations &locations = shader->uniforms;
 		if (locations.framebufsize != -1)
 			glUniform2f(locations.framebufsize, targetwidth, targetheight);
+		if (locations.projmat != -1)
+			glUniformMatrix4fv(locations.projmat, 1, GL_FALSE, projmat.m);
+		if (locations.viewmat != -1)
+			glUniformMatrix4fv(locations.viewmat, 1, GL_FALSE, viewmat.m);
+		if (locations.viewmatinv != -1)
+			glUniformMatrix4fv(locations.viewmatinv, 1, GL_FALSE, viewmatinv.m);
+		if (locations.viewprojmat != -1)
+			glUniformMatrix4fv(locations.viewprojmat, 1, GL_FALSE, viewprojmat.m);
+		if (locations.viewerpos != -1)
+			glUniform3f(locations.viewerpos, viewer.x, viewer.y, viewer.z);
 		if (light)
 		{
 			if (locations.lightpos != -1)
@@ -576,12 +588,14 @@ namespace opengl
 	}
 
 	void VideoDriverOpenGL::setMatrices(math::Matrix4 projmat,
-	                                    math::Matrix4 viewmat)
+	                                    math::Matrix4 viewmat,
+	                                    math::Vector3F viewer)
 	{
 		this->projmat = projmat;
 		this->viewmat = viewmat;
 		viewmatinv = viewmat.inverse();
 		viewprojmat = projmat * viewmat;
+		this->viewer = viewer;
 		// TODO: These should not only updated in the shader when necessary
 	}
 

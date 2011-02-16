@@ -72,13 +72,17 @@ namespace scene
 		                      * math::Matrix4::TransMat(-getPosition());
 		*shadowmat = projmat * viewmat;
 		// Create render queue
+		void *ptr = queue->memory->allocate(sizeof(render::CameraUniforms));
+		render::CameraUniforms *camerauniforms = (render::CameraUniforms*)ptr;
+		camerauniforms->projmat = projmat;
+		camerauniforms->viewmat = viewmat;
+		camerauniforms->viewer = viewmat.transformPoint(math::Vector3F(0, 0, 0));
 		queue->context = getShadowContext();
-		queue->projmat = projmat;
-		queue->viewmat = viewmat;
+		queue->camera = camerauniforms;
 		queue->light = uniforms;
 		// TODO: Clipping
 		// Add draw command to the queue
-		void *ptr = queue->memory->allocate(sizeof(render::RenderCommand));
+		ptr = queue->memory->allocate(sizeof(render::RenderCommand));
 		render::RenderCommand *cmd = (render::RenderCommand*)ptr;
 		cmd->type = render::RenderCommandType::RenderQueue;
 		cmd->renderqueue.queue = queue;

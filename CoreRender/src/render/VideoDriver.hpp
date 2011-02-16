@@ -185,7 +185,8 @@ namespace render
 			virtual void endFrame() = 0;
 
 			virtual void setMatrices(math::Matrix4 projmat,
-			                         math::Matrix4 viewmat) = 0;
+			                         math::Matrix4 viewmat,
+			                         math::Vector3F viewer) = 0;
 
 			void bindTextures(TextureBinding *textures, unsigned int texturecount)
 			{

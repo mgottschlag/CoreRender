@@ -107,6 +107,12 @@ namespace render
 		math::Matrix4 shadowmat;
 		Texture *shadowmap;
 	};
+	struct CameraUniforms
+	{
+		math::Matrix4 viewmat;
+		math::Matrix4 projmat;
+		math::Vector3F viewer;
+	};
 	struct RenderQueue
 	{
 		RenderQueue()
@@ -114,8 +120,7 @@ namespace render
 			// TODO: Resize batches?
 		}
 		unsigned int context;
-		math::Matrix4 projmat;
-		math::Matrix4 viewmat;
+		CameraUniforms *camera;
 		math::Frustum clipping[2];
 		std::vector<Batch*> batches;
 		tbb::mutex batchmutex;
@@ -163,6 +168,7 @@ namespace render
 				float quad[4];
 				ShaderCombination *shader;
 				Material *material;
+				CameraUniforms *camera;
 				LightUniforms *light;
 			} drawquad;
 		};
