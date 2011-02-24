@@ -22,16 +22,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender.hpp"
 
 #include <GL/glfw.h>
-#include <fstream>
 
 using namespace cr;
 
-math::Vector3F cameraRot(-40, 0, 0);
+math::Vector3F camerarot(-40, 0, 0);
 
 void mouseMovementListener(int x, int y)
 {
-	cameraRot = math::Vector3F(-y, -x, 0) * 0.1;
-	
+	camerarot = math::Vector3F(-y, -x, 0) * 0.1;
 }
 
 int main(int argc, char **argv)
@@ -71,10 +69,8 @@ int main(int argc, char **argv)
 	core::File::Ptr terrainfile = rmgr->getFileSystem()->open("/Terrain.data",
 	                                                          core::FileAccess::Read,
 	                                                          false);
-	//std::ifstream file("Terrain.data", std::ios_base::binary);
 	float *terraindata = new float[257 * 257];
 	terrainfile->read(257 * 257 * sizeof(float), terraindata);
-	//file.read((char*)terraindata, 257 * 257 * sizeof(float));
 	scene::Terrain::Ptr terrain = rmgr->createResource<scene::Terrain>("Terrain", "testterrain");
 	terrain->set(257, 257, 65, terraindata);
 	delete[] terraindata;
@@ -103,7 +99,7 @@ int main(int argc, char **argv)
 	bool stopping = false;
 	core::Time fpstime = core::Time::Now();
 	int fps = 0;
-	math::Vector3F cameraPos(0, 100, 0);
+	math::Vector3F camerapos(0, 100, 0);
 	while (!stopping)
 	{
 		// Process input
@@ -122,16 +118,13 @@ int main(int argc, char **argv)
 		movement = movement * 0.1;
 		if (fast)
 			movement = movement * 10;
-		math::Matrix4 rotationMat = math::Quaternion(cameraRot).toMatrix();
-		movement = rotationMat.transformPoint(movement);
-		cameraPos += movement;
-		math::Matrix4 viewMatInv = math::Matrix4::TransMat(cameraPos) * rotationMat;
-		viewmat = viewMatInv.inverse();
+		math::Matrix4 rotationmat = math::Quaternion(camerarot).toMatrix();
+		movement = rotationmat.transformPoint(movement);
+		camerapos += movement;
+		math::Matrix4 viewmatinv = math::Matrix4::TransMat(camerapos) * rotationmat;
+		viewmat = viewmatinv.inverse();
 		// Set animations
-		//viewmat = viewmat * math::Quaternion(math::Vector3F(0.0f, 0.1f, 0.0f)).toMatrix();
 		camera->setViewMat(viewmat);
-		//math::Matrix4 viewMatInv = viewmat.inverse();
-		math::Vector3F cameraPos = viewMatInv.transformPoint(math::Vector3F(0, 0, 0));
 		// Render objects
 		render::FrameData *frame = graphics.beginFrame();
 		render::SceneFrameData *scenedata = scene.beginFrame(frame);
@@ -141,7 +134,7 @@ int main(int argc, char **argv)
 		{
 			//terrain->render(renderqueues[i], math::Matrix4::ScaleMat(300.0f, 1.0f, 300.0f), cameraPos);
 			//terrain->render(renderqueues[i], math::Matrix4::TransMat(-512.0f, 0.0f, -512.0f) * math::Matrix4::ScaleMat(1024.0f, 1.0f, 1024.0f), math::Vector3F(100, 100, 200));
-			terrain->render(renderqueues[i], math::Matrix4::TransMat(-512.0f, 0.0f, -512.0f) * math::Matrix4::ScaleMat(1024.0f, 100.0f, 1024.0f), cameraPos);
+			terrain->render(renderqueues[i], math::Matrix4::TransMat(-512.0f, 0.0f, -512.0f) * math::Matrix4::ScaleMat(1024.0f, 100.0f, 1024.0f), camerapos);
 		}
 		graphics.endFrame(frame);
 		// Render frame
