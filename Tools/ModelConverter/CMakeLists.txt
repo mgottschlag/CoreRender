@@ -5,7 +5,7 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	include_directories(/usr/local/include/assimp)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-include_directories(../../CoreRender/src/3rdparty)
+include_directories(../../CoreRender/src/3rdparty ../../CoreRender/include)
 
 set(SRC
 	src/main.cpp
