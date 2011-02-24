@@ -218,8 +218,10 @@ namespace opengl
 	{
 		// Set viewport
 		glViewport(x, y, width, height);
-		targetwidth = width;
-		targetheight = height;
+		viewport[0] = x;
+		viewport[1] = y;
+		viewport[2] = width;
+		viewport[3] = height;
 	}
 	void VideoDriverOpenGL::clear(unsigned int buffers,
 	                              float *color,
@@ -229,6 +231,9 @@ namespace opengl
 			return;
 		glClearColor(color[0], color[1], color[2], color[3]);
 		glClearDepth(depth);
+		// We want to restrict clears to the current viewport
+		glScissor(viewport[0], viewport[1], viewport[2], viewport[3]);
+		glEnable(GL_SCISSOR_TEST);
 		// Enable writing to the buffers we want to write to
 		bool clearz = (buffers & 1) != 0;
 		if (clearz)
@@ -244,6 +249,7 @@ namespace opengl
 			glClear(GL_COLOR_BUFFER_BIT);
 		else
 			glClear(GL_DEPTH_BUFFER_BIT);
+		glDisable(GL_SCISSOR_TEST);
 		// Reset draw buffers again
 		// Note that we do not have to reset depth writes as this is a per-batch
 		// setting and is reset anyways if necessary
@@ -388,7 +394,7 @@ namespace opengl
 				                   GL_FALSE,
 				                   batch->skinmat);
 			if (locations.framebufsize != -1)
-				glUniform2f(locations.framebufsize, targetwidth, targetheight);
+				glUniform2f(locations.framebufsize, viewport[2], viewport[3]);
 			// TODO: Other uniforms
 			LightUniforms *light = getLightUniforms();
 			if (light)
@@ -499,7 +505,7 @@ namespace opengl
 		// TODO
 		UniformLocations &locations = shader->uniforms;
 		if (locations.framebufsize != -1)
-			glUniform2f(locations.framebufsize, targetwidth, targetheight);
+			glUniform2f(locations.framebufsize, viewport[2], viewport[3]);
 		if (locations.projmat != -1)
 			glUniformMatrix4fv(locations.projmat, 1, GL_FALSE, projmat.m);
 		if (locations.viewmat != -1)
@@ -571,8 +577,8 @@ namespace opengl
 		// Unbind render target
 		if (currentfb)
 		{
-			generateMipmaps(currentfb);
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+			generateMipmaps(currentfb);
 			currentfb = 0;
 		}
 		// TODO: Unbind buffers, textures, program

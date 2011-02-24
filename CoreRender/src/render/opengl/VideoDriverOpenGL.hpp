@@ -130,8 +130,7 @@ namespace opengl
 			math::Matrix4 viewprojmat;
 			math::Vector3F viewer;
 
-			unsigned int targetwidth;
-			unsigned int targetheight;
+			unsigned int viewport[4];
 
 			unsigned int instancingbuffer;
 	};

@@ -228,6 +228,7 @@ namespace scene
 		std::vector<render::TextureBinding> boundtextures;
 		render::TextureBinding *preparedtextures = 0;
 		render::RenderTarget::Ptr currenttarget = 0;
+		insertSetTarget(frame, currenttarget, camera, memory);
 		// We need to keep track of the current pipeline state as targets etc
 		// are set with a command but actually passed for every queue
 		for (unsigned int i = 0; i < pipeline->getStageCount(); i++)
@@ -491,7 +492,13 @@ namespace scene
 	                            Camera::Ptr camera,
 	                            core::MemoryPool *memory)
 	{
-		// TODO: Configurable viewport
+		// If we do not have any target, use the camera default target
+		bool defaulttarget = false;
+		if (!target)
+		{
+			target = camera->getTarget();
+			defaulttarget = true;
+		}
 		render::RenderTargetInfo *targetinfo = 0;
 		render::FrameBuffer::Ptr fb;
 		if (target)
@@ -507,7 +514,8 @@ namespace scene
 		render::RenderCommand *cmd = (render::RenderCommand*)ptr;
 		cmd->type = render::RenderCommandType::SetTarget;
 		cmd->settarget.target = targetinfo;
-		if (!targetinfo)
+		// If we use the camera target, we have to use the camera viewport
+		if (!targetinfo || defaulttarget)
 		{
 			// If we render to the final target, use the camera
 			// viewport
