@@ -178,7 +178,7 @@ namespace opengl
 	void TextureOpenGL::upload(void *data)
 	{
 		TextureData *uploaddata = (TextureData*)data;
-		unsigned int opengltype = translateTextureType(uploaddata->type);
+		opengltype = translateTextureType(uploaddata->type);
 		// Create the texture object if necessary
 		if (handle == 0)
 			glGenTextures(1, &handle);
