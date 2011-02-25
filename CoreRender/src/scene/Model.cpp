@@ -31,7 +31,8 @@ namespace cr
 {
 namespace scene
 {
-	Model::Model(cr::res::ResourceManager *rmgr, const std::string &name)
+	Model::Model(cr::res::ResourceManager *rmgr,
+	             const std::string &name)
 		: Resource(rmgr, name), changecounter(0)
 	{
 	}
@@ -117,7 +118,6 @@ namespace scene
 		render::Batch *batch = (render::Batch*)ptr;
 		batch->vertices = vertices.get();
 		batch->indices = indices.get();
-		// TODO: This will crash if the layout is removed
 		batch->layout = geom->layout.get();
 		batch->shader = shader;
 		batch->material = material.get();
@@ -437,7 +437,8 @@ namespace scene
 		if (elemcount == 0)
 			return 0;
 		// Create layout
-		render::VertexLayout::Ptr layout = new render::VertexLayout(elemcount);
+		render::VertexLayout::Ptr layout = new render::VertexLayout(getManager()->getUploadManager(),
+		                                                            elemcount);
 		// Set elements
 		unsigned int elemidx = 0;
 		if (attribs.flags & GeometryFile::AttribFlags::HasPositions)

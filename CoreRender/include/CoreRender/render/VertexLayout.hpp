@@ -22,7 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_VERTEXLAYOUT_HPP_INCLUDED_
 #define _CORERENDER_RENDER_VERTEXLAYOUT_HPP_INCLUDED_
 
-#include "../core/ReferenceCounted.hpp"
+#include "RenderObject.hpp"
 
 #include <string>
 
@@ -106,15 +106,19 @@ namespace cr
 		 * @endcode
 		 * @note Do not modify existing instances of this class while they are
 		 * in use. Rather think about creating a new instance and using that.
+		 * @note This class is a RenderObject even if it does not upload
+		 * anything because it can only be deleted when the render thread is not
+		 * using it anymore even if it does not store it in a SharedPointer.
 		 */
-		class VertexLayout : public core::ReferenceCounted
+		class VertexLayout : public RenderObject
 		{
 			public:
 				/**
 				 * Constructor.
 				 * @param elemcount Number of elements in the layout.
 				 */
-				VertexLayout(unsigned int elemcount) : elemcount(elemcount)
+				VertexLayout(UploadManager &uploadmgr, unsigned int elemcount)
+					: RenderObject(uploadmgr), elemcount(elemcount)
 				{
 					elements = new VertexLayoutElement[elemcount];
 				}
@@ -222,7 +226,15 @@ namespace cr
 					}
 				}
 
+				virtual void upload(void *data)
+				{
+				}
+
 				typedef core::SharedPointer<VertexLayout> Ptr;
+			protected:
+				virtual void *getUploadData()
+				{
+				}
 			private:
 				unsigned int elemcount;
 				VertexLayoutElement *elements;

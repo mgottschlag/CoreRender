@@ -33,6 +33,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace cr
 {
+namespace render
+{
+	class UploadManager;
+}
 namespace res
 {
 	class LoadingThread;
@@ -54,7 +58,9 @@ namespace res
 			 * @param fs File system to be used for resource loading.
 			 * @param log Log writer to be used for the resource system.
 			 */
-			ResourceManager(core::FileSystem::Ptr fs, core::Log::Ptr log);
+			ResourceManager(render::UploadManager &uploadmgr,
+			                core::FileSystem::Ptr fs,
+			                core::Log::Ptr log);
 			/**
 			 * Destructor.
 			 */
@@ -68,7 +74,7 @@ namespace res
 			/**
 			 * Destroys the resource manager.
 			 * @note All resources have to be destroyed prior to this.
-			 * @return Returns false if 
+			 * @return Returns false if an error occurred.
 			 */
 			bool shutdown();
 
@@ -258,11 +264,26 @@ namespace res
 				return log;
 			}
 
+			/**
+			 * Returns the name registry to be used with the resource manager.
+			 *
+			 * This is used to create simple int handles from strings.
+			 */
 			NameRegistry &getNameRegistry()
 			{
 				return names;
 			}
+
+			/**
+			 * Returns the upload manager used for render resources.
+			 */
+			render::UploadManager &getUploadManager()
+			{
+				return uploadmgr;
+			}
 		private:
+			render::UploadManager &uploadmgr;
+
 			typedef std::map<std::string, Resource*> ResourceMap;
 			ResourceMap resources;
 

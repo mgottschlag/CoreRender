@@ -23,7 +23,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_SCENE_MODEL_HPP_INCLUDED_
 
 #include "../res/Resource.hpp"
-#include <GameMath.hpp>
 #include "../math/BoundingBox.hpp"
 #include "../render/VertexBuffer.hpp"
 #include "../render/IndexBuffer.hpp"
@@ -31,6 +30,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "../render/Material.hpp"
 #include "GeometryFile.hpp"
 
+#include <GameMath.hpp>
 #include <vector>
 
 class TiXmlElement;
@@ -47,7 +47,8 @@ namespace scene
 	class Model : public res::Resource
 	{
 		public:
-			Model(cr::res::ResourceManager* rmgr, const std::string& name);
+			Model(res::ResourceManager* rmgr,
+			      const std::string& name);
 			virtual ~Model();
 
 			void render(render::RenderQueue &queue,

@@ -34,9 +34,10 @@ namespace cr
 {
 namespace res
 {
-	ResourceManager::ResourceManager(core::FileSystem::Ptr fs,
-		core::Log::Ptr log)
-		: namecounter(0), fs(fs), log(log)
+	ResourceManager::ResourceManager(render::UploadManager &uploadmgr,
+	                                 core::FileSystem::Ptr fs,
+	                                 core::Log::Ptr log)
+		: uploadmgr(uploadmgr), namecounter(0), fs(fs), log(log)
 	{
 		// Start loading thread
 		thread = new LoadingThread(log);

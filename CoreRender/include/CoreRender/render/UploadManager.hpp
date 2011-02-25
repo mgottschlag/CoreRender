@@ -24,7 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "FrameData.hpp"
 
-#include <tbb/spin_mutex.h>
+#include <tbb/mutex.h>
 
 namespace cr
 {
@@ -71,7 +71,7 @@ namespace render
 			}
 		private:
 			// TODO: Mutex type?
-			tbb::spin_mutex listmutex;
+			tbb::mutex listmutex;
 			std::vector<RenderResource*> resupload;
 			std::vector<RenderResource*> resdeletion;
 			std::vector<RenderObject*> objupload;

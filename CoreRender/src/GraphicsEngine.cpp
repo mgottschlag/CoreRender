@@ -44,9 +44,6 @@ namespace cr
 				uploadmgr(uploadmgr)
 			{
 			}
-			virtual ~TextureFactory()
-			{
-			}
 
 			virtual res::Resource::Ptr create(const std::string &name)
 			{
@@ -64,9 +61,6 @@ namespace cr
 			                    res::ResourceManager *rmgr)
 				: res::ResourceFactory(rmgr), driver(driver),
 				uploadmgr(uploadmgr)
-			{
-			}
-			virtual ~VertexBufferFactory()
 			{
 			}
 
@@ -88,9 +82,6 @@ namespace cr
 				uploadmgr(uploadmgr)
 			{
 			}
-			virtual ~IndexBufferFactory()
-			{
-			}
 
 			virtual res::Resource::Ptr create(const std::string &name)
 			{
@@ -108,9 +99,6 @@ namespace cr
 			              res::ResourceManager *rmgr)
 				: res::ResourceFactory(rmgr), driver(driver),
 				uploadmgr(uploadmgr)
-			{
-			}
-			virtual ~ShaderFactory()
 			{
 			}
 
@@ -132,9 +120,6 @@ namespace cr
 				uploadmgr(uploadmgr)
 			{
 			}
-			virtual ~FrameBufferFactory()
-			{
-			}
 
 			virtual res::Resource::Ptr create(const std::string &name)
 			{
@@ -150,9 +135,6 @@ namespace cr
 			MaterialFactory(render::UploadManager &uploadmgr,
 			                res::ResourceManager *rmgr)
 				: res::ResourceFactory(rmgr), uploadmgr(uploadmgr)
-			{
-			}
-			virtual ~MaterialFactory()
 			{
 			}
 
@@ -187,7 +169,7 @@ namespace cr
 		log->info("CoreRender initializing.");
 		// TODO: Version information
 		// Initialize resource manager
-		rmgr = new res::ResourceManager(fs, log);
+		rmgr = new res::ResourceManager(uploadmgr, fs, log);
 		if (!rmgr->init())
 		{
 			log->error("Could not initialize resource manager.");

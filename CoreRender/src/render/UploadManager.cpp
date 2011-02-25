@@ -36,29 +36,29 @@ namespace render
 
 	void UploadManager::registerUpload(RenderResource *resource)
 	{
-		tbb::spin_mutex::scoped_lock lock(listmutex);
+		tbb::mutex::scoped_lock lock(listmutex);
 		resupload.push_back(resource);
 	}
 	void UploadManager::registerDeletion(RenderResource *resource)
 	{
-		tbb::spin_mutex::scoped_lock lock(listmutex);
+		tbb::mutex::scoped_lock lock(listmutex);
 		resdeletion.push_back(resource);
 	}
 	void UploadManager::registerUpload(RenderObject *object)
 	{
-		tbb::spin_mutex::scoped_lock lock(listmutex);
+		tbb::mutex::scoped_lock lock(listmutex);
 		objupload.push_back(object);
 	}
 	void UploadManager::registerDeletion(RenderObject *object)
 	{
-		tbb::spin_mutex::scoped_lock lock(listmutex);
+		tbb::mutex::scoped_lock lock(listmutex);
 		objdeletion.push_back(object);
 	}
 
 	void UploadManager::getLists(UploadLists &lists, core::MemoryPool *memory)
 	{
 		{
-			tbb::spin_mutex::scoped_lock lock(listmutex);
+			tbb::mutex::scoped_lock lock(listmutex);
 			// Get resource upload list
 			unsigned int memsize = sizeof(UploadLists::ResourceUploadEntry) * resupload.size();
 			lists.resupload = (UploadLists::ResourceUploadEntry*)memory->allocate(memsize);

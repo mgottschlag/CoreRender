@@ -36,7 +36,7 @@ namespace scene
 	{
 		vertices = rmgr->createResource<render::VertexBuffer>("VertexBuffer");
 		indices = rmgr->createResource<render::IndexBuffer>("IndexBuffer");
-		layout = new render::VertexLayout(1);
+		layout = new render::VertexLayout(getManager()->getUploadManager(), 1);
 		layout->setElement(0, rmgr->getNameRegistry().getAttrib("pos"), 0, 3, 0,
 			render::VertexElementType::Float, 0);
 		displacementmap = rmgr->createResource<render::Texture>("Texture");
