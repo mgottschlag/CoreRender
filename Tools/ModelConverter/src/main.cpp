@@ -10,7 +10,7 @@
 #include <fstream>
 #include <queue>
 #include <sstream>
-#include <CoreRender/math/Matrix4.hpp>
+#include <GameMath.hpp>
 
 using namespace cr;
 using namespace scene;
@@ -257,7 +257,7 @@ void computeBoundingBox(const aiScene *scene, const aiNode *node,
 	aiMatrix4x4 transmat, bool swapxy, float *boundingbox)
 {
 	transmat = transmat * node->mTransformation;
-	math::Matrix4 matrix;
+	math::Mat4f matrix;
 	memcpy(matrix.m, &transmat.a1, 16 * sizeof(float));
 	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
@@ -266,7 +266,7 @@ void computeBoundingBox(const aiScene *scene, const aiNode *node,
 			continue;
 		for (unsigned int j = 0; j < mesh->mNumVertices; j++)
 		{
-			math::Vector3F pos(mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z);
+			math::Vec3f pos(mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z);
 			pos = matrix.transposed().transformPoint(pos);
 			if (pos.x < boundingbox[0])
 				boundingbox[0] = pos.x;

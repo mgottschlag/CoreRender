@@ -56,8 +56,8 @@ namespace scene
 			struct NodeAnimationInfo
 			{
 				bool updated;
-				math::Vector3F trans;
-				math::Vector3F scale;
+				math::Vec3f trans;
+				math::Vec3f scale;
 				math::Quaternion rot;
 			};
 
@@ -69,10 +69,10 @@ namespace scene
 			unsigned int getAnimationCount();
 
 			void render(render::RenderQueue &queue,
-			            math::Matrix4 transmat);
+			            math::Mat4f transmat);
 			void render(render::RenderQueue &queue,
 			            unsigned int instancecount,
-			            math::Matrix4 *transmat);
+			            math::Mat4f *transmat);
 
 			typedef core::SharedPointer<AnimatedModel> Ptr;
 		private:

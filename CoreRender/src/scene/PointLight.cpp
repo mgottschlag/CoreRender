@@ -63,8 +63,8 @@ namespace scene
 	{
 		// To find out the bounds of the light quad in screen space, we need
 		// to transform the bounding box of the light
-		math::BoundingBox lightbb(getPosition() + math::Vector3F(-radius, -radius, -radius),
-		                          getPosition() + math::Vector3F(radius, radius, radius));
+		math::BoundingBox lightbb(getPosition() + math::Vec3f(-radius, -radius, -radius),
+		                          getPosition() + math::Vec3f(radius, radius, radius));
 		lightbb = lightbb.transform(camera->getViewMat()).transform(camera->getProjMat());
 		quad[0] = lightbb.minCorner.x;
 		quad[1] = lightbb.minCorner.y;

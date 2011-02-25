@@ -70,8 +70,8 @@ namespace scene
 	}
 
 	void Terrain::render(render::RenderQueue &queue,
-	                     math::Matrix4 transmat,
-	                     math::Vector3F camerapos)
+	                     math::Mat4f transmat,
+	                     math::Vec3f camerapos)
 	{
 		// Allocate global uniforms
 		core::MemoryPool *memory = queue.memory;
@@ -91,8 +91,8 @@ namespace scene
 		texcoordscale.data = uniformdata;
 		// For calculating the LODs we need the camera position in the local
 		// coordinate system
-		math::Matrix4 transmatinv = transmat.inverse();
-		math::Vector3F localcamerapos = transmatinv.transformPoint(camerapos);
+		math::Mat4f transmatinv = transmat.inverse();
+		math::Vec3f localcamerapos = transmatinv.transformPoint(camerapos);
 
 		unsigned int maxdepth = log2((sizex - 1) / (patchsize - 1));
 
@@ -185,7 +185,7 @@ namespace scene
 
 	void Terrain::setDisplacement(unsigned int x,
 	                              unsigned int z,
-	                              math::Vector3F displacement)
+	                              math::Vec3f displacement)
 	{
 	}
 	void Terrain::setDisplacement(unsigned int x,
@@ -194,10 +194,10 @@ namespace scene
 	{
 		// TODO
 	}
-	math::Vector3F Terrain::getDisplacement(int x, int z)
+	math::Vec3f Terrain::getDisplacement(int x, int z)
 	{
 		// TODO
-		return math::Vector3F(0, 0, 0);
+		return math::Vec3f(0, 0, 0);
 	}
 
 	bool Terrain::load()
@@ -486,7 +486,7 @@ namespace scene
 	}
 
 	void Terrain::renderPatch(render::RenderQueue &queue,
-	                          math::Matrix4 transmat,
+	                          math::Mat4f transmat,
 	                          unsigned int lod,
 	                          float *offsetscale,
 	                          render::CustomUniform &texcoordscale)
@@ -547,16 +547,16 @@ namespace scene
 	}
 
 	void Terrain::renderRecursively(render::RenderQueue &queue,
-	                                math::Matrix4 transmat,
+	                                math::Mat4f transmat,
 	                                unsigned int maxdepth,
-	                                math::Vector3F camerapos,
+	                                math::Vec3f camerapos,
 	                                float *offsetscale,
 	                                render::CustomUniform &texcoordscale)
 	{
 		// TODO: Clipping
-		math::Vector2F center(offsetscale[0] + offsetscale[2] * 0.5f,
-		                      offsetscale[1] + offsetscale[3] * 0.5f);
-		float cameradist = (center - math::Vector2F(camerapos.x, camerapos.z)).getLength();
+		math::Vec2f center(offsetscale[0] + offsetscale[2] * 0.5f,
+		                   offsetscale[1] + offsetscale[3] * 0.5f);
+		float cameradist = (center - math::Vec2f(camerapos.x, camerapos.z)).getLength();
 		if (cameradist < offsetscale[2] * 1.5 && maxdepth > 0)
 		{
 			float offsetscale1[4] =

@@ -23,8 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_SCENE_TERRAIN_HPP_INCLUDED_
 
 #include "../res/Resource.hpp"
-#include "../math/Vector3.hpp"
-#include "../math/Vector2.hpp"
+#include <GameMath.hpp>
 #include "../render/Texture.hpp"
 #include "../render/VertexBuffer.hpp"
 #include "../render/IndexBuffer.hpp"
@@ -45,8 +44,8 @@ namespace scene
 			virtual ~Terrain();
 
 			void render(render::RenderQueue &queue,
-			            math::Matrix4 transmat,
-			            math::Vector3F camerapos);
+			            math::Mat4f transmat,
+			            math::Vec3f camerapos);
 
 			void set(unsigned int sizex,
 			         unsigned int sizez,
@@ -55,11 +54,11 @@ namespace scene
 
 			void setDisplacement(unsigned int x,
 			                     unsigned int z,
-			                     math::Vector3F displacement);
+			                     math::Vec3f displacement);
 			void setDisplacement(unsigned int x,
 			                     unsigned int z,
 			                     float height);
-			math::Vector3F getDisplacement(int x, int z);
+			math::Vec3f getDisplacement(int x, int z);
 
 			/**
 			 * Discards the displacement data in RAM and only keeps the copy in
@@ -68,9 +67,9 @@ namespace scene
 			 */
 			void discardDisplacementData();
 
-			math::Vector2I getSize()
+			math::Vec2u getSize()
 			{
-				return math::Vector2I(sizex, sizez);
+				return math::Vec2u(sizex, sizez);
 			}
 
 			void setMaterial(render::Material::Ptr material)
@@ -98,14 +97,14 @@ namespace scene
 			void updateGeometry(unsigned int patchsize);
 
 			void renderPatch(render::RenderQueue &queue,
-			                 math::Matrix4 transmat,
+			                 math::Mat4f transmat,
 			                 unsigned int lod,
 			                 float *offsetscale,
 			                 render::CustomUniform &texcoordscale);
 			void renderRecursively(render::RenderQueue &queue,
-			                       math::Matrix4 transmat,
+			                       math::Mat4f transmat,
 			                       unsigned int maxdepth,
-			                       math::Vector3F camerapos,
+			                       math::Vec3f camerapos,
 			                       float *offsetscale,
 			                       render::CustomUniform &texcoordscale);
 

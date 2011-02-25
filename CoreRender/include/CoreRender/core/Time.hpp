@@ -22,7 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_CORE_TIME_HPP_INCLUDED_
 #define _CORERENDER_CORE_TIME_HPP_INCLUDED_
 
-#include "../math/StdInt.hpp"
+#include "GameMath.hpp"
 
 #include <string>
 
@@ -64,7 +64,7 @@ namespace core
 			 * @param hours Value of the time span.
 			 * @return Time span.
 			 */
-			static Duration Hours(int64_t hours)
+			static Duration Hours(math::int64 hours)
 			{
 				Duration d;
 				d.duration = hours * 3600000000000LL;
@@ -75,7 +75,7 @@ namespace core
 			 * @param minutes Value of the time span.
 			 * @return Time span.
 			 */
-			static Duration Minutes(int64_t minutes)
+			static Duration Minutes(math::int64 minutes)
 			{
 				Duration d;
 				d.duration = minutes * 60000000000LL;
@@ -86,7 +86,7 @@ namespace core
 			 * @param seconds Value of the time span.
 			 * @return Time span.
 			 */
-			static Duration Seconds(int64_t seconds)
+			static Duration Seconds(math::int64 seconds)
 			{
 				Duration d;
 				d.duration = seconds * 1000000000LL;
@@ -97,7 +97,7 @@ namespace core
 			 * @param microseconds Value of the time span.
 			 * @return Time span.
 			 */
-			static Duration Microseconds(int64_t microseconds)
+			static Duration Microseconds(math::int64 microseconds)
 			{
 				Duration d;
 				d.duration = microseconds * 1000;
@@ -108,7 +108,7 @@ namespace core
 			 * @param nanoseconds Value of the time span.
 			 * @return Time span.
 			 */
-			static Duration Nanoseconds(int64_t nanoseconds)
+			static Duration Nanoseconds(math::int64 nanoseconds)
 			{
 				Duration d;
 				d.duration = nanoseconds;
@@ -119,7 +119,7 @@ namespace core
 			 * Returns the value of the time span in nanoseconds.
 			 * @return Value of the time span.
 			 */
-			int64_t getNanoseconds() const
+			math::int64 getNanoseconds() const
 			{
 				return duration;
 			}
@@ -127,7 +127,7 @@ namespace core
 			 * Returns the value of the time span in microseconds.
 			 * @return Value of the time span.
 			 */
-			int64_t getMicroseconds() const
+			math::int64 getMicroseconds() const
 			{
 				return duration / 1000;
 			}
@@ -135,7 +135,7 @@ namespace core
 			 * Returns the value of the time span in milliseconds.
 			 * @return Value of the time span.
 			 */
-			int64_t getMilliseconds() const
+			math::int64 getMilliseconds() const
 			{
 				return duration / 1000000;
 			}
@@ -143,7 +143,7 @@ namespace core
 			 * Returns the value of the time span in seconds.
 			 * @return Value of the time span.
 			 */
-			int64_t getSeconds() const
+			math::int64 getSeconds() const
 			{
 				return duration / 1000000000LL;
 			}
@@ -151,7 +151,7 @@ namespace core
 			 * Returns the value of the time span in minutes.
 			 * @return Value of the time span.
 			 */
-			int64_t getMinutes() const
+			math::int64 getMinutes() const
 			{
 				return duration / 60000000000LL;
 			}
@@ -159,7 +159,7 @@ namespace core
 			 * Returns the value of the time span in hours.
 			 * @return Value of the time span.
 			 */
-			int64_t getHours() const
+			math::int64 getHours() const
 			{
 				return duration / 3600000000000LL;
 			}
@@ -217,7 +217,7 @@ namespace core
 			friend class Time;
 			friend class AbsoluteTime;
 
-			int64_t duration;
+			math::int64 duration;
 	};
 
 	/**
@@ -271,7 +271,7 @@ namespace core
 			 * @param nanoseconds Time in nanoseconds for which execution
 			 * shall be paused.
 			 */
-			static void sleep(uint64_t nanoseconds);
+			static void sleep(math::uint64 nanoseconds);
 
 			Duration operator-(Time &other) const
 			{
@@ -327,7 +327,7 @@ namespace core
 				return time != t.time;
 			}
 		private:
-			int64_t time;
+			math::int64 time;
 	};
 
 	/**
@@ -445,7 +445,7 @@ namespace core
 				return time != t.time;
 			}
 		private:
-			int64_t time;
+			math::int64 time;
 	};
 }
 }

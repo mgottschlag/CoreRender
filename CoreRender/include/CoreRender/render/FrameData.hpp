@@ -22,7 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_FRAMEDATA_HPP_INCLUDED_
 #define _CORERENDER_RENDER_FRAMEDATA_HPP_INCLUDED_
 
-#include "../math/Matrix4.hpp"
+#include "GameMath.hpp"
 #include "../math/Frustum.hpp"
 #include "FrameBuffer.hpp"
 
@@ -64,7 +64,7 @@ namespace render
 		ShaderCombination *shader;
 		// TODO: Do we want the whole material here?
 		Material *material;
-		math::Matrix4 transmat;
+		math::Mat4f transmat;
 
 		unsigned int customuniformcount;
 		CustomUniform *customuniforms;
@@ -81,7 +81,7 @@ namespace render
 		unsigned int skinmatcount;
 		// Instancing
 		unsigned int transmatcount;
-		math::Matrix4 *transmatlist;
+		math::Mat4f *transmatlist;
 	};
 	struct RenderCommandType
 	{
@@ -104,14 +104,14 @@ namespace render
 		float position[4];
 		float direction[3];
 		float color[4];
-		math::Matrix4 shadowmat;
+		math::Mat4f shadowmat;
 		Texture *shadowmap;
 	};
 	struct CameraUniforms
 	{
-		math::Matrix4 viewmat;
-		math::Matrix4 projmat;
-		math::Vector3F viewer;
+		math::Mat4f viewmat;
+		math::Mat4f projmat;
+		math::Vec3f viewer;
 	};
 	struct RenderQueue
 	{

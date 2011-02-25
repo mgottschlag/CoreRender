@@ -22,12 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_MATH_BOUNDINGBOX_HPP_INCLUDED_
 #define _CORERENDER_MATH_BOUNDINGBOX_HPP_INCLUDED_
 
-#include "Vector3.hpp"
-#include "Vector4.hpp"
-#include "Matrix4.hpp"
+#include <GameMath.hpp>
 
-namespace cr
-{
 namespace math
 {
 	/**
@@ -51,7 +47,7 @@ namespace math
 			 * @param minCorner Point with the largest values for all components which
 			 * is still in the box.
 			 */
-			BoundingBox(const Vector3F &minCorner, const Vector3F &maxCorner)
+			BoundingBox(const Vec3f &minCorner, const Vec3f &maxCorner)
 				: minCorner(minCorner), maxCorner(maxCorner)
 			{
 			}
@@ -59,40 +55,40 @@ namespace math
 			 * Constructor. Creates an empty box.
 			 * @param center Center of the bounding box.
 			 */
-			BoundingBox(const Vector3F &center)
+			BoundingBox(const Vec3f &center)
 				: minCorner(center), maxCorner(center)
 			{
 			}
 
-			Vector3F getCorner(unsigned int index)
+			Vec3f getCorner(unsigned int index)
 			{
 				switch (index)
 				{
 					case 0:
-						return Vector3F(minCorner.x, minCorner.y, minCorner.z);
+						return Vec3f(minCorner.x, minCorner.y, minCorner.z);
 					case 1:
-						return Vector3F(maxCorner.x, minCorner.y, minCorner.z);
+						return Vec3f(maxCorner.x, minCorner.y, minCorner.z);
 					case 2:
-						return Vector3F(maxCorner.x, maxCorner.y, minCorner.z);
+						return Vec3f(maxCorner.x, maxCorner.y, minCorner.z);
 					case 3:
-						return Vector3F(minCorner.x, maxCorner.y, minCorner.z);
+						return Vec3f(minCorner.x, maxCorner.y, minCorner.z);
 					case 4:
-						return Vector3F(minCorner.x, minCorner.y, maxCorner.z);
+						return Vec3f(minCorner.x, minCorner.y, maxCorner.z);
 					case 5:
-						return Vector3F(maxCorner.x, minCorner.y, maxCorner.z);
+						return Vec3f(maxCorner.x, minCorner.y, maxCorner.z);
 					case 6:
-						return Vector3F(maxCorner.x, maxCorner.y, maxCorner.z);
+						return Vec3f(maxCorner.x, maxCorner.y, maxCorner.z);
 					case 7:
-						return Vector3F(minCorner.x, maxCorner.y, maxCorner.z);
+						return Vec3f(minCorner.x, maxCorner.y, maxCorner.z);
 					default:
-						return Vector3F(0, 0, 0);
+						return Vec3f(0, 0, 0);
 				}
 			}
 			/**
 			 * Returns the center of the bounding box.
 			 * @return Center of the box.
 			 */
-			Vector3F getCenter()
+			Vec3f getCenter()
 			{
 				return (minCorner + maxCorner) * 0.5f;
 			}
@@ -100,7 +96,7 @@ namespace math
 			 * Returns the size of the bounding box.
 			 * @return Size of the box.
 			 */
-			Vector3F getSize()
+			Vec3f getSize()
 			{
 				return maxCorner - minCorner;
 			}
@@ -109,7 +105,7 @@ namespace math
 			 * Inserts a point into the bounding box and enlarges the box so
 			 * that it contains the point if necessary.
 			 */
-			void insert(const Vector3F &point)
+			void insert(const Vec3f &point)
 			{
 				if (minCorner.x < point.x)
 					minCorner.x = point.x;
@@ -140,7 +136,7 @@ namespace math
 			 * @param transformation Transformation matrix.
 			 * @return Transformed bounding box.
 			 */
-			BoundingBox transform(const Matrix4 &transformation)
+			BoundingBox transform(const Mat4f &transformation)
 			{
 				// Construct empty box from first corner
 				// If we do not initialize the box like this, (0/0/0) would
@@ -157,7 +153,7 @@ namespace math
 			 * @param point Point to check.
 			 * @return True if the point is in the box.
 			 */
-			bool isInside(const Vector3F &point)
+			bool isInside(const Vec3f &point)
 			{
 				// TODO: This function uses a different notation compared to
 				// the frustum functions
@@ -179,13 +175,12 @@ namespace math
 			/**
 			 * Minimum coordinates of all points in the bounding box.
 			 */
-			Vector3F minCorner;
+			Vec3f minCorner;
 			/**
 			 * Maximum coordinates of all points in the bounding box.
 			 */
-			Vector3F maxCorner;
+			Vec3f maxCorner;
 	};
-}
 }
 
 #endif

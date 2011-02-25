@@ -25,8 +25,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "../core/ReferenceCounted.hpp"
 #include "../core/Color.hpp"
 #include "../render/Material.hpp"
-#include "../math/Vector3.hpp"
 #include "Camera.hpp"
+
+#include <GameMath.hpp>
 
 namespace cr
 {
@@ -53,20 +54,20 @@ namespace scene
 				return color;
 			}
 
-			void setPosition(math::Vector3F position)
+			void setPosition(math::Vec3f position)
 			{
 				this->position = position;
 			}
-			math::Vector3F getPosition()
+			math::Vec3f getPosition()
 			{
 				return position;
 			}
 
-			void setDirection(math::Vector3F direction)
+			void setDirection(math::Vec3f direction)
 			{
 				this->direction = direction;
 			}
-			math::Vector3F getDirection()
+			math::Vec3f getDirection()
 			{
 				return direction;
 			}
@@ -100,7 +101,7 @@ namespace scene
 			virtual void prepareShadowMaps(render::SceneFrameData *frame,
 			                               render::RenderQueue *queue,
 			                               Camera::Ptr camera,
-			                               math::Matrix4 *shadowmat,
+			                               math::Mat4f *shadowmat,
 			                               render::LightUniforms *uniforms);
 			virtual void getLightQuad(Camera::Ptr camera,
 			                          float *quad) = 0;
@@ -120,8 +121,8 @@ namespace scene
 		private:
 			core::Color color;
 
-			math::Vector3F position;
-			math::Vector3F direction;
+			math::Vec3f position;
+			math::Vec3f direction;
 
 			render::Material::Ptr deferredmat;
 			int lightcontext;

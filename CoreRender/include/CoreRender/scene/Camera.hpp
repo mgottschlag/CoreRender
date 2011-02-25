@@ -25,7 +25,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "../core/ReferenceCounted.hpp"
 #include "../render/Pipeline.hpp"
 #include "../render/RenderTarget.hpp"
-#include "../math/Matrix4.hpp"
+
+#include <GameMath.hpp>
 
 namespace cr
 {
@@ -55,19 +56,19 @@ namespace scene
 				return target;
 			}
 
-			void setProjMat(math::Matrix4 projmat)
+			void setProjMat(math::Mat4f projmat)
 			{
 				this->projmat = projmat;
 			}
-			math::Matrix4 getProjMat()
+			math::Mat4f getProjMat()
 			{
 				return projmat;
 			}
-			void setViewMat(math::Matrix4 viewmat)
+			void setViewMat(math::Mat4f viewmat)
 			{
 				this->viewmat = viewmat;
 			}
-			math::Matrix4 getViewMat()
+			math::Mat4f getViewMat()
 			{
 				return viewmat;
 			}
@@ -93,8 +94,8 @@ namespace scene
 			render::RenderTarget::Ptr target;
 
 			unsigned int viewport[4];
-			math::Matrix4 projmat;
-			math::Matrix4 viewmat;
+			math::Mat4f projmat;
+			math::Mat4f viewmat;
 	};
 }
 }

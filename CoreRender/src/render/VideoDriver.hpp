@@ -31,7 +31,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/Shader.hpp"
 #include "CoreRender/render/RenderStats.hpp"
 #include "CoreRender/render/FrameBuffer.hpp"
-#include "CoreRender/math/Matrix4.hpp"
 
 namespace cr
 {
@@ -184,9 +183,9 @@ namespace render
 			 */
 			virtual void endFrame() = 0;
 
-			virtual void setMatrices(math::Matrix4 projmat,
-			                         math::Matrix4 viewmat,
-			                         math::Vector3F viewer) = 0;
+			virtual void setMatrices(math::Mat4f projmat,
+			                         math::Mat4f viewmat,
+			                         math::Vec3f viewer) = 0;
 
 			void bindTextures(TextureBinding *textures, unsigned int texturecount)
 			{

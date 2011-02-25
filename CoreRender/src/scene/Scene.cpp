@@ -27,6 +27,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/res/ResourceManager.hpp"
 
 #include <cstring>
+#include <iostream>
 
 namespace cr
 {
@@ -220,7 +221,7 @@ namespace scene
 		render::CameraUniforms *camerauniforms = (render::CameraUniforms*)ptr;
 		camerauniforms->projmat = camera->getProjMat();
 		camerauniforms->viewmat = camera->getViewMat();
-		camerauniforms->viewer = camera->getViewMat().inverse().transformPoint(math::Vector3F(0, 0, 0));
+		camerauniforms->viewer = camera->getViewMat().inverse().transformPoint(math::Vec3f(0, 0, 0));
 		// Only lights which are visible need to be drawn
 		std::vector<Light::Ptr> lights;
 		clipLights(camera, lights);
@@ -265,7 +266,7 @@ namespace scene
 						render::LightUniforms *light = (render::LightUniforms*)ptr;
 						light->shadowmap = 0;
 						lights[i]->getLightInfo(light);
-						math::Matrix4 shadowmat;
+						math::Mat4f shadowmat;
 						if (lights[i]->getShadowsEnabled()
 							&& lights[i]->getShadowContext() != -1)
 						{
@@ -287,8 +288,8 @@ namespace scene
 							queuecount += shadowmapcount;
 							// The shadow matrix has to be modified to output
 							// texture coordinates (0..1 instead of -1..1)
-							shadowmat = math::Matrix4::TransMat(0.5f, 0.5f, 0.0f)
-							          * math::Matrix4::ScaleMat(0.5f, 0.5f, 1.0f)
+							shadowmat = math::Mat4f::TransMat(0.5f, 0.5f, 0.0f)
+							          * math::Mat4f::ScaleMat(0.5f, 0.5f, 1.0f)
 							          * shadowmat;
 						}
 						light->shadowmat = shadowmat;
@@ -319,7 +320,7 @@ namespace scene
 						render::LightUniforms *light = (render::LightUniforms*)ptr;
 						light->shadowmap = 0;
 						lights[i]->getLightInfo(light);
-						math::Matrix4 shadowmat;
+						math::Mat4f shadowmat;
 						if (lights[i]->getShadowsEnabled()
 							&& lights[i]->getShadowContext() != -1)
 						{
@@ -341,8 +342,8 @@ namespace scene
 							queuecount += shadowmapcount;
 							// The shadow matrix has to be modified to output
 							// texture coordinates (0..1 instead of -1..1)
-							shadowmat = math::Matrix4::TransMat(0.5f, 0.5f, 0.0f)
-							          * math::Matrix4::ScaleMat(0.5f, 0.5f, 1.0f)
+							shadowmat = math::Mat4f::TransMat(0.5f, 0.5f, 0.0f)
+							          * math::Mat4f::ScaleMat(0.5f, 0.5f, 1.0f)
 							          * shadowmat;
 						}
 						light->shadowmat = shadowmat;

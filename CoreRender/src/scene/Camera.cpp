@@ -29,8 +29,8 @@ namespace scene
 		: pipeline(pipeline)
 	{
 		// TODO: Make these functions inline?
-		setProjMat(math::Matrix4::PerspectiveFOV(90.0f, 1.0f, 1.0f, 1000.0f));
-		setViewMat(math::Matrix4::Identity());
+		setProjMat(math::Mat4f::PerspectiveFOV(90.0f, 1.0f, 1.0f, 1000.0f));
+		setViewMat(math::Mat4f::Identity());
 	}
 	Camera::~Camera()
 	{

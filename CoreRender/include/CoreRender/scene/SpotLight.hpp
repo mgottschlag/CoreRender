@@ -64,7 +64,7 @@ namespace scene
 			virtual void prepareShadowMaps(render::SceneFrameData *frame,
 			                               render::RenderQueue *queue,
 			                               Camera::Ptr camera,
-			                               math::Matrix4 *shadowmat,
+			                               math::Mat4f *shadowmat,
 			                               render::LightUniforms *uniforms);
 			virtual void getLightQuad(Camera::Ptr camera,
 			                          float *quad);

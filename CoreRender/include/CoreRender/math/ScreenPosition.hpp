@@ -17,10 +17,8 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #ifndef _CORERENDER_MATH_SCREENPOSITION_HPP_
 #define _CORERENDER_MATH_SCREENPOSITION_HPP_
 
-#include "Vector2.hpp"
+#include <GameMath.hpp>
 
-namespace cr
-{
 namespace math
 {
 	/**
@@ -44,8 +42,8 @@ namespace math
 			/**
 			 * Constructor.
 			 */
-			ScreenPosition(const Vector2F &relative,
-				const Vector2I &absolute = Vector2I(0, 0))
+			ScreenPosition(const Vec2f &relative,
+				const Vec2i &absolute = Vec2i(0, 0))
 			{
 				rel = relative;
 				abs = absolute;
@@ -88,24 +86,23 @@ namespace math
 			 * Computes the absolute screen position based on the current
 			 * screen size.
 			 */
-			Vector2I getAbsolute(const Vector2I &screensize) const
+			Vec2i getAbsolute(const Vec2i &screensize) const
 			{
-				return abs + Vector2I(rel.x * screensize.x,
+				return abs + Vec2i(rel.x * screensize.x,
 					rel.y * screensize.y);
 			}
 
 			/**
 			 * Relative part of the position (1.0 means screen width/height).
 			 */
-			Vector2F rel;
+			Vec2f rel;
 			/**
 			 * Absolute part of the position in pixels.
 			 */
-			Vector2I abs;
+			Vec2i abs;
 	};
 
 	typedef ScreenPosition ScreenSize;
-}
 }
 
 #endif

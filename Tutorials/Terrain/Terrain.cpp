@@ -22,14 +22,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender.hpp"
 
 #include <GL/glfw.h>
+#include <iostream>
 
 using namespace cr;
 
-math::Vector3F camerarot(-40, 0, 0);
+math::Vec3f camerarot(-40, 0, 0);
 
 void mouseMovementListener(int x, int y)
 {
-	camerarot = math::Vector3F(-y, -x, 0) * 0.1;
+	camerarot = math::Vec3f(-y, -x, 0) * 0.1;
 }
 
 int main(int argc, char **argv)
@@ -80,9 +81,9 @@ int main(int argc, char **argv)
 	terrain->setMaterial(terrainmat);
 	// Add a camera
 	scene::Camera::Ptr camera = new scene::Camera;
-	camera->setProjMat(math::Matrix4::PerspectiveFOV(90.0f, 4.0f/3.0f, 1.0f, 1000.0f));
-	math::Matrix4 viewmat = math::Matrix4::TransMat(0.0f, 0.0f, -300.0f)
-	                      * math::Quaternion(math::Vector3F(30.0f, 0.0f, 0.0f)).toMatrix();
+	camera->setProjMat(math::Mat4f::PerspectiveFOV(90.0f, 4.0f/3.0f, 1.0f, 1000.0f));
+	math::Mat4f viewmat = math::Mat4f::TransMat(0.0f, 0.0f, -300.0f)
+	                      * math::Quaternion(math::Vec3f(30.0f, 0.0f, 0.0f)).toMatrix();
 	camera->setViewMat(viewmat);
 	// Setup render pipeline
 	{
@@ -99,14 +100,14 @@ int main(int argc, char **argv)
 	bool stopping = false;
 	core::Time fpstime = core::Time::Now();
 	int fps = 0;
-	math::Vector3F camerapos(0, 100, 0);
+	math::Vec3f camerapos(0, 100, 0);
 	while (!stopping)
 	{
 		// Process input
 		bool fast = false;
 		if (glfwGetKey(GLFW_KEY_LSHIFT) == GLFW_PRESS)
 			fast = true;
-		math::Vector3F movement(0, 0, 0);
+		math::Vec3f movement(0, 0, 0);
 		if (glfwGetKey('W') == GLFW_PRESS)
 			movement.z -= 1;
 		if (glfwGetKey('S') == GLFW_PRESS)
@@ -118,10 +119,10 @@ int main(int argc, char **argv)
 		movement = movement * 0.1;
 		if (fast)
 			movement = movement * 10;
-		math::Matrix4 rotationmat = math::Quaternion(camerarot).toMatrix();
+		math::Mat4f rotationmat = math::Quaternion(camerarot).toMatrix();
 		movement = rotationmat.transformPoint(movement);
 		camerapos += movement;
-		math::Matrix4 viewmatinv = math::Matrix4::TransMat(camerapos) * rotationmat;
+		math::Mat4f viewmatinv = math::Mat4f::TransMat(camerapos) * rotationmat;
 		viewmat = viewmatinv.inverse();
 		// Set animations
 		camera->setViewMat(viewmat);
@@ -132,9 +133,9 @@ int main(int argc, char **argv)
 		unsigned int queuecount = scenedata->getRenderQueueCount();
 		for (unsigned int i = 0; i < queuecount; i++)
 		{
-			//terrain->render(renderqueues[i], math::Matrix4::ScaleMat(300.0f, 1.0f, 300.0f), cameraPos);
-			//terrain->render(renderqueues[i], math::Matrix4::TransMat(-512.0f, 0.0f, -512.0f) * math::Matrix4::ScaleMat(1024.0f, 1.0f, 1024.0f), math::Vector3F(100, 100, 200));
-			terrain->render(renderqueues[i], math::Matrix4::TransMat(-512.0f, 0.0f, -512.0f) * math::Matrix4::ScaleMat(1024.0f, 100.0f, 1024.0f), camerapos);
+			//terrain->render(renderqueues[i], math::Mat4f::ScaleMat(300.0f, 1.0f, 300.0f), cameraPos);
+			//terrain->render(renderqueues[i], math::Mat4f::TransMat(-512.0f, 0.0f, -512.0f) * math::Mat4f::ScaleMat(1024.0f, 1.0f, 1024.0f), math::Vec3f(100, 100, 200));
+			terrain->render(renderqueues[i], math::Mat4f::TransMat(-512.0f, 0.0f, -512.0f) * math::Mat4f::ScaleMat(1024.0f, 100.0f, 1024.0f), camerapos);
 		}
 		graphics.endFrame(frame);
 		// Render frame

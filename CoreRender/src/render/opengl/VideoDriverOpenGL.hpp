@@ -76,9 +76,9 @@ namespace opengl
 			virtual void beginFrame();
 			virtual void endFrame();
 
-			virtual void setMatrices(math::Matrix4 projmat,
-			                         math::Matrix4 viewmat,
-			                         math::Vector3F viewer);
+			virtual void setMatrices(math::Mat4f projmat,
+			                         math::Mat4f viewmat,
+			                         math::Vec3f viewer);
 
 			virtual VideoDriverType::List getType()
 			{
@@ -103,10 +103,10 @@ namespace opengl
 			void setVertexBuffer(VertexBuffer *vertices);
 			void setIndexBuffer(IndexBuffer *indices);
 
-			void drawSingle(Batch *batch, const math::Matrix4 &transmat);
+			void drawSingle(Batch *batch, const math::Mat4f &transmat);
 			void drawInstanced(Batch *batch,
 			                   unsigned int instancecount,
-			                   math::Matrix4 *transmat);
+			                   math::Mat4f *transmat);
 
 			void applyTextures(ShaderCombination *shader, Material *material);
 
@@ -124,11 +124,11 @@ namespace opengl
 			DepthTest::List currentdepthtest;
 			unsigned int currentdrawbuffers;
 
-			math::Matrix4 projmat;
-			math::Matrix4 viewmat;
-			math::Matrix4 viewmatinv;
-			math::Matrix4 viewprojmat;
-			math::Vector3F viewer;
+			math::Mat4f projmat;
+			math::Mat4f viewmat;
+			math::Mat4f viewmatinv;
+			math::Mat4f viewprojmat;
+			math::Vec3f viewer;
 
 			unsigned int viewport[4];
 

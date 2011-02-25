@@ -36,14 +36,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/core/StandardFileSystem.hpp"
 #include "CoreRender/core/Time.hpp"
 #include "CoreRender/core/Log.hpp"
-#include "CoreRender/math/Vector3.hpp"
-#include "CoreRender/math/Alignment.hpp"
-#include "CoreRender/math/Quaternion.hpp"
-#include "CoreRender/math/Matrix4.hpp"
-#include "CoreRender/math/Math.hpp"
-#include "CoreRender/math/Vector2.hpp"
 #include "CoreRender/math/ScreenPosition.hpp"
-#include "CoreRender/math/StdInt.hpp"
 #include "CoreRender/res/LoadingThread.hpp"
 #include "CoreRender/res/Resource.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
@@ -134,12 +127,6 @@ namespace cr
  * shader have contexts for forward and deferred rendering.
  */
 
-/**
- * Namespace containing all 3d math classes.
- */
-namespace math
-{
-}
 /**
  * Namespace containing all core utility classes.
  */

@@ -25,19 +25,10 @@ set(SRC
 	include/CoreRender/core/Time.hpp
 	include/CoreRender/GraphicsEngine.hpp
 	include/CoreRender.hpp
-	include/CoreRender/math/Alignment.hpp
 	include/CoreRender/math/BoundingBox.hpp
 	include/CoreRender/math/Frustum.hpp
-	include/CoreRender/math/Math.hpp
-	include/CoreRender/math/Matrix3.hpp
-	include/CoreRender/math/Matrix4.hpp
 	include/CoreRender/math/Plane.hpp
-	include/CoreRender/math/Quaternion.hpp
 	include/CoreRender/math/ScreenPosition.hpp
-	include/CoreRender/math/StdInt.hpp
-	include/CoreRender/math/Vector2.hpp
-	include/CoreRender/math/Vector3.hpp
-	include/CoreRender/math/Vector4.hpp
 	include/CoreRender/render/BlendMode.hpp
 	include/CoreRender/render/DepthTest.hpp
 	include/CoreRender/render/FrameBuffer.hpp
@@ -57,7 +48,6 @@ set(SRC
 	include/CoreRender/render/ShaderCombination.hpp
 	include/CoreRender/render/Shader.hpp
 	include/CoreRender/render/ShaderVariableType.hpp
-	include/CoreRender/render/SpatialRenderable.hpp
 	include/CoreRender/render/Texture.hpp
 	include/CoreRender/render/TimerQuery.hpp
 	include/CoreRender/render/UploadManager.hpp

@@ -40,7 +40,7 @@ namespace scene
 	}
 
 	void Model::render(render::RenderQueue &queue,
-	                  math::Matrix4 transmat)
+	                  math::Mat4f transmat)
 	{
 		// TODO: Culling
 		for (unsigned int i = 0; i < batches.size(); i++)
@@ -57,12 +57,12 @@ namespace scene
 	}
 	void Model::render(render::RenderQueue &queue,
 	                  unsigned int instancecount,
-	                  math::Matrix4 *transmat)
+	                  math::Mat4f *transmat)
 	{
 		core::MemoryPool *memory = queue.memory;
 		// Create transformation matrix list
-		unsigned int memsize = sizeof(math::Matrix4) * instancecount;
-		math::Matrix4 *matrices = (math::Matrix4*)memory->allocate(memsize);
+		unsigned int memsize = sizeof(math::Mat4f) * instancecount;
+		math::Mat4f *matrices = (math::Mat4f*)memory->allocate(memsize);
 		for (unsigned int i = 0; i < instancecount; i++)
 			matrices[i] = transmat[i];
 		// Create batches
@@ -73,7 +73,7 @@ namespace scene
 			render::Batch *batch = prepareBatch(queue, i, true, false);
 			if (!batch)
 				continue;
-			batch->transmat = math::Matrix4::Identity();
+			batch->transmat = math::Mat4f::Identity();
 			batch->transmatcount = instancecount;
 			batch->transmatlist = matrices;
 			// Add batch to the render queue
@@ -404,7 +404,7 @@ namespace scene
 			geometry[i].joints.resize(batchdata[i].geom.jointcount);
 			for (unsigned int j = 0; j < batchdata[i].geom.jointcount; j++)
 			{
-				math::Matrix4 &jointmat = geometry[i].joints[j].jointmat;
+				math::Mat4f &jointmat = geometry[i].joints[j].jointmat;
 				memcpy(&jointmat.m[0],
 				       &batchdata[i].jointmatrices[j * 16],
 				       sizeof(float) * 16);
@@ -546,7 +546,7 @@ namespace scene
 		newnode.name = name;
 		// Read transformation
 		TiXmlElement *transelem = xml->FirstChildElement("Transformation");
-		math::Matrix4 transmat = math::Matrix4::Identity();
+		math::Mat4f transmat = math::Mat4f::Identity();
 		if (transelem)
 		{
 			std::istringstream matstream(transelem->GetText());

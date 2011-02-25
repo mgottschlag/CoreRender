@@ -22,7 +22,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/scene/SpotLight.hpp"
 #include "CoreRender/res/NameRegistry.hpp"
 #include "CoreRender/render/FrameData.hpp"
-#include "CoreRender/math/Quaternion.hpp"
 #include "CoreRender/core/MemoryPool.hpp"
 
 #include <cstring>
@@ -59,24 +58,24 @@ namespace scene
 	void SpotLight::prepareShadowMaps(render::SceneFrameData *frame,
 	                                  render::RenderQueue *queue,
 	                                  Camera::Ptr camera,
-	                                  math::Matrix4 *shadowmat,
+	                                  math::Mat4f *shadowmat,
 	                                  render::LightUniforms *uniforms)
 	{
 		// Compute projection and view matrices of the shadow map camera
-		math::Matrix4 projmat = math::Matrix4::PerspectiveFOV(getAngle(),
+		math::Mat4f projmat = math::Mat4f::PerspectiveFOV(getAngle(),
 		                                                      1.0f,
 		                                                      1.0f,
 		                                                      getRadius());
-		math::Vector3F rotation = (-getDirection()).getAngle();
-		math::Matrix4 viewmat = math::Quaternion(rotation).toMatrix()
-		                      * math::Matrix4::TransMat(-getPosition());
+		math::Vec3f rotation = (-getDirection()).getAngle();
+		math::Mat4f viewmat = math::Quaternion(rotation).toMatrix()
+		                      * math::Mat4f::TransMat(-getPosition());
 		*shadowmat = projmat * viewmat;
 		// Create render queue
 		void *ptr = queue->memory->allocate(sizeof(render::CameraUniforms));
 		render::CameraUniforms *camerauniforms = (render::CameraUniforms*)ptr;
 		camerauniforms->projmat = projmat;
 		camerauniforms->viewmat = viewmat;
-		camerauniforms->viewer = viewmat.transformPoint(math::Vector3F(0, 0, 0));
+		camerauniforms->viewer = viewmat.transformPoint(math::Vec3f(0, 0, 0));
 		queue->context = getShadowContext();
 		queue->camera = camerauniforms;
 		queue->light = uniforms;
@@ -95,8 +94,8 @@ namespace scene
 		// To find out the bounds of the light quad in screen space, we need
 		// to transform the bounding box of the light
 		// TODO: This is way too much
-		math::BoundingBox lightbb(getPosition() + math::Vector3F(-radius, -radius, -radius),
-		                          getPosition() + math::Vector3F(radius, radius, radius));
+		math::BoundingBox lightbb(getPosition() + math::Vec3f(-radius, -radius, -radius),
+		                          getPosition() + math::Vec3f(radius, radius, radius));
 		lightbb.transform(camera->getViewMat());
 		lightbb.transform(camera->getProjMat());
 		quad[0] = lightbb.minCorner.x;

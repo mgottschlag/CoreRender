@@ -24,10 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "BoundingBox.hpp"
 #include "Plane.hpp"
-#include "Matrix4.hpp"
 
-namespace cr
-{
 namespace math
 {
 	class Frustum
@@ -36,24 +33,24 @@ namespace math
 			Frustum()
 			{
 			}
-			Frustum(const Matrix4 &projmat)
+			Frustum(const Mat4f &projmat)
 			{
 				setProjectionMatrix(projmat);
 			}
 
-			void setProjectionMatrix(const Matrix4 &projmat)
+			void setProjectionMatrix(const Mat4f &projmat)
 			{
 				this->projmat = projmat;
-				Matrix4 projmatinv = projmat.inverse();
+				Mat4f projmatinv = projmat.inverse();
 				// Corners of the frustum in world space
-				corners[0] = projmatinv.transformPoint(Vector3F(-1, 1, -1));
-				corners[1] = projmatinv.transformPoint(Vector3F(1, 1, -1));
-				corners[2] = projmatinv.transformPoint(Vector3F(1, -1, -1));
-				corners[3] = projmatinv.transformPoint(Vector3F(-1, -1, -1));
-				corners[4] = projmatinv.transformPoint(Vector3F(-1, 1, 1));
-				corners[5] = projmatinv.transformPoint(Vector3F(1, 1, 1));
-				corners[6] = projmatinv.transformPoint(Vector3F(1, -1, 1));
-				corners[7] = projmatinv.transformPoint(Vector3F(-1, -1, 1));
+				corners[0] = projmatinv.transformPoint(Vec3f(-1, 1, -1));
+				corners[1] = projmatinv.transformPoint(Vec3f(1, 1, -1));
+				corners[2] = projmatinv.transformPoint(Vec3f(1, -1, -1));
+				corners[3] = projmatinv.transformPoint(Vec3f(-1, -1, -1));
+				corners[4] = projmatinv.transformPoint(Vec3f(-1, 1, 1));
+				corners[5] = projmatinv.transformPoint(Vec3f(1, 1, 1));
+				corners[6] = projmatinv.transformPoint(Vec3f(1, -1, 1));
+				corners[7] = projmatinv.transformPoint(Vec3f(-1, -1, 1));
 				// Near plane
 				planes[0] = Plane(corners[0], corners[1], corners[2]);
 				// Left plane
@@ -69,7 +66,7 @@ namespace math
 				// TODO: Fix normal vectors to point inside!
 			}
 
-			bool isInside(const Vector3F &point)
+			bool isInside(const Vec3f &point)
 			{
 				for (unsigned int i = 0; i < 6; i++)
 				{
@@ -91,11 +88,10 @@ namespace math
 				// TODO
 			}
 
-			Matrix4 projmat;
+			Mat4f projmat;
 			Plane planes[6];
-			Vector3F corners[6];
+			Vec3f corners[6];
 	};
-}
 }
 
 

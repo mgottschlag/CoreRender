@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/core/MemoryPool.hpp"
 
 #include <cstring>
+#include <iostream>
 
 namespace cr
 {
@@ -84,7 +85,7 @@ namespace scene
 	}
 
 	void AnimatedModel::render(render::RenderQueue &queue,
-	                          math::Matrix4 transmat)
+	                          math::Mat4f transmat)
 	{
 		// Compute animation data for all nodes
 		std::vector<Model::Node> animatednodes = model->getNodes();
@@ -116,7 +117,7 @@ namespace scene
 					}
 					else
 					{
-						math::Matrix4 jointmat = animatednodes[jointnode].abstrans * geom->joints[j].jointmat;
+						math::Mat4f jointmat = animatednodes[jointnode].abstrans * geom->joints[j].jointmat;
 						memcpy(&skinmatrices[j * 16], jointmat.m, 16 * sizeof(float));
 					}
 				}
@@ -137,12 +138,12 @@ namespace scene
 	}
 	void AnimatedModel::render(render::RenderQueue &queue,
 	                          unsigned int instancecount,
-	                          math::Matrix4 *transmat)
+	                          math::Mat4f *transmat)
 	{
 		core::MemoryPool *memory = queue.memory;
 		// Create transformation matrix list
-		unsigned int memsize = sizeof(math::Matrix4) * instancecount;
-		math::Matrix4 *matrices = (math::Matrix4*)memory->allocate(memsize);
+		unsigned int memsize = sizeof(math::Mat4f) * instancecount;
+		math::Mat4f *matrices = (math::Mat4f*)memory->allocate(memsize);
 		for (unsigned int i = 0; i < instancecount; i++)
 			matrices[i] = transmat[i];
 		// Compute animation data for all nodes
@@ -174,13 +175,13 @@ namespace scene
 					}
 					else
 					{
-						math::Matrix4 jointmat = animatednodes[jointnode].abstrans * geom->joints[j].jointmat;
+						math::Mat4f jointmat = animatednodes[jointnode].abstrans * geom->joints[j].jointmat;
 						memcpy(&skinmatrices[j * 16], jointmat.m, 16 * sizeof(float));
 					}
 				}
 				batch->skinmat = skinmatrices;
 				batch->skinmatcount = jointcount;
-				batch->transmat = math::Matrix4::Identity();
+				batch->transmat = math::Mat4f::Identity();
 				batch->transmatcount = instancecount;
 				batch->transmatlist = matrices;
 			}
@@ -272,9 +273,9 @@ namespace scene
 			Model::Node &node = nodes[i];
 			if (animinfo.updated)
 			{
-				node.transmat = math::Matrix4::TransMat(animinfo.trans)
+				node.transmat = math::Mat4f::TransMat(animinfo.trans)
 				              * animinfo.rot.toMatrix()
-				              * math::Matrix4::ScaleMat(animinfo.scale);
+				              * math::Mat4f::ScaleMat(animinfo.scale);
 			}
 		}
 		// Compute absolute transformation

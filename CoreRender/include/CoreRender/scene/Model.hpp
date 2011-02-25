@@ -23,7 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_SCENE_MODEL_HPP_INCLUDED_
 
 #include "../res/Resource.hpp"
-#include "../math/Matrix4.hpp"
+#include <GameMath.hpp>
 #include "../math/BoundingBox.hpp"
 #include "../render/VertexBuffer.hpp"
 #include "../render/IndexBuffer.hpp"
@@ -51,23 +51,23 @@ namespace scene
 			virtual ~Model();
 
 			void render(render::RenderQueue &queue,
-			            math::Matrix4 transmat);
+			            math::Mat4f transmat);
 			void render(render::RenderQueue &queue,
 			            unsigned int instancecount,
-			            math::Matrix4 *transmat);
+			            math::Mat4f *transmat);
 
 			struct Node
 			{
 				std::string name;
 				int parent;
-				math::Matrix4 transmat;
-				math::Matrix4 abstrans;
-				math::Matrix4 abstransinverse;
+				math::Mat4f transmat;
+				math::Mat4f abstrans;
+				math::Mat4f abstransinverse;
 			};
 			struct Joint
 			{
 				int node;
-				math::Matrix4 jointmat;
+				math::Mat4f jointmat;
 			};
 			struct BatchGeometry
 			{

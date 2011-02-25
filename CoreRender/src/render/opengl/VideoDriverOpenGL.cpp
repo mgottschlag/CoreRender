@@ -593,9 +593,9 @@ namespace opengl
 		setLightUniforms(0);
 	}
 
-	void VideoDriverOpenGL::setMatrices(math::Matrix4 projmat,
-	                                    math::Matrix4 viewmat,
-	                                    math::Vector3F viewer)
+	void VideoDriverOpenGL::setMatrices(math::Mat4f projmat,
+	                                    math::Mat4f viewmat,
+	                                    math::Vec3f viewer)
 	{
 		this->projmat = projmat;
 		this->viewmat = viewmat;
@@ -757,7 +757,7 @@ namespace opengl
 		}
 	}
 
-	void VideoDriverOpenGL::drawSingle(Batch *batch, const math::Matrix4 &transmat)
+	void VideoDriverOpenGL::drawSingle(Batch *batch, const math::Mat4f &transmat)
 	{
 		// Default uniforms (not dependant on the transformation matrix)
 		{
@@ -767,7 +767,7 @@ namespace opengl
 			if (locations.worldnormalmat != -1)
 			{
 				// TODO: Is this correct?
-				math::Matrix4 worldnormalmat = transmat.inverse().transposed();
+				math::Mat4f worldnormalmat = transmat.inverse().transposed();
 				glUniformMatrix4fv(locations.worldnormalmat, 1, GL_FALSE, worldnormalmat.m);
 			}
 			// TODO: Other uniforms
@@ -801,7 +801,7 @@ namespace opengl
 	}
 	void VideoDriverOpenGL::drawInstanced(Batch *batch,
 	                                      unsigned int instancecount,
-	                                      math::Matrix4 *transmat)
+	                                      math::Mat4f *transmat)
 	{
 		// Disable vertex buffer as we specify the transformation matrices as
 		// an attrib directly without using a buffer object

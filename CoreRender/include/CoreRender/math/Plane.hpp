@@ -22,10 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_MATH_PLANE_HPP_INCLUDED_
 #define _CORERENDER_MATH_PLANE_HPP_INCLUDED_
 
-#include "Vector3.hpp"
+#include <GameMath.hpp>
 
-namespace cr
-{
 namespace math
 {
 	class Plane
@@ -35,7 +33,7 @@ namespace math
 				: normal(0, 1, 0), d(0)
 			{
 			}
-			Plane(const Vector3F &normal, float d)
+			Plane(const Vec3f &normal, float d)
 				: normal(normal), d(d)
 			{
 			}
@@ -43,10 +41,10 @@ namespace math
 				: normal(a, b, c), d(d)
 			{
 			}
-			Plane(const Vector3F &p1, const Vector3F &p2, const Vector3F &p3)
+			Plane(const Vec3f &p1, const Vec3f &p2, const Vec3f &p3)
 			{
-				Vector3F v1 = p2 - p1;
-				Vector3F v2 = p3 - p1;
+				Vec3f v1 = p2 - p1;
+				Vec3f v2 = p3 - p1;
 				normal = v1.cross(v2);
 				d = p1.dot(normal);
 			}
@@ -67,16 +65,15 @@ namespace math
 			 * @param point Point to compute the distance to.
 			 * @return Distance of the point to the plane.
 			 */
-			float getDistance(const Vector3F &point)
+			float getDistance(const Vec3f &point)
 			{
 				float d2 = point.dot(normal);
 				return d2 - d;
 			}
 
-			Vector3F normal;
+			Vec3f normal;
 			float d;
 	};
-}
 }
 
 #endif

@@ -22,6 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender.hpp"
 
 #include <GL/glfw.h>
+#include <iostream>
 
 using namespace cr;
 
@@ -63,13 +64,13 @@ int main(int argc, char **argv)
 	scene::AnimatedModel::Ptr dwarf2 = new scene::AnimatedModel(dwarf);
 	scene::Animation::Ptr dwarfanim = graphics.getAnimation("/models/dwarf.anim");
 	dwarf2->addAnimation(dwarfanim, 1.0f);
-	math::Matrix4 dwarf2positions[256];
+	math::Mat4f dwarf2positions[256];
 	for (unsigned int i = 0; i < 256; i++)
 	{
 		float x = (float)(i % 16) * 30.0f - 240.0f;
 		float z = (float)(i / 16) * 30.0f - 240.0f;
-		dwarf2positions[i] = math::Matrix4::TransMat(x, 0.0f, z)
-		                   * math::Matrix4::ScaleMat(0.4f, 0.4f, 0.4f);
+		dwarf2positions[i] = math::Mat4f::TransMat(x, 0.0f, z)
+		                   * math::Mat4f::ScaleMat(0.4f, 0.4f, 0.4f);
 	}
 	// Wait for loading
 	dwarf->waitForLoading(true);
@@ -85,8 +86,8 @@ int main(int argc, char **argv)
 	                                                       "SHADOWMAP");
 	spotlight->setRadius(200.0f);
 	spotlight->setColor(core::Color(1.0f, 0.0f, 0.0f, 1.0f));
-	spotlight->setPosition(math::Vector3F(0, 100, 0));
-	spotlight->setDirection(math::Vector3F(0, -1, 0.5));
+	spotlight->setPosition(math::Vec3f(0, 100, 0));
+	spotlight->setDirection(math::Vec3f(0, -1, 0.5));
 	spotlight->setShadowsEnabled(true);
 	scene::PointLight::Ptr pointlight = new scene::PointLight(names,
 	                                                          lightmat,
@@ -94,12 +95,12 @@ int main(int argc, char **argv)
 	                                                          "");
 	pointlight->setRadius(150.0f);
 	pointlight->setColor(core::Color(0.0f, 1.0f, 0.0f, 1.0f));
-	pointlight->setPosition(math::Vector3F(0, 10, 0));
+	pointlight->setPosition(math::Vec3f(0, 10, 0));
 	// Add a camera
 	scene::Camera::Ptr camera = new scene::Camera;
-	camera->setProjMat(math::Matrix4::PerspectiveFOV(90.0f, 4.0f/3.0f, 1.0f, 1000.0f));
-	math::Matrix4 viewmat = math::Matrix4::TransMat(0.0f, 0.0f, -200.0f)
-	                      * math::Quaternion(math::Vector3F(30.0f, 0.0f, 0.0f)).toMatrix();
+	camera->setProjMat(math::Mat4f::PerspectiveFOV(90.0f, 4.0f/3.0f, 1.0f, 1000.0f));
+	math::Mat4f viewmat = math::Mat4f::TransMat(0.0f, 0.0f, -200.0f)
+	                      * math::Quaternion(math::Vec3f(30.0f, 0.0f, 0.0f)).toMatrix();
 	camera->setViewMat(viewmat);
 	// Setup render pipeline
 	{
@@ -128,7 +129,7 @@ int main(int argc, char **argv)
 		dwarf2->setAnimation(0, animtime);
 		if (animtime > 1.4f)
 			animtime = 0.0f;
-		viewmat = viewmat * math::Quaternion(math::Vector3F(0.0f, 0.3f, 0.0f)).toMatrix();
+		viewmat = viewmat * math::Quaternion(math::Vec3f(0.0f, 0.3f, 0.0f)).toMatrix();
 		camera->setViewMat(viewmat);
 		// Render objects
 		render::FrameData *frame = graphics.beginFrame();
@@ -137,11 +138,11 @@ int main(int argc, char **argv)
 		unsigned int queuecount = scenedata->getRenderQueueCount();
 		for (unsigned int i = 0; i < queuecount; i++)
 		{
-			plane->render(renderqueues[i], math::Matrix4::ScaleMat(300.0f, 300.0f, 300.0f));
-			jeep->render(renderqueues[i], math::Matrix4::TransMat(20.0f, 0.0f, 0.0f)
-			                            * math::Matrix4::ScaleMat(5.0f, 5.0f, 5.0f));
-			dwarf->render(renderqueues[i], math::Matrix4::TransMat(-20.0f, 0.0f, 0.0f));
-			dwarf2->render(renderqueues[i], math::Matrix4::TransMat(-60.0f, 0.0f, 0.0f));
+			plane->render(renderqueues[i], math::Mat4f::ScaleMat(300.0f, 300.0f, 300.0f));
+			jeep->render(renderqueues[i], math::Mat4f::TransMat(20.0f, 0.0f, 0.0f)
+			                            * math::Mat4f::ScaleMat(5.0f, 5.0f, 5.0f));
+			dwarf->render(renderqueues[i], math::Mat4f::TransMat(-20.0f, 0.0f, 0.0f));
+			dwarf2->render(renderqueues[i], math::Mat4f::TransMat(-60.0f, 0.0f, 0.0f));
 			dwarf2->render(renderqueues[i], 256, dwarf2positions);
 		}
 		graphics.endFrame(frame);
