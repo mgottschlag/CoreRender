@@ -114,6 +114,12 @@ namespace render
 			 */
 			void addTexture(const std::string name, Texture::Ptr texture);
 			/**
+			 * Sets a texture entry.
+			 * @param name Sampler name.
+			 * @param texture Texture resource to be bound to the sampler.
+			 */
+			void setTexture(const std::string name, Texture::Ptr texture);
+			/**
 			 * Returns the texture bound to a certain sampler.
 			 * @param name Sampler name.
 			 * @return Texture bound to the sampler.

@@ -64,6 +64,17 @@ namespace render
 		textures.push_back(info);
 		registerUpload();
 	}
+	void Material::setTexture(const std::string name, Texture::Ptr texture)
+	{
+		for (unsigned int i = 0; i < textures.size(); i++)
+		{
+			if (textures[i].name == name)
+			{
+				textures[i].texture = texture;
+			}
+		}
+		registerUpload();
+	}
 	Texture::Ptr Material::getTexture(const std::string &name)
 	{
 		for (unsigned int i = 0; i < textures.size(); i++)
