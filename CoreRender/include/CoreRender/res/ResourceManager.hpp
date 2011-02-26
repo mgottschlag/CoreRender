@@ -245,6 +245,8 @@ namespace res
 			/**
 			 * Sets the file system to be used for loading resources.
 			 * @param fs New file system used for the resource system.
+			 * @note This function is not thread-safe, do not call it while
+			 * there are resources loading.
 			 */
 			void setFileSystem(core::FileSystem::Ptr fs);
 			/**

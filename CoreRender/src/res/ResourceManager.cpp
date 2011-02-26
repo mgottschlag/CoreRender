@@ -210,7 +210,6 @@ namespace res
 
 	void ResourceManager::setFileSystem(core::FileSystem::Ptr fs)
 	{
-		// TODO: Maybe not thread-safe
 		this->fs = fs;
 	}
 }
