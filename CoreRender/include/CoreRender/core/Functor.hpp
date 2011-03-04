@@ -26,25 +26,43 @@ namespace cr
 {
 namespace core
 {
+	/**
+	 * Object which can be called like a function with no parameters.
+	 * 
+	 * This can be used for callbacks.
+	 */
 	class Functor
 	{
 		public:
+			/**
+			 * Destructor.
+			 */
 			virtual ~Functor()
 			{
 			}
 
+			/**
+			 * Calls the functor.
+			 */
 			virtual void call() = 0;
 		private:
 	};
 
+	/**
+	 * Function pointer to a non-static member function.
+	 */
 	template<class T> class ClassFunctor : public Functor
 	{
 		public:
+			/**
+			 * Constructor.
+			 * 
+			 * @param instance Will be passed as "this" when the function is
+			 * called.
+			 * @param function Non-static member function.
+			 */
 			ClassFunctor(T *instance, void (T::*function)(void))
 				: instance(instance), function(function)
-			{
-			}
-			virtual ~ClassFunctor()
 			{
 			}
 
@@ -57,6 +75,11 @@ namespace core
 			void (T::*function)(void);
 	};
 
+	/**
+	 * Object which can be called like a function with one parameter.
+	 * 
+	 * This can be used for callbacks.
+	 */
 	template<class P1> class Functor1
 	{
 		public:
@@ -64,18 +87,30 @@ namespace core
 			{
 			}
 
+			/**
+			 * Calls the functor.
+			 * 
+			 * @param p1 First function parameter.
+			 */
 			virtual void call(P1 p1) = 0;
 		private:
 	};
 
+	/**
+	 * Function pointer to a non-static member function with one parameter.
+	 */
 	template<class T, class P1> class ClassFunctor1 : public Functor1<P1>
 	{
 		public:
+			/**
+			 * Constructor.
+			 * 
+			 * @param instance Will be passed as "this" when the function is
+			 * called.
+			 * @param function Non-static member function.
+			 */
 			ClassFunctor1(T *instance, void (T::*function)(P1))
 				: instance(instance), function(function)
-			{
-			}
-			virtual ~ClassFunctor1()
 			{
 			}
 
@@ -104,9 +139,6 @@ namespace core
 		public:
 			ClassFunctor2(T *instance, void (T::*function)(P1, P2))
 				: instance(instance), function(function)
-			{
-			}
-			virtual ~ClassFunctor2()
 			{
 			}
 
