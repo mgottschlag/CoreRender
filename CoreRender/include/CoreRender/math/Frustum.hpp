@@ -23,7 +23,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_MATH_FRUSTUM_HPP_INCLUDED_
 
 #include "BoundingBox.hpp"
-#include "Plane.hpp"
+
+#include <GameMath.hpp>
 
 namespace math
 {

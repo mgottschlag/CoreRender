@@ -27,7 +27,6 @@ set(SRC
 	include/CoreRender.hpp
 	include/CoreRender/math/BoundingBox.hpp
 	include/CoreRender/math/Frustum.hpp
-	include/CoreRender/math/Plane.hpp
 	include/CoreRender/math/ScreenPosition.hpp
 	include/CoreRender/render/BlendMode.hpp
 	include/CoreRender/render/DepthTest.hpp
