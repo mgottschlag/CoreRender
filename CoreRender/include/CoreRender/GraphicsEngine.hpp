@@ -30,6 +30,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "scene/Model.hpp"
 #include "scene/Animation.hpp"
 #include "scene/Terrain.hpp"
+#include "render/Mesh.hpp"
 
 namespace cr
 {
@@ -96,12 +97,15 @@ namespace cr
 			scene::Terrain::Ptr getTerrain(const std::string name);
 			render::Pipeline::Ptr getPipeline(const std::string name);
 			render::Material::Ptr getMaterial(const std::string name);
+			render::Mesh::Ptr createMesh();
 
 			/**
 			 * Sets a user-specified file system for the engine. This can be
 			 * called before calling init().
 			 * @note The file system is reset at shutdown(), so you might have
 			 * to call this again before calling init() again.
+			 * @note This is not thread-safe, do not call this if resources
+			 * might be loading in the background.
 			 * @param fs New user-specified file system.
 			 */
 			void setFileSystem(core::FileSystem::Ptr fs);

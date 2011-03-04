@@ -30,9 +30,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "../render/FrameData.hpp"
 #include "../render/Material.hpp"
 #include "../render/VertexLayout.hpp"
+#include "../render/Mesh.hpp"
 
 namespace cr
 {
+class GraphicsEngine;
 namespace scene
 {
 	class TerrainMaterial;
@@ -40,7 +42,7 @@ namespace scene
 	class Terrain : public res::Resource
 	{
 		public:
-			Terrain(cr::res::ResourceManager* rmgr, const std::string& name);
+			Terrain(GraphicsEngine *graphics, const std::string& name);
 			virtual ~Terrain();
 
 			void render(render::RenderQueue &queue,
@@ -108,6 +110,8 @@ namespace scene
 			                       float *offsetscale,
 			                       render::CustomUniform &texcoordscale);
 
+			GraphicsEngine *graphics;
+
 			render::Material::Ptr material;
 
 			float *displacement;
@@ -119,10 +123,8 @@ namespace scene
 			struct Patch
 			{
 				unsigned int patchsize;
-				unsigned int indextype;
 				unsigned int indexoffset;
-				unsigned int vertexoffset;
-				unsigned int indexcount;
+				render::Mesh::Ptr mesh;
 			};
 			std::vector<Patch> patches;
 			render::VertexBuffer::Ptr vertices;

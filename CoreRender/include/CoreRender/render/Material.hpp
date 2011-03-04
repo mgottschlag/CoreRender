@@ -178,6 +178,9 @@ namespace render
 			}
 			virtual void upload(void *data);
 
+			virtual res::Resource::Ptr clone(std::string name = "");
+			virtual res::Resource::Ptr cloneDeep(std::string name = "");
+
 			typedef core::SharedPointer<Material> Ptr;
 		protected:
 			virtual void *getUploadData();

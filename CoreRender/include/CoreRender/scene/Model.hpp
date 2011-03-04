@@ -29,6 +29,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "../render/VertexLayout.hpp"
 #include "../render/Material.hpp"
 #include "GeometryFile.hpp"
+#include "../render/Mesh.hpp"
 
 #include <GameMath.hpp>
 #include <vector>
@@ -37,6 +38,7 @@ class TiXmlElement;
 
 namespace cr
 {
+class GraphicsEngine;
 namespace render
 {
 	struct RenderQueue;
@@ -47,7 +49,7 @@ namespace scene
 	class Model : public res::Resource
 	{
 		public:
-			Model(res::ResourceManager* rmgr,
+			Model(GraphicsEngine *graphics,
 			      const std::string& name);
 			virtual ~Model();
 
@@ -73,33 +75,9 @@ namespace scene
 			struct BatchGeometry
 			{
 				/**
-				 * Vertex layout.
+				 * Mesh which is used for this batch.
 				 */
-				render::VertexLayout::Ptr layout;
-				/**
-				 * Index size, can be 1, 2 or 4.
-				 */
-				unsigned int indextype;
-				/**
-				 * Start index in the index buffer.
-				 */
-				unsigned int startindex;
-				/**
-				 * Number of indices in the index buffer.
-				 */
-				unsigned int indexcount;
-				/**
-				 * Base vertex (offset added to all indices).
-				 */
-				unsigned int basevertex;
-				/**
-				 * Byte offset to the first vertex.
-				 */
-				unsigned int vertexoffset;
-				/**
-				 * Number of vertices in the vertex buffer.
-				 */
-				unsigned int vertexcount;
+				render::Mesh::Ptr mesh;
 				/**
 				 * Joints influencing this batch.
 				 */
@@ -187,6 +165,8 @@ namespace scene
 			render::VertexLayout::Ptr createVertexLayout(const GeometryFile::AttribInfo &attribs);
 
 			bool parseNode(TiXmlElement *xml, int parent);
+
+			GraphicsEngine *graphics;
 
 			std::vector<BatchGeometry> geometry;
 			std::vector<Node> nodes;

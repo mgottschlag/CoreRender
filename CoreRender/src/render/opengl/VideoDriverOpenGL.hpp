@@ -56,6 +56,7 @@ namespace opengl
 			virtual FrameBuffer::Ptr createFrameBuffer(UploadManager &uploadmgr,
 			                                           res::ResourceManager *rmgr,
 			                                           const std::string &name);
+			virtual Mesh::Ptr createMesh(UploadManager &uploadmgr);
 
 			virtual void setRenderTarget(const RenderTargetInfo *target);
 			virtual void setViewport(unsigned int x,

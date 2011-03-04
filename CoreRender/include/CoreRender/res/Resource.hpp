@@ -69,6 +69,8 @@ namespace res
 			 */
 			virtual ~Resource();
 
+			typedef core::SharedPointer<Resource> Ptr;
+
 			/**
 			 * Returns the name of the resource.
 			 * @note This function is thread-safe.
@@ -131,6 +133,30 @@ namespace res
 			                            bool highpriority = false);
 
 			/**
+			 * Creates a shallow clone of the resource.
+			 * @param name Name of the resource. If this is "", a default name
+			 * is chosen.
+			 * @return Clone of the resource. 0 if cloning is not supported.
+			 */
+			virtual Resource::Ptr clone(std::string name = "")
+			{
+				return 0;
+			}
+			/**
+			 * Creates a deep clone of the resource.
+			 * @param name Name of the resource. If this is "", a default name
+			 * is chosen.
+			 * @return Clone of the resource. 0 if cloning is not supported.
+			 * @note Warning: This potentiall uses much memory, especially if
+			 * textures are cloned as well. Usually it is better to just
+			 * manually perform a deep clone of the parts you want.
+			 */
+			virtual Resource::Ptr cloneDeep(std::string name = "")
+			{
+				return 0;
+			}
+
+			/**
 			 * Returns the name of the resource class as a string.
 			 * @return Resource type name.
 			 */
@@ -144,8 +170,6 @@ namespace res
 			{
 				return rmgr;
 			}
-
-			typedef core::SharedPointer<Resource> Ptr;
 		protected:
 			void finishLoading(bool loaded);
 

@@ -23,6 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/res/ResourceManager.hpp"
 #include "CoreRender/core/MemoryPool.hpp"
 #include "CoreRender/render/Texture.hpp"
+#include "CoreRender/GraphicsEngine.hpp"
 
 #include <cstring>
 
@@ -30,16 +31,16 @@ namespace cr
 {
 namespace scene
 {
-	Terrain::Terrain(cr::res::ResourceManager* rmgr, const std::string& name)
-		: Resource(rmgr, name), displacement(0), normals(0), sizex(0), sizez(0),
-		patchsize(0)
+	Terrain::Terrain(GraphicsEngine *graphics, const std::string& name)
+		: Resource(graphics->getResourceManager(), name), graphics(graphics),
+		displacement(0), normals(0), sizex(0), sizez(0), patchsize(0)
 	{
-		vertices = rmgr->createResource<render::VertexBuffer>("VertexBuffer");
-		indices = rmgr->createResource<render::IndexBuffer>("IndexBuffer");
+		vertices = getManager()->createResource<render::VertexBuffer>("VertexBuffer");
+		indices = getManager()->createResource<render::IndexBuffer>("IndexBuffer");
 		layout = new render::VertexLayout(getManager()->getUploadManager(), 1);
-		layout->setElement(0, rmgr->getNameRegistry().getAttrib("pos"), 0, 3, 0,
-			render::VertexElementType::Float, 0);
-		displacementmap = rmgr->createResource<render::Texture>("Texture");
+		layout->setElement(0, getManager()->getNameRegistry().getAttrib("pos"),
+			0, 3, 0, render::VertexElementType::Float, 0);
+		displacementmap = getManager()->createResource<render::Texture>("Texture");
 		displacementmap->setMipmapsEnabled(false);
 		displacementmap->setFiltering(render::TextureFiltering::Nearest);
 		/*normalmap = rmgr->createResource<render::Texture>("Texture");
@@ -235,22 +236,29 @@ namespace scene
 		while (lodcount < 4 && patchsize >= 3)
 		{
 			Patch patch;
-			patch.indexoffset = indexoffset;
-			patch.vertexoffset = vertexoffset;
+			patch.mesh = graphics->createMesh();
+			patch.mesh->setVertices(vertices);
+			patch.mesh->setIndices(indices);
+			patch.mesh->setVertexOffset(vertexoffset);
+			patch.mesh->setVertexLayout(layout);
 			patch.patchsize = patchsize;
+			patch.indexoffset = indexoffset;
 			// We need patchSize*patchSize vertices for the terrain surface and
 			// patchSize*4-4 for the skirts to hide holes
 			unsigned int vertexcount = patchsize * patchsize + 4 * patchsize - 4;
+			unsigned int indextype;
 			if (vertexcount >= 256)
-				patch.indextype = 2;
+				indextype = 2;
 			else
-				patch.indextype = 1;
+				indextype = 1;
+			patch.mesh->setIndexType(indextype);
+			patch.mesh->setStartIndex(indexoffset / indextype);
 			vertexoffset += vertexcount * sizeof(float) * 3;
 			unsigned int indexcount = (patchsize - 1) * (patchsize - 1) * 6;
 			indexcount += (patchsize - 1) * 4 * 6;
 			// TODO: Triangle strips
-			patch.indexcount = indexcount;
-			indexoffset += indexcount * patch.indextype;
+			patch.mesh->setIndexCount(indexcount);
+			indexoffset += indexcount * indextype;
 			patches.push_back(patch);
 			lodcount++;
 			patchsize = ((patchsize - 1) / 2) + 1;
@@ -261,7 +269,7 @@ namespace scene
 		{
 			Patch &patch = patches[j];
 			patchsize = patch.patchsize;
-			float *vertices = (float*)& vertexdata[patch.vertexoffset];
+			float *vertices = (float*)& vertexdata[patch.mesh->getVertexOffset()];
 			// Compute the surface vertices
 			for (unsigned int i = 0; i < patchsize * patchsize; i++)
 			{
@@ -294,7 +302,7 @@ namespace scene
 				vertices[offset + (patchsize - 2) * 3 + i * 3 + 1] = -1;
 				vertices[offset + (patchsize - 2) * 3 + i * 3 + 2] = z;
 			}
-			if (patch.indextype == 1)
+			if (patch.mesh->getIndexType() == 1)
 			{
 				// Compute the surface indices
 				unsigned char *indices = (unsigned char*)& indexdata[patch.indexoffset];
@@ -511,10 +519,7 @@ namespace scene
 		// Create batch
 		void *ptr = memory->allocate(sizeof(render::Batch));
 		render::Batch *batch = (render::Batch*)ptr;
-		batch->vertices = vertices.get();
-		batch->indices = indices.get();
-		// TODO: This will crash if the layout is removed
-		batch->layout = layout.get();
+		batch->mesh = patches[lod].mesh.get();
 		batch->shader = shader;
 		batch->material = material.get();
 		batch->transmatcount = 0;
@@ -522,12 +527,6 @@ namespace scene
 		batch->skinmatcount = 0;
 		// TODO: Sorting
 		batch->sortkey = 0.0f;
-		batch->startindex = patches[lod].indexoffset / patches[lod].indextype;
-		// TODO: Rename endindex to indexcount
-		batch->endindex = patches[lod].indexoffset / patches[lod].indextype + patches[lod].indexcount;
-		batch->basevertex = 0;
-		batch->vertexoffset = patches[lod].vertexoffset;
-		batch->indextype = patches[lod].indextype;
 		batch->customuniformcount = 2;
 		ptr = memory->allocate(sizeof(render::CustomUniform) * 2);
 		render::CustomUniform *uniform = (render::CustomUniform*)ptr;
@@ -541,7 +540,7 @@ namespace scene
 		uniform[1] = texcoordscale;
 		batch->customuniforms = uniform;
 		batch->transmat = transmat;
-		// Add batch to the render queue
+		// Add batch to the render queuemesh
 		tbb::mutex::scoped_lock lock(queue.batchmutex);
 		queue.batches.push_back(batch);
 	}

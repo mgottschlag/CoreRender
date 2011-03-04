@@ -35,9 +35,11 @@ set(SRC
 	include/CoreRender/render/GeometryManager.hpp
 	include/CoreRender/render/IndexBuffer.hpp
 	include/CoreRender/render/Material.hpp
+	include/CoreRender/render/Mesh.hpp
 	include/CoreRender/render/OcclusionQuery.hpp
 	include/CoreRender/render/Pipeline.hpp
 	include/CoreRender/render/PipelineStage.hpp
+	include/CoreRender/render/PrimitiveType.hpp
 	include/CoreRender/render/RenderCaps.hpp
 	include/CoreRender/render/RenderObject.hpp
 	include/CoreRender/render/RenderQuery.hpp
@@ -89,8 +91,10 @@ set(SRC
 	src/render/ImageSTB.cpp
 	src/render/IndexBuffer.cpp
 	src/render/Material.cpp
+	src/render/Mesh.cpp
 	src/render/opengl/FrameBufferOpenGL.cpp
 	src/render/opengl/IndexBufferOpenGL.cpp
+	src/render/opengl/MeshOpenGL.cpp
 	src/render/opengl/RenderCapsOpenGL.cpp
 	src/render/opengl/ShaderOpenGL.cpp
 	src/render/opengl/TextureOpenGL.cpp

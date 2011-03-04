@@ -25,9 +25,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "GameMath.hpp"
 #include "../math/Frustum.hpp"
 #include "FrameBuffer.hpp"
+#include "Material.hpp"
+#include "Mesh.hpp"
+#include "../core/MemoryPool.hpp"
 
 #include <tbb/spin_mutex.h>
 #include <tbb/mutex.h>
+#include <cstring>
+#include <cstdlib>
 
 namespace cr
 {
@@ -38,14 +43,8 @@ namespace core
 namespace render
 {
 	class RenderResource;
-	class RenderObject;
 	struct ShaderCombination;
-	class VertexBuffer;
-	class IndexBuffer;
 	class RenderTarget;
-	class Texture;
-	class Material;
-	class VertexLayout;
 	struct RenderTargetInfo;
 
 	struct CustomUniform
@@ -57,25 +56,18 @@ namespace render
 
 	struct Batch
 	{
-		VertexBuffer *vertices;
-		IndexBuffer *indices;
-		VertexLayout *layout;
-
+		// Draw info
+		Mesh *mesh;
 		ShaderCombination *shader;
-		// TODO: Do we want the whole material here?
 		Material *material;
 		math::Mat4f transmat;
-
 		unsigned int customuniformcount;
 		CustomUniform *customuniforms;
 
+		// Used for optimization (front-to-back, back-to-front or state change
+		// sorting)
 		float sortkey;
 
-		unsigned int startindex;
-		unsigned int endindex;
-		unsigned int basevertex;
-		unsigned int vertexoffset;
-		unsigned int indextype;
 		// Skinning
 		float *skinmat;
 		unsigned int skinmatcount;
@@ -119,6 +111,62 @@ namespace render
 		{
 			// TODO: Resize batches?
 		}
+
+		Batch *prepareBatch(Material *material,
+		                    Mesh *mesh,
+		                    bool instancing = false,
+		                    bool skinning = false)
+		{
+			// Get shader
+			if (!material->getShader())
+				return 0;
+			unsigned int shaderflagmask;
+				unsigned int shaderflagvalue;
+			material->getShaderFlags(shaderflagmask,
+			                         shaderflagvalue);
+			render::ShaderCombination *shader;
+			shader = material->getShader()->getCombination(context,
+			                                               shaderflagmask,
+			                                               shaderflagvalue,
+			                                               instancing,
+			                                               skinning).get();
+			if (!shader)
+				return 0;
+			// Create batch
+			void *ptr = memory->allocate(sizeof(render::Batch));
+			render::Batch *batch = (render::Batch*)ptr;
+			batch->mesh = mesh;
+			batch->shader = shader;
+			batch->material = material;
+			batch->transmatcount = 0;
+			batch->skinmat = 0;
+			batch->skinmatcount = 0;
+			// TODO: Sorting
+			batch->sortkey = 0.0f;
+			// Custom uniforms
+			const std::vector<render::Material::UniformInfo> &uniforms = material->getUniforms();
+			batch->customuniformcount = uniforms.size();
+			if (uniforms.size() > 0)
+			{
+				ptr = memory->allocate(sizeof(render::CustomUniform) * uniforms.size());
+				render::CustomUniform *uniformdata = (render::CustomUniform*)ptr;
+				for (unsigned int i = 0; i < uniforms.size(); i++)
+				{
+					uniformdata[i].size = uniforms[i].size;
+					uniformdata[i].data = (float*)memory->allocate(sizeof(float) * uniforms[i].size);
+					std::memcpy(uniformdata[i].data,
+					            uniforms[i].data,
+					            uniforms[i].size * sizeof(float));
+					uniformdata[i].name = (char*)memory->allocate(uniforms[i].name.length() + 1);
+					std::strcpy(uniformdata[i].name, uniforms[i].name.c_str());
+				}
+				batch->customuniforms = uniformdata;
+			}
+			else
+				batch->customuniforms = 0;
+			return batch;
+		}
+
 		unsigned int context;
 		CameraUniforms *camera;
 		math::Frustum clipping[2];

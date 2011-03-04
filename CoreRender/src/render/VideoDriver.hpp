@@ -31,6 +31,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/Shader.hpp"
 #include "CoreRender/render/RenderStats.hpp"
 #include "CoreRender/render/FrameBuffer.hpp"
+#include "CoreRender/render/Mesh.hpp"
 
 namespace cr
 {
@@ -119,6 +120,11 @@ namespace render
 			virtual FrameBuffer::Ptr createFrameBuffer(UploadManager &uploadmgr,
 			                                           res::ResourceManager *rmgr,
 			                                           const std::string &name) = 0;
+
+			/**
+			 * Creates a new mesh object.
+			 */
+			virtual Mesh::Ptr createMesh(UploadManager &uploadmgr) = 0;
 
 			/**
 			 * Sets a render target for following calls to draw() or clear() to

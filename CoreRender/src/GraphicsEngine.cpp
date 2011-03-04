@@ -145,6 +145,38 @@ namespace cr
 		private:
 			render::UploadManager &uploadmgr;
 	};
+	class ModelFactory : public res::ResourceFactory
+	{
+	public:
+		ModelFactory(GraphicsEngine *graphics)
+			: res::ResourceFactory(graphics->getResourceManager()),
+			graphics(graphics)
+		{
+		}
+
+		virtual res::Resource::Ptr create(const std::string &name)
+		{
+			return new scene::Model(graphics, name);
+		}
+	private:
+		GraphicsEngine *graphics;
+	};
+	class TerrainFactory : public res::ResourceFactory
+	{
+	public:
+		TerrainFactory(GraphicsEngine *graphics)
+			: res::ResourceFactory(graphics->getResourceManager()),
+			graphics(graphics)
+		{
+		}
+
+		virtual res::Resource::Ptr create(const std::string &name)
+		{
+			return new scene::Terrain(graphics, name);
+		}
+	private:
+		GraphicsEngine *graphics;
+	};
 
 	GraphicsEngine::GraphicsEngine()
 		: rmgr(0), driver(0)
@@ -205,11 +237,11 @@ namespace cr
 		rmgr->addFactory("RenderTarget", factory);
 		factory = new res::DefaultResourceFactory<render::Pipeline>(rmgr);
 		rmgr->addFactory("Pipeline", factory);
-		factory = new res::DefaultResourceFactory<scene::Model>(rmgr);
+		factory = new ModelFactory(this);
 		rmgr->addFactory("Model", factory);
 		factory = new res::DefaultResourceFactory<scene::Animation>(rmgr);
 		rmgr->addFactory("Animation", factory);
-		factory = new res::DefaultResourceFactory<scene::Terrain>(rmgr);
+		factory = new TerrainFactory(this);
 		rmgr->addFactory("Terrain", factory);
 		// Create default resources
 		// TODO
@@ -316,10 +348,13 @@ namespace cr
 		res::Resource::Ptr res = rmgr->getOrLoad("Material", name);
 		return render::Material::Ptr((render::Material*)res.get());
 	}
+	render::Mesh::Ptr GraphicsEngine::createMesh()
+	{
+		return driver->createMesh(uploadmgr);
+	}
 
 	void GraphicsEngine::setFileSystem(core::FileSystem::Ptr fs)
 	{
-		// TODO: Maybe not thread-safe
 		this->fs = fs;
 		if (rmgr)
 		{

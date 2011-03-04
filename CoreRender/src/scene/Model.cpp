@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "../3rdparty/tinyxml.h"
 #include "CoreRender/render/FrameData.hpp"
 #include "CoreRender/core/MemoryPool.hpp"
+#include "CoreRender/GraphicsEngine.hpp"
 
 #include <sstream>
 
@@ -31,9 +32,9 @@ namespace cr
 {
 namespace scene
 {
-	Model::Model(cr::res::ResourceManager *rmgr,
+	Model::Model(GraphicsEngine *graphics,
 	             const std::string &name)
-		: Resource(rmgr, name), changecounter(0)
+		: Resource(graphics->getResourceManager(), name), graphics(graphics), changecounter(0)
 	{
 	}
 	Model::~Model()
@@ -95,7 +96,11 @@ namespace scene
 			return 0;
 		if (meshbatch.node >= nodes.size())
 			return 0;
-		core::MemoryPool *memory = queue.memory;
+		return queue.prepareBatch(meshbatch.material.get(),
+		                          geometry[meshbatch.geometry].mesh.get(),
+		                          instancing,
+		                          skinning);
+		/*core::MemoryPool *memory = queue.memory;
 		// Get material information
 		render::Material::Ptr material = meshbatch.material;
 		if (!material->getShader())
@@ -116,9 +121,7 @@ namespace scene
 		// Create batch
 		void *ptr = memory->allocate(sizeof(render::Batch));
 		render::Batch *batch = (render::Batch*)ptr;
-		batch->vertices = vertices.get();
-		batch->indices = indices.get();
-		batch->layout = geom->layout.get();
+		batch->mesh = geom->mesh.get();
 		batch->shader = shader;
 		batch->material = material.get();
 		batch->transmatcount = 0;
@@ -126,12 +129,6 @@ namespace scene
 		batch->skinmatcount = 0;
 		// TODO: Sorting
 		batch->sortkey = 0.0f;
-		batch->startindex = geom->startindex;
-		// TODO: Rename endindex to indexcount
-		batch->endindex = geom->startindex + geom->indexcount;
-		batch->basevertex = geom->basevertex;
-		batch->vertexoffset = geom->vertexoffset;
-		batch->indextype = geom->indextype;
 		// Custom uniforms
 		const std::vector<render::Material::UniformInfo> &uniforms = material->getUniforms();
 		batch->customuniformcount = uniforms.size();
@@ -153,7 +150,7 @@ namespace scene
 		}
 		else
 			batch->customuniforms = 0;
-		return batch;
+		return batch;*/
 	}
 
 	bool Model::load()
@@ -385,21 +382,25 @@ namespace scene
 		geometry.resize(header.batchcount);
 		for (unsigned int i = 0; i < header.batchcount; i++)
 		{
-			geometry[i].layout = createVertexLayout(batchdata[i].attribs);
-			if (!geometry[i].layout)
+			geometry[i].mesh = graphics->createMesh();
+			render::VertexLayout::Ptr layout = createVertexLayout(batchdata[i].attribs);
+			if (!layout)
 			{
 				getManager()->getLog()->error("%s: Could not create vertex layout.",
-				                              getName().c_str());
+											  getName().c_str());
 				return false;
 			}
+			geometry[i].mesh->setVertexLayout(layout);
 			GeometryFile::AttribInfo &attribs = batchdata[i].attribs;
 			GeometryFile::GeometryInfo &geom = batchdata[i].geom;
-			geometry[i].basevertex = geom.basevertex;
-			geometry[i].indextype = geom.indextype;
-			geometry[i].indexcount = geom.indexcount;
-			geometry[i].startindex = geom.indexoffset / geom.indextype;
-			geometry[i].vertexoffset = geom.vertexoffset;
-			geometry[i].vertexcount = geom.vertexsize / attribs.stride;
+			geometry[i].mesh->setBaseVertex(geom.basevertex);
+			geometry[i].mesh->setIndexType(geom.indextype);
+			geometry[i].mesh->setIndexCount(geom.indexcount);
+			geometry[i].mesh->setStartIndex(geom.indexoffset / geom.indextype);
+			geometry[i].mesh->setVertexOffset(geom.vertexoffset);
+			geometry[i].mesh->setVertexCount(geom.vertexsize / attribs.stride);
+			geometry[i].mesh->setVertices(vertices);
+			geometry[i].mesh->setIndices(indices);
 			// Create joints
 			geometry[i].joints.resize(batchdata[i].geom.jointcount);
 			for (unsigned int j = 0; j < batchdata[i].geom.jointcount; j++)

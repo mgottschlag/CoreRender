@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "VertexBufferOpenGL.hpp"
 #include "ShaderOpenGL.hpp"
 #include "FrameBufferOpenGL.hpp"
+#include "MeshOpenGL.hpp"
 #include "CoreRender/render/FrameData.hpp"
 #include "CoreRender/render/VertexLayout.hpp"
 #include "CoreRender/render/Material.hpp"
@@ -113,6 +114,11 @@ namespace opengl
 	                                                      const std::string &name)
 	{
 		return new FrameBufferOpenGL(uploadmgr, rmgr, name);
+	}
+	Mesh::Ptr VideoDriverOpenGL::createMesh(UploadManager &uploadmgr)
+	{
+		// TODO: Conditionally enable vertex array objects
+		return new MeshOpenGL(uploadmgr, false);
 	}
 
 	void VideoDriverOpenGL::setRenderTarget(const RenderTargetInfo *target)
@@ -268,8 +274,10 @@ namespace opengl
 		// Change depth write
 		setDepthWrite(batch->shader->uploadeddata.depthwrite);
 		// Change vertex/index buffer
-		setVertexBuffer(batch->vertices);
-		setIndexBuffer(batch->indices);
+		Mesh::MeshData *mesh = ((MeshOpenGL*)batch->mesh)->getData();
+		setVertexBuffer(mesh->vertices);
+		if (mesh->indices)
+			setIndexBuffer(mesh->indices);
 		// Bind shader
 		// TODO: Error checking
 		if (currentshader != batch->shader)
@@ -285,7 +293,7 @@ namespace opengl
 			if (attribhandle == -1)
 				continue;
 			unsigned int name = shaderinfo->attribs[i];
-			VertexLayoutElement *layoutelem = batch->layout->getElementByName(name);
+			VertexLayoutElement *layoutelem = mesh->layout->getElementByName(name);
 			if (!layoutelem)
 				continue;
 			unsigned int opengltype = GL_FLOAT;
@@ -317,7 +325,7 @@ namespace opengl
 			                      opengltype,
 			                      GL_FALSE,
 			                      layoutelem->stride,
-			                      (void*)(layoutelem->offset + batch->vertexoffset));
+			                      (void*)(layoutelem->offset + mesh->vertexoffset));
 		}
 		// Custom uniforms
 		for (unsigned int i = 0; i < shaderinfo->uniforms.size(); i++)
@@ -773,31 +781,45 @@ namespace opengl
 			// TODO: Other uniforms
 		}
 		// Render triangles
-		unsigned int indexcount = batch->endindex - batch->startindex;
-		if (batch->indextype == 1)
+		Mesh::MeshData *mesh = ((MeshOpenGL*)batch->mesh)->getData();
+		bool useindices = true;
+		if (mesh->primitivetype == PrimitiveType::QuadList
+			|| mesh->primitivetype == PrimitiveType::TriangleList)
+			useindices = false;
+		if (useindices)
 		{
-			glDrawElements(GL_TRIANGLES,
-			               indexcount,
-			               GL_UNSIGNED_BYTE,
-			               (void*)(batch->startindex));
+			// TODO: Primitive type
+			unsigned int indexcount = mesh->indexcount;
+			if (mesh->indextype == 1)
+			{
+				glDrawElements(GL_TRIANGLES,
+				               indexcount,
+				               GL_UNSIGNED_BYTE,
+				               (void*)(mesh->startindex));
+			}
+			else if (mesh->indextype == 2)
+			{
+				glDrawElements(GL_TRIANGLES,
+				               indexcount,
+				               GL_UNSIGNED_SHORT,
+				               (void*)(mesh->startindex * 2));
+			}
+			else if (mesh->indextype == 4)
+			{
+				glDrawElements(GL_TRIANGLES,
+				               indexcount,
+				               GL_UNSIGNED_INT,
+				               (void*)(mesh->startindex * 4));
+			}
+			// Increase polygon/batch counters
+			getStats().increaseBatchCount(1);
+			getStats().increasePolygonCount(indexcount / 3);
 		}
-		else if (batch->indextype == 2)
+		else
 		{
-			glDrawElements(GL_TRIANGLES,
-			               indexcount,
-			               GL_UNSIGNED_SHORT,
-			               (void*)(batch->startindex * 2));
+			glDrawArrays(GL_QUADS, 0, mesh->vertexcount);
+			// TODO
 		}
-		else if (batch->indextype == 4)
-		{
-			glDrawElements(GL_TRIANGLES,
-			               indexcount,
-			               GL_UNSIGNED_INT,
-			               (void*)(batch->startindex * 4));
-		}
-		// Increase polygon/batch counters
-		getStats().increaseBatchCount(1);
-		getStats().increasePolygonCount(indexcount / 3);
 	}
 	void VideoDriverOpenGL::drawInstanced(Batch *batch,
 	                                      unsigned int instancecount,
@@ -836,29 +858,30 @@ namespace opengl
 			glVertexAttribDivisorARB(batch->shader->transmatattrib + 3, 1);
 		}
 		// Render triangles
-		unsigned int indexcount = batch->endindex - batch->startindex;
-		if (batch->indextype == 1)
+		Mesh::MeshData *mesh = ((MeshOpenGL*)batch->mesh)->getData();
+		unsigned int indexcount = mesh->indexcount;
+		if (mesh->indextype == 1)
 		{
 			glDrawElementsInstancedARB(GL_TRIANGLES,
 			                           indexcount,
 			                           GL_UNSIGNED_BYTE,
-			                           (void*)(batch->startindex),
+			                           (void*)(mesh->startindex),
 			                           instancecount);
 		}
-		else if (batch->indextype == 2)
+		else if (mesh->indextype == 2)
 		{
 			glDrawElementsInstancedARB(GL_TRIANGLES,
 			                           indexcount,
 			                           GL_UNSIGNED_SHORT,
-			                           (void*)(batch->startindex * 2),
+			                           (void*)(mesh->startindex * 2),
 			                           instancecount);
 		}
-		else if (batch->indextype == 4)
+		else if (mesh->indextype == 4)
 		{
 			glDrawElementsInstancedARB(GL_TRIANGLES,
 			                           indexcount,
 			                           GL_UNSIGNED_INT,
-			                           (void*)(batch->startindex * 4),
+			                           (void*)(mesh->startindex * 4),
 			                           instancecount);
 		}
 		// Increase polygon/batch counters

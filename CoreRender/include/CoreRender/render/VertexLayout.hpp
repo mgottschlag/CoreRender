@@ -118,7 +118,8 @@ namespace cr
 				 * @param elemcount Number of elements in the layout.
 				 */
 				VertexLayout(UploadManager &uploadmgr, unsigned int elemcount)
-					: RenderObject(uploadmgr), elemcount(elemcount)
+					: RenderObject(uploadmgr), changecounter(0),
+					elemcount(elemcount)
 				{
 					elements = new VertexLayoutElement[elemcount];
 				}
@@ -155,6 +156,8 @@ namespace cr
 					elements[element].offset = offset;
 					elements[element].type = type;
 					elements[element].stride = stride;
+
+					changecounter++;
 				}
 
 				/**
@@ -230,12 +233,27 @@ namespace cr
 				{
 				}
 
+				/**
+				 * Returns the value of a counter which is incremented on every
+				 * call to setElement().
+				 *
+				 * This can be used for conditional uploading of objects which
+				 * use the layout.
+				 * @return Change counter.
+				 */
+				unsigned int getChangeCounter()
+				{
+					return changecounter;
+				}
+
 				typedef core::SharedPointer<VertexLayout> Ptr;
 			protected:
 				virtual void *getUploadData()
 				{
+					return 0;
 				}
 			private:
+				unsigned int changecounter;
 				unsigned int elemcount;
 				VertexLayoutElement *elements;
 		};

@@ -331,5 +331,60 @@ namespace render
 			list->textures[i] = textures[i];
 		return list;
 	}
+
+	res::Resource::Ptr Material::clone(std::string name)
+	{
+		if (name == "")
+			name = getManager()->getInternalName();
+		Material::Ptr material = new Material(getUploadManager(),
+		                                      getManager(),
+											  name);
+		material->shader = shader;
+		material->shaderflags = shaderflags;
+		material->shaderflagmask = shaderflagmask;
+		material->shaderflagvalue = shaderflagvalue;
+
+		material->textures = textures;
+		material->uniforms = uniforms;
+		material->registerUpload();
+		return material;
+	}
+
+	res::Resource::Ptr Material::cloneDeep(std::string name)
+	{
+		// Clone used resources
+		res::Resource::Ptr shadercopy = shader->cloneDeep();
+		if (!shadercopy)
+			return 0;
+		std::vector<res::Resource::Ptr> texturecopy(textures.size());
+		for (unsigned int i = 0; i < textures.size(); i++)
+		{
+			if (textures[i].texture)
+			{
+				texturecopy[i] = textures[i].texture->cloneDeep();
+				if (!texturecopy[i])
+					return 0;
+			}
+		}
+		// Clone the resource
+		if (name == "")
+			name = getManager()->getInternalName();
+		Material::Ptr material = new Material(getUploadManager(),
+											  getManager(),
+											  name);
+		material->shader = (Shader*)shadercopy.get();
+		material->shaderflags = shaderflags;
+		material->shaderflagmask = shaderflagmask;
+		material->shaderflagvalue = shaderflagvalue;
+
+		material->textures = textures;
+		for (unsigned int i = 0; i < textures.size(); i++)
+		{
+			material->textures[i].texture = (Texture*)texturecopy[i].get();
+		}
+		material->uniforms = uniforms;
+		material->registerUpload();
+		return material;
+	}
 }
 }
