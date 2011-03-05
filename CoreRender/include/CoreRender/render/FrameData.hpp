@@ -54,6 +54,14 @@ namespace render
 		float *data;
 	};
 
+	struct ScissorRect
+	{
+		unsigned int x;
+		unsigned int y;
+		unsigned int width;
+		unsigned int height;
+	};
+
 	struct Batch
 	{
 		// Draw info
@@ -74,6 +82,9 @@ namespace render
 		// Instancing
 		unsigned int transmatcount;
 		math::Mat4f *transmatlist;
+
+		// Scissor rect (only used when non-null, mostly used for 2d rendering)
+		ScissorRect *scissor;
 	};
 	struct RenderCommandType
 	{
@@ -164,6 +175,8 @@ namespace render
 			}
 			else
 				batch->customuniforms = 0;
+			// Scissors
+			batch->scissor = 0;
 			return batch;
 		}
 
