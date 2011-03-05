@@ -499,36 +499,11 @@ namespace scene
 	                          float *offsetscale,
 	                          render::CustomUniform &texcoordscale)
 	{
+		render::Batch *batch = queue.prepareBatch(material.get(), patches[lod].mesh.get(), false, false);
+		// TODO: This overwrites existing material uniforms
 		core::MemoryPool *memory = queue.memory;
-		// Get material information
-		render::Material::Ptr material = this->material;
-		if (!material->getShader())
-			return;
-		unsigned int shaderflagmask;
-		unsigned int shaderflagvalue;
-		material->getShaderFlags(shaderflagmask,
-		                         shaderflagvalue);
-		render::ShaderCombination *shader;
-		shader = material->getShader()->getCombination(queue.context,
-		                                               shaderflagmask,
-		                                               shaderflagvalue,
-		                                               false,
-		                                               false).get();
-		if (!shader)
-			return;
-		// Create batch
-		void *ptr = memory->allocate(sizeof(render::Batch));
-		render::Batch *batch = (render::Batch*)ptr;
-		batch->mesh = patches[lod].mesh.get();
-		batch->shader = shader;
-		batch->material = material.get();
-		batch->transmatcount = 0;
-		batch->skinmat = 0;
-		batch->skinmatcount = 0;
-		// TODO: Sorting
-		batch->sortkey = 0.0f;
 		batch->customuniformcount = 2;
-		ptr = memory->allocate(sizeof(render::CustomUniform) * 2);
+		void *ptr = memory->allocate(sizeof(render::CustomUniform) * 2);
 		render::CustomUniform *uniform = (render::CustomUniform*)ptr;
 		char *uniformname = (char*)memory->allocate(strlen("terrainOffsetScale") + 1);
 		strcpy(uniformname, "terrainOffsetScale");
