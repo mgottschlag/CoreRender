@@ -38,14 +38,14 @@ namespace render
 			Mesh(UploadManager &uploadmgr);
 			~Mesh();
 
-			void setVertices(VertexBuffer::Ptr vertices);
-			VertexBuffer::Ptr getVertices()
+			void setVertexBuffer(VertexBuffer::Ptr vertices);
+			VertexBuffer::Ptr getVertexBuffer()
 			{
 				return vertices;
 			}
 
-			void setIndices(IndexBuffer::Ptr indices);
-			IndexBuffer::Ptr getIndices()
+			void setIndexBuffer(IndexBuffer::Ptr indices);
+			IndexBuffer::Ptr getIndexBuffer()
 			{
 				return indices;
 			}

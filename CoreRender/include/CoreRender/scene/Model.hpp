@@ -122,19 +122,19 @@ namespace scene
 			{
 				return batches;
 			}
-			void setVertices(render::VertexBuffer::Ptr vertices)
+			void setVertexBuffer(render::VertexBuffer::Ptr vertices)
 			{
 				this->vertices = vertices;
 			}
-			render::VertexBuffer::Ptr getVertices()
+			render::VertexBuffer::Ptr getVertexBuffer()
 			{
 				return vertices;
 			}
-			void setIndices(render::IndexBuffer::Ptr indices)
+			void setIndexBuffer(render::IndexBuffer::Ptr indices)
 			{
 				this->indices = indices;
 			}
-			render::IndexBuffer::Ptr getIndices()
+			render::IndexBuffer::Ptr getIndexBuffer()
 			{
 				return indices;
 			}

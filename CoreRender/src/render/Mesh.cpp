@@ -35,13 +35,13 @@ namespace render
 	{
 	}
 
-	void Mesh::setVertices(VertexBuffer::Ptr vertices)
+	void Mesh::setVertexBuffer(VertexBuffer::Ptr vertices)
 	{
 		this->vertices = vertices;
 		registerUpload();
 	}
 
-	void Mesh::setIndices(IndexBuffer::Ptr indices)
+	void Mesh::setIndexBuffer(IndexBuffer::Ptr indices)
 	{
 		this->indices = indices;
 		registerUpload();

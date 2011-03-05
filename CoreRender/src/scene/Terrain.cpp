@@ -237,8 +237,8 @@ namespace scene
 		{
 			Patch patch;
 			patch.mesh = graphics->createMesh();
-			patch.mesh->setVertices(vertices);
-			patch.mesh->setIndices(indices);
+			patch.mesh->setVertexBuffer(vertices);
+			patch.mesh->setIndexBuffer(indices);
 			patch.mesh->setVertexOffset(vertexoffset);
 			patch.mesh->setVertexLayout(layout);
 			patch.patchsize = patchsize;

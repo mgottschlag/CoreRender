@@ -399,8 +399,8 @@ namespace scene
 			geometry[i].mesh->setStartIndex(geom.indexoffset / geom.indextype);
 			geometry[i].mesh->setVertexOffset(geom.vertexoffset);
 			geometry[i].mesh->setVertexCount(geom.vertexsize / attribs.stride);
-			geometry[i].mesh->setVertices(vertices);
-			geometry[i].mesh->setIndices(indices);
+			geometry[i].mesh->setVertexBuffer(vertices);
+			geometry[i].mesh->setIndexBuffer(indices);
 			// Create joints
 			geometry[i].joints.resize(batchdata[i].geom.jointcount);
 			for (unsigned int j = 0; j < batchdata[i].geom.jointcount; j++)
