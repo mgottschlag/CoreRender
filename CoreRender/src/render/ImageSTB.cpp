@@ -45,23 +45,24 @@ namespace render
 		int width;
 		int height;
 		void *image;
+		int availablecomponents = 0;
 		if (ishdr)
 		{
 			image = stbi_loadf_from_memory(data,
-			                                      datasize,
-			                                      &width,
-			                                      &height,
-			                                      0,
-			                                      4);
+			                               datasize,
+			                               &width,
+			                               &height,
+			                               &availablecomponents,
+			                               4);
 		}
 		else
 		{
 			image = stbi_load_from_memory(data,
-			                                       datasize,
-			                                       &width,
-			                                       &height,
-			                                       0,
-			                                       4);
+			                              datasize,
+			                              &width,
+			                              &height,
+			                              &availablecomponents,
+			                              4);
 		}
 		// If we do not get any image data, this can mean either that the
 		// image is corrupt or that it is in a format we do not support here
