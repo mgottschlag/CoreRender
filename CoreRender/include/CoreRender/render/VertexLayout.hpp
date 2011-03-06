@@ -41,8 +41,11 @@ namespace cr
 				DoubleFloat,
 				HalfFloat,
 				Integer,
+				UnsignedInteger,
 				Short,
-				Byte
+				UnsignedShort,
+				Byte,
+				UnsignedByte
 			};
 		};
 
@@ -221,9 +224,12 @@ namespace cr
 						case VertexElementType::HalfFloat:
 							return 2;
 						case VertexElementType::Integer:
+						case VertexElementType::UnsignedInteger:
 							return 4;
 						case VertexElementType::Short:
+						case VertexElementType::UnsignedShort:
 							return 2;
+						case VertexElementType::UnsignedByte:
 						case VertexElementType::Byte:
 							return 1;
 					}

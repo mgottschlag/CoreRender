@@ -297,17 +297,21 @@ namespace opengl
 			if (!layoutelem)
 				continue;
 			unsigned int opengltype = GL_FLOAT;
+			int normalize = GL_TRUE;
 			switch (layoutelem->type)
 			{
 				case VertexElementType::Float:
 					opengltype = GL_FLOAT;
+					normalize = GL_FALSE;
 					break;
 				case VertexElementType::DoubleFloat:
 					opengltype = GL_DOUBLE;
+					normalize = GL_FALSE;
 					break;
 				case VertexElementType::HalfFloat:
 					// TODO
 					opengltype = GL_FLOAT;
+					normalize = GL_FALSE;
 					break;
 				case VertexElementType::Integer:
 					opengltype = GL_INT;
@@ -318,12 +322,21 @@ namespace opengl
 				case VertexElementType::Byte:
 					opengltype = GL_BYTE;
 					break;
+				case VertexElementType::UnsignedInteger:
+					opengltype = GL_UNSIGNED_INT;
+					break;
+				case VertexElementType::UnsignedShort:
+					opengltype = GL_UNSIGNED_SHORT;
+					break;
+				case VertexElementType::UnsignedByte:
+					opengltype = GL_UNSIGNED_BYTE;
+					break;
 			}
 			glEnableVertexAttribArray(attribhandle);
 			glVertexAttribPointer(attribhandle,
 			                      layoutelem->components,
 			                      opengltype,
-			                      GL_FALSE,
+			                      normalize,
 			                      layoutelem->stride,
 			                      (void*)(layoutelem->offset + mesh->vertexoffset));
 		}
