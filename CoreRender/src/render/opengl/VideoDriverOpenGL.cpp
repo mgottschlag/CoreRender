@@ -747,7 +747,7 @@ namespace opengl
 				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 				break;
 			case BlendMode::Blend:
-				glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 				break;
 			case BlendMode::Multiply:
 				glBlendFunc(GL_DST_COLOR, GL_ZERO);
