@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2010, Mathias Gottschlag
+Copyright (C) 2011, Mathias Gottschlag
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -145,13 +145,13 @@ namespace cr
 			}
 			/**
 			 * Returns the rendering statistics from the last completely
-			 * finished frame. Note that this frame is not the one from the last
-			 * endFrame() but rather the one before that if multithreading is
-			 * enabled.
+			 * finished frame. This is the last frame for which render() was
+			 * called.
 			 * @return Render statistics.
 			 */
-			const render::RenderStats &getRenderStats()
+			render::RenderStats getRenderStats()
 			{
+				tbb::mutex::scoped_lock lock(statsmutex);
 				return stats;
 			}
 		private:
@@ -165,7 +165,22 @@ namespace cr
 
 			render::VideoDriver *driver;
 
+			tbb::mutex statsmutex;
 			render::RenderStats stats;
+			core::Time lastframeendtime;
+
+			core::Time accumulationstart;
+			core::Time lastaccumulationstart;
+			unsigned int frames;
+			unsigned int lastframes;
+			core::Duration frametime;
+			core::Duration lastframetime;
+			core::Duration uploadtime;
+			core::Duration lastuploadtime;
+			core::Duration rendertime;
+			core::Duration lastrendertime;
+			core::Duration composetime;
+			core::Duration lastcomposetime;
 	};
 }
 

@@ -178,10 +178,51 @@ namespace core
 			 */
 			std::string toString(bool asseconds = true) const;
 
-			Duration operator+(const Duration &other) const;
-			Duration operator-(const Duration &other) const;
-			Duration &operator+=(const Duration &other);
-			Duration &operator-=(const Duration &other);
+			Duration operator+(const Duration &other) const
+			{
+				Duration out;
+				out.duration = duration + other.duration;
+				return out;
+			}
+			Duration operator-(const Duration &other) const
+			{
+				Duration out;
+				out.duration = duration - other.duration;
+				return out;
+			}
+			Duration &operator+=(const Duration &other)
+			{
+				duration += other.duration;
+				return *this;
+			}
+			Duration &operator-=(const Duration &other)
+			{
+				duration -= other.duration;
+				return *this;
+			}
+
+			Duration operator*(int factor) const
+			{
+				Duration out(*this);
+				out *= factor;
+				return out;
+			}
+			Duration &operator*=(int factor)
+			{
+				duration *= factor;
+				return *this;
+			}
+			Duration operator/(int divisor) const
+			{
+				Duration out(*this);
+				out /= divisor;
+				return out;
+			}
+			Duration &operator/=(int divisor)
+			{
+				duration /= divisor;
+				return *this;
+			}
 
 			Duration &operator=(const Duration &other)
 			{

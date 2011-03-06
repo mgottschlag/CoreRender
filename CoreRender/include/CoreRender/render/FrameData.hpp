@@ -28,6 +28,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Material.hpp"
 #include "Mesh.hpp"
 #include "../core/MemoryPool.hpp"
+#include "CoreRender/core/Time.hpp"
 
 #include <tbb/spin_mutex.h>
 #include <tbb/mutex.h>
@@ -309,6 +310,7 @@ namespace render
 			FrameData(core::MemoryPool *memory)
 				: memory(memory)
 			{
+				composestarttime = core::Time::Now();
 			}
 
 			/**
@@ -334,12 +336,28 @@ namespace render
 			{
 				return memory;
 			}
-		private:
+
+			void endFrame()
+			{
+				composeendtime = core::Time::Now();
+			}
+			core::Time getComposeStartTime()
+			{
+				return composestarttime;
+			}
+			core::Time getComposeEndTime()
+			{
+				return composeendtime;
+			}
+	private:
 			core::MemoryPool *memory;
 			UploadLists upload;
 			std::vector<SceneFrameData*> scenes;
 			// TODO: Try tbb::mutex here
 			tbb::spin_mutex scenemutex;
+
+			core::Time composestarttime;
+			core::Time composeendtime;
 	};
 }
 }

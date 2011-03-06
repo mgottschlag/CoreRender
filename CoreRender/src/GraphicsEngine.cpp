@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2010, Mathias Gottschlag
+Copyright (C) 2011, Mathias Gottschlag
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -245,6 +245,20 @@ namespace cr
 		rmgr->addFactory("Terrain", factory);
 		// Create default resources
 		// TODO
+		// Statistics
+		lastframeendtime = core::Time::Now();
+		accumulationstart = lastframeendtime;
+		lastaccumulationstart = accumulationstart;
+		frames = 0;
+		lastframes = 0;
+		frametime = core::Duration::Nanoseconds(0);
+		lastframetime = core::Duration::Nanoseconds(0);
+		uploadtime = core::Duration::Nanoseconds(0);
+		lastuploadtime = core::Duration::Nanoseconds(0);
+		rendertime = core::Duration::Nanoseconds(0);
+		lastrendertime = core::Duration::Nanoseconds(0);
+		composetime = core::Duration::Nanoseconds(0);
+		lastcomposetime = core::Duration::Nanoseconds(0);
 		return true;
 	}
 	void GraphicsEngine::shutdown()
@@ -290,13 +304,16 @@ namespace cr
 	{
 		// Create lists with resources to be uploaded and deleted
 		uploadmgr.getLists(frame->getUploadLists(), frame->getMemory());
-		// TODO: Render stats
+		frame->endFrame();
 	}
 	void GraphicsEngine::render(render::FrameData *frame)
 	{
 		// Upload resources which need to be uploaded
+		core::Time uploadstart = core::Time::Now();
 		uploadmgr.uploadResources(frame->getUploadLists());
+		core::Time uploadend = core::Time::Now();
 		// Render frame
+		core::Time renderstart = uploadend;
 		driver->beginFrame();
 		const std::vector<render::SceneFrameData*> &scenes = frame->getScenes();
 		for (unsigned int i = 0; i < scenes.size(); i++)
@@ -308,8 +325,52 @@ namespace cr
 		uploadmgr.deleteResources(frame->getUploadLists());
 		// Delete frame data
 		core::MemoryPool *memory = frame->getMemory();
+		core::Time composestart = frame->getComposeStartTime();
+		core::Time composeend = frame->getComposeEndTime();
 		delete frame;
 		delete memory;
+		core::Time renderend = core::Time::Now();
+		// Statistics
+		core::Duration timesincelastframe = renderend - lastframeendtime;
+		lastframeendtime = renderend;
+		render::RenderStats stats = driver->getStats();
+		stats.fps = 1.0e9 / (double)timesincelastframe.getNanoseconds();
+		stats.composetime = composeend - composestart;
+		stats.uploadtime = uploadend - uploadstart;
+		stats.rendertime = renderend - renderstart;
+		stats.frametime = stats.composetime + stats.uploadtime + stats.rendertime;
+		// Compute average values (accumulated over 1-2 seconds)
+		frames++;
+		unsigned int accumframes = frames + lastframes;
+		composetime += stats.composetime;
+		stats.averagecomposetime = (composetime + lastcomposetime) / accumframes;
+		uploadtime += stats.uploadtime;
+		stats.averageuploadtime = (uploadtime + lastuploadtime) / accumframes;
+		rendertime += stats.rendertime;
+		stats.averagerendertime = (rendertime + lastrendertime) / accumframes;
+		frametime += stats.frametime;
+		stats.averageframetime = (frametime + lastframetime) / accumframes;
+		float accumseconds = 1.0e-9 * (renderend - lastaccumulationstart).getNanoseconds();
+		stats.averagefps = (double)(frames + lastframes) / accumseconds;
+		// Start a new accumulation frame
+		if (renderend - accumulationstart >= core::Duration::Seconds(1))
+		{
+			lastaccumulationstart = accumulationstart;
+			accumulationstart = core::Time::Now();
+			lastframes = frames;
+			frames = 0;
+			lastframetime = frametime;
+			frametime = core::Duration::Nanoseconds(0);
+			lastuploadtime = uploadtime;
+			uploadtime = core::Duration::Nanoseconds(0);
+			lastrendertime = rendertime;
+			rendertime = core::Duration::Nanoseconds(0);
+			lastcomposetime = composetime;
+			composetime = core::Duration::Nanoseconds(0);
+		}
+		// Write the data
+		tbb::mutex::scoped_lock lock(statsmutex);
+		this->stats = stats;
 	}
 	void GraphicsEngine::discard(render::FrameData *frame)
 	{

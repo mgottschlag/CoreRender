@@ -586,6 +586,7 @@ namespace opengl
 
 	void VideoDriverOpenGL::beginFrame()
 	{
+		getStats().reset();
 		// Init static OpenGL states
 		glCullFace(GL_BACK);
 		glEnable(GL_CULL_FACE);
@@ -832,6 +833,8 @@ namespace opengl
 		{
 			glDrawArrays(GL_QUADS, 0, mesh->vertexcount);
 			// TODO
+			getStats().increaseBatchCount(1);
+			getStats().increasePolygonCount(mesh->vertexcount / 4);
 		}
 	}
 	void VideoDriverOpenGL::drawInstanced(Batch *batch,

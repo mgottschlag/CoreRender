@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2010, Mathias Gottschlag
+Copyright (C) 2011, Mathias Gottschlag
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -26,6 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace cr
 {
+class GraphicsEngine;
 namespace render
 {
 	/**
@@ -38,10 +39,15 @@ namespace render
 			 * Constructor.
 			 */
 			RenderStats()
-				: polygons(0), batches(0), fps(0.0f),
+				: polygons(0), batches(0), fps(0.0f), averagefps(0),
 				frametime(core::Duration::Seconds(0)),
+				averageframetime(core::Duration::Seconds(0)),
+				uploadtime(core::Duration::Seconds(0)),
+				averageuploadtime(core::Duration::Seconds(0)),
 				rendertime(core::Duration::Seconds(0)),
-				waittime(core::Duration::Seconds(0))
+				averagerendertime(core::Duration::Seconds(0)),
+				composetime(core::Duration::Seconds(0)),
+				averagecomposetime(core::Duration::Seconds(0))
 			{
 			}
 			/**
@@ -52,12 +58,15 @@ namespace render
 				polygons = other.polygons;
 				batches = other.batches;
 				fps = other.fps;
+				averagefps = other.averagefps;
 				frametime = other.frametime;
+				averageframetime = other.averageframetime;
 				rendertime = other.rendertime;
-				waittime = other.waittime;
-				framebegin = other.framebegin;
-				renderbegin = other.renderbegin;
-				frameend = other.frameend;
+				averagerendertime = other.averagerendertime;
+				composetime = other.composetime;
+				averagecomposetime = other.averagecomposetime;
+				uploadtime = other.uploadtime;
+				averageuploadtime = other.averageuploadtime;
 			}
 			/**
 			 * Destructor.
@@ -83,35 +92,85 @@ namespace render
 			}
 			/**
 			 * Returns the number of frames rendered per second. Note that this
-			 * is only measured based on the time of one single frame, so this
-			 * number will vary wildly.
+			 * is only measured based on the time between the last and this
+			 * call to GraphicsEngine::render(), so this number will vary
+			 * wildly. Use getAverageFPS() for more stable and usable numbers.
 			 */
 			float getFPS() const
 			{
 				return fps;
 			}
 			/**
+			 * Returns the average frames per second of all frames of about the
+			 * last second.
+			 */
+			float getAverageFPS() const
+			{
+				return averagefps;
+			}
+			/**
 			 * Returns the time needed to for the frame. This includes both the
-			 * time needed for rendering (getRenderTime()) and the time lost for
-			 * syncronization with the main thread (getWaitTime()).
+			 * time needed for rendering (getRenderTime()) and the time needed
+			 * to compose the frame (getComposeTime()).
 			 */
 			core::Duration getFrameTime() const
 			{
 				return frametime;
 			}
 			/**
-			 * Returns the time needed for only rendering.
+			 * Returns the average frame time of all frames of about the last
+			 * second.
+			 */
+			core::Duration getAverageFrameTime() const
+			{
+				return averageframetime;
+			}
+			/**
+			 * Returns the time needed foruploading of resources.
+			 */
+			core::Duration getUploadTime() const
+			{
+				return uploadtime;
+			}
+			/**
+			 * Returns the average upload time of all frames of about the last
+			 * second.
+			 */
+			core::Duration getAverageUploadTime() const
+			{
+				return averageuploadtime;
+			}
+			/**
+			 * Returns the time needed for only rendering
+			 * (GraphicsEngine::render()).
 			 */
 			core::Duration getRenderTime() const
 			{
 				return rendertime;
 			}
 			/**
-			 * Returns the time lost for waiting for the main thread.
+			 * Returns the average render time of all frames of about the last
+			 * second.
 			 */
-			core::Duration getWaitTime() const
+			core::Duration getAverageRenderTime() const
 			{
-				return waittime;
+				return averagerendertime;
+			}
+			/**
+			 * Returns the time which was needed to compose the frame (between
+			 * GraphicsEngine::beginFrame() and GraphicsEngine::endFrame()).
+			 */
+			core::Duration getComposeTime() const
+			{
+				return composetime;
+			}
+			/**
+			 * Returns the average compose time of all frames of about the last
+			 * second.
+			 */
+			core::Duration getAverageComposeTime() const
+			{
+				return averagecomposetime;
 			}
 
 			/**
@@ -122,35 +181,7 @@ namespace render
 				polygons = 0;
 				batches = 0;
 				fps = 0.0f;
-			}
-			/**
-			 * Signals the class that the frame has started. This is called
-			 * before waiting for the main thread.
-			 */
-			void setFrameBegin(core::Time time)
-			{
-				framebegin = time;
-			}
-			/**
-			 * Signals the class that rendering has started. This is called
-			 * after waiting for the main thread.
-			 */
-			void setRenderBegin(core::Time time)
-			{
-				renderbegin = time;
-				waittime = renderbegin - framebegin;
-			}
-			/**
-			 * Signals the class that rendering has finished. This also computes
-			 * the different statistics like times or fps.
-			 */
-			void setFrameEnd(core::Time time)
-			{
-				frameend = time;
-				rendertime = frameend - renderbegin;
-				frametime = frameend - framebegin;
-				// Compute frame per second
-				fps = 1000000000.0f / frametime.getNanoseconds();
+				averagefps = 0.0f;
 			}
 			/**
 			 * Signals the class that a certain number of batches has been
@@ -174,25 +205,32 @@ namespace render
 				polygons = other.polygons;
 				batches = other.batches;
 				fps = other.fps;
+				averagefps = other.averagefps;
 				frametime = other.frametime;
+				averageframetime = other.averageframetime;
 				rendertime = other.rendertime;
-				waittime = other.waittime;
-				framebegin = other.framebegin;
-				renderbegin = other.renderbegin;
-				frameend = other.frameend;
+				averagerendertime = other.averagerendertime;
+				composetime = other.composetime;
+				averagecomposetime = other.averagecomposetime;
+				uploadtime = other.uploadtime;
+				averageuploadtime = other.averageuploadtime;
 				return *this;
 			}
 		private:
+			friend class cr::GraphicsEngine;
+
 			unsigned int polygons;
 			unsigned int batches;
 			float fps;
+			float averagefps;
 			core::Duration frametime;
+			core::Duration averageframetime;
+			core::Duration uploadtime;
+			core::Duration averageuploadtime;
 			core::Duration rendertime;
-			core::Duration waittime;
-
-			core::Time framebegin;
-			core::Time renderbegin;
-			core::Time frameend;
+			core::Duration averagerendertime;
+			core::Duration composetime;
+			core::Duration averagecomposetime;
 	};
 }
 }
