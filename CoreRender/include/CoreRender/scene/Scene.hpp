@@ -65,7 +65,8 @@ namespace scene
 			                std::vector<Light::Ptr> &visible);
 			unsigned int beginFrame(render::SceneFrameData *frame,
 			                        render::RenderQueue *queue,
-			                        Camera::Ptr camera);
+			                        Camera::Ptr camera,
+			                        core::MemoryPool *memory);
 
 			static void prepareTextures(render::SceneFrameData *frame,
 			                            const std::vector<render::TextureBinding> &textures,

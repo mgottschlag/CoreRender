@@ -122,7 +122,7 @@ namespace scene
 		unsigned int currentqueue = 0;
 		for (unsigned int i = 0; i < cameras.size(); i++)
 		{
-			currentqueue += beginFrame(framedata, &queues[currentqueue], cameras[i]);
+			currentqueue += beginFrame(framedata, &queues[currentqueue], cameras[i], memory);
 		}
 		frame->addScene(framedata);
 		return framedata;
@@ -210,12 +210,12 @@ namespace scene
 	}
 	unsigned int Scene::beginFrame(render::SceneFrameData *frame,
 	                               render::RenderQueue *queue,
-	                               Camera::Ptr camera)
+	                               Camera::Ptr camera,
+	                               core::MemoryPool *memory)
 	{
 		render::Pipeline::Ptr pipeline = camera->getPipeline();
 		if (!pipeline)
 			return 0;
-		core::MemoryPool *memory = queue->memory;
 		// Initialize camera uniforms
 		void *ptr = memory->allocate(sizeof(render::CameraUniforms));
 		render::CameraUniforms *camerauniforms = (render::CameraUniforms*)ptr;
