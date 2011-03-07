@@ -79,7 +79,20 @@ namespace rocket
 
 	void RenderInterface::shutdown()
 	{
+		if (vertexdata)
+			free(vertexdata);
+		vertexdata = 0;
+		if (indexdata)
+			free(indexdata);
+		indexdata = 0;
 		renderable = 0;
+		layout = 0;
+		vertices = 0;
+		indices = 0;
+		texturematerial = 0;
+		colormaterial = 0;
+		meshcount = 0;
+		meshes.clear();
 	}
 
 	void RenderInterface::reset()

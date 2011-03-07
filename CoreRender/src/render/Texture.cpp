@@ -515,9 +515,11 @@ namespace render
 			getManager()->getLog()->error("%s: Could not load image.",
 			                              getName().c_str());
 			delete image;
+			delete buffer;
 			finishLoading(false);
 			return false;
 		}
+		delete buffer;
 		set(image->getType(),
 		    image->getWidth(),
 		    image->getHeight(),

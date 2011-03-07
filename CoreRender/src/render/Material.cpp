@@ -318,6 +318,7 @@ namespace render
 	{
 		if (uploadeddata)
 		{
+			delete[] uploadeddata->textures;
 			delete uploadeddata;
 		}
 		uploadeddata = (TextureList*)data;
