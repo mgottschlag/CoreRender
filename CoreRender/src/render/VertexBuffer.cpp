@@ -31,7 +31,7 @@ namespace render
 	VertexBuffer::VertexBuffer(UploadManager &uploadmgr,
 	             res::ResourceManager *rmgr,
 	             const std::string &name)
-		: RenderResource(uploadmgr, rmgr, name), handle(0)
+		: RenderResource(uploadmgr, rmgr, name), handle(0), discarddata(false)
 	{
 		currentdata.size = 0;
 		currentdata.data = 0;
@@ -45,7 +45,8 @@ namespace render
 	void VertexBuffer::set(unsigned int size,
 	                       void *data,
 	                       VertexBufferUsage::List usage,
-	                       bool copy)
+	                       bool copy,
+	                       bool discard)
 	{
 		// Copy the data
 		void *datacopy;
@@ -63,6 +64,7 @@ namespace render
 		currentdata.size = size;
 		currentdata.data = datacopy;
 		currentdata.usage = usage;
+		discarddata = discard;
 		// Register for uploading
 		registerUpload();
 	}
@@ -72,16 +74,23 @@ namespace render
 	{
 		// TODO
 	}
-	void VertexBuffer::discardData()
-	{
-		// TODO
-	}
 
 	void *VertexBuffer::getUploadData()
 	{
 		BufferData *uploaddata = new BufferData(currentdata);
-		uploaddata->data = malloc(currentdata.size);
-		memcpy(uploaddata->data, currentdata.data, currentdata.size);
+		if (discarddata)
+		{
+			// If we are allowed to discard the data, we can take a fast path
+			uploaddata->data = currentdata.data;
+			currentdata.data = 0;
+			currentdata.size = 0;
+			discarddata = false;
+		}
+		else
+		{
+			uploaddata->data = malloc(currentdata.size);
+			memcpy(uploaddata->data, currentdata.data, currentdata.size);
+		}
 		return uploaddata;
 	}
 }

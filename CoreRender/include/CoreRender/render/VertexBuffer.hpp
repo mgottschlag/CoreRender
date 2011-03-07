@@ -92,14 +92,22 @@ namespace render
 			 * data but rather takes over ownership of it and frees it itself
 			 * later. For this, data has to be allocated with malloc() as it is
 			 * later freed with free().
+			 * @param discard If set to true, the data is removed from RAM after
+			 * it has been uploaded to VRAM. Set this to false if you want to
+			 * call update() later.
 			 */
 			void set(unsigned int size,
 			         void *data,
 			         VertexBufferUsage::List usage = VertexBufferUsage::Static,
-			         bool copy = true);
+			         bool copy = true,
+			         bool discard = true);
 			/**
 			 * Updates a part of the vertex buffer. This can be used if multiple
 			 * meshes share one vertex buffer.
+			 *
+			 * This does not work if the discard flag was set when set() was
+			 * called.
+			 *
 			 * @param offset Byte offset of the area to be updated.
 			 * @param size Number of bytes to be updated.
 			 * @param data New data of this buffer area.
@@ -107,11 +115,6 @@ namespace render
 			void update(unsigned int offset,
 			            unsigned int size,
 			            const void *data);
-			/**
-			 * Discards the buffer data in RAM and only keeps the copy in VRAM
-			 * if possible.
-			 */
-			void discardData();
 
 			/**
 			 * Returns the handle to this vertex buffer.
@@ -150,6 +153,8 @@ namespace render
 			};
 		private:
 			BufferData currentdata;
+
+			bool discarddata;
 	};
 }
 }
