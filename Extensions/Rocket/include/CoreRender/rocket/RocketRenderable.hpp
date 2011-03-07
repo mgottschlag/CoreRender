@@ -71,6 +71,8 @@ namespace rocket
 			{
 				return &fileinterface;
 			}
+
+			typedef core::SharedPointer<RocketRenderable> Ptr;
 		private:
 			RenderInterface *renderinterface;
 			SystemInterface systeminterface;
