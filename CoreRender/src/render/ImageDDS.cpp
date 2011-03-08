@@ -23,7 +23,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <cstring>
 #include <algorithm>
-#include <iostream>
+#include <cassert>
 
 namespace cr
 {
@@ -97,12 +97,11 @@ namespace render
 	{
 	}
 
-	bool ImageDDS::load(const char *filename,
-	                    unsigned int datasize,
-	                    unsigned char *data)
+	bool ImageDDS::create(const std::string &filename,
+	                      unsigned int datasize,
+	                      unsigned char *data)
 	{
-		if (sizeof(DDSHeader) != 128)
-			return false;
+		assert(sizeof(DDSHeader) == 128);
 		if (datasize < sizeof(DDSHeader))
 			return false;
 		// Parse DDS header
@@ -169,7 +168,7 @@ namespace render
 		}
 		else if (header->pixelformat.flags & DDPF_RGB)
 		{
-			
+
 			if (header->pixelformat.rbitmask == 0x000000FF
 			 && header->pixelformat.gbitmask == 0x0000FF00
 			 && header->pixelformat.bbitmask == 0x00FF0000)

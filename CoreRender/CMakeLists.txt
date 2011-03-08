@@ -87,6 +87,7 @@ set(SRC
 	src/core/Time.cpp
 	src/GraphicsEngine.cpp
 	src/render/FrameBuffer.cpp
+	src/render/Image.cpp
 	src/render/ImageDDS.cpp
 	src/render/ImageSTB.cpp
 	src/render/IndexBuffer.cpp

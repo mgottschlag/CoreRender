@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2010, Mathias Gottschlag
+Copyright (C) 2011, Mathias Gottschlag
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -22,7 +22,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_IMAGE_HPP_INCLUDED_
 #define _CORERENDER_RENDER_IMAGE_HPP_INCLUDED_
 
-#include "CoreRender/render/Texture.hpp"
+#include "Texture.hpp"
+#include "../core/FileSystem.hpp"
 
 #include <cstdlib>
 
@@ -30,24 +31,65 @@ namespace cr
 {
 namespace render
 {
+	/**
+	 * Class which can load image data from files.
+	 */
 	class Image
 	{
 		public:
+			/**
+			 * Constructor.
+			 */
 			Image()
 				: width(0), height(0), depth(0), type(TextureType::Texture2D),
 				format(TextureFormat::Invalid), deletedata(true), imagedata(0),
 				imagesize(0), hasmipmaps(false)
 			{
 			}
+			/**
+			 * Destructor.
+			 */
 			virtual ~Image()
 			{
 				if (imagedata && deletedata)
-					free(imagedata);
+					std::free(imagedata);
 			}
 
-			virtual bool load(const char *filename,
-			                  unsigned int datasize,
-			                  unsigned char *data) = 0;
+			/**
+			 * Creates an image from data in RAM.
+			 *
+			 * This should not be used, load the image using one of the static
+			 * methods instead which automatically select the correct image
+			 * loader.
+			 *
+			 * @param filename File name of the image.
+			 * @param datasize Size of the file contents.
+			 * @param data File contents.
+			 * @return True if the image could be loaded.
+			 */
+			virtual bool create(const std::string &filename,
+			                    unsigned int datasize,
+			                    unsigned char *data) = 0;
+
+			/**
+			 * Loads an image from a file.
+			 *
+			 * @param fs File system to use.
+			 * @param filename Absolute file name of the image.
+			 * @return Image or 0 if an error occurred.
+			 */
+			static Image *load(core::FileSystem::Ptr fs, const std::string &filename);
+			/**
+			 * Loads an image from data in RAM.
+			 *
+			 * @param filename File name of the image.
+			 * @param datasize Size of the file contents.
+			 * @param data File contents.
+			 * @return Image or 0 if an error occurred.
+			 */
+			static Image *load(const std::string &filename,
+			                   unsigned int datasize,
+			                   unsigned char *data);
 
 			unsigned int getWidth()
 			{

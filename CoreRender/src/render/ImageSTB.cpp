@@ -36,9 +36,9 @@ namespace render
 	{
 	}
 
-	bool ImageSTB::load(const char *filename,
-	                    unsigned int datasize,
-	                    unsigned char *data)
+	bool ImageSTB::create(const std::string &filename,
+	                      unsigned int datasize,
+	                      unsigned char *data)
 	{
 		bool ishdr = stbi_is_hdr_from_memory(data, datasize);
 		// Load the image from the buffer provided by the caller

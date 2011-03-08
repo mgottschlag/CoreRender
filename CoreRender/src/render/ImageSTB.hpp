@@ -22,7 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_IMAGESTB_HPP_INCLUDED_
 #define _CORERENDER_RENDER_IMAGESTB_HPP_INCLUDED_
 
-#include "Image.hpp"
+#include "CoreRender/render/Image.hpp"
 
 namespace cr
 {
@@ -34,9 +34,9 @@ namespace render
 			ImageSTB();
 			virtual ~ImageSTB();
 
-			virtual bool load(const char *filename,
-			                  unsigned int datasize,
-			                  unsigned char *data);
+			virtual bool create(const std::string &filename,
+			                    unsigned int datasize,
+			                    unsigned char *data);
 	};
 }
 }

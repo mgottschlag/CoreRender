@@ -22,11 +22,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/Texture.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
 #include "CoreRender/render/RenderCaps.hpp"
-#include "ImageSTB.hpp"
+#include "CoreRender/render/Image.hpp"
 
 #include <cstring>
 #include <cstdlib>
-#include "ImageDDS.hpp"
 
 namespace cr
 {
@@ -37,7 +36,6 @@ namespace render
 	                              bool uploadingdata,
 	                              TextureFormat::List uploadformat)
 	{
-		// TODO
 		bool internalcompressed = TextureFormat::isCompressed(internalformat);
 		bool compressed = TextureFormat::isCompressed(uploadformat);
 		// Compressed textures need OpenGL extensions and have certain
@@ -483,43 +481,15 @@ namespace render
 		std::string path = getPath();
 		// Open file
 		core::FileSystem::Ptr fs = getManager()->getFileSystem();
-		core::File::Ptr file = fs->open(path, core::FileAccess::Read);
-		if (!file)
+		// Open image
+		Image *image = Image::load(fs, path);
+		if (!image)
 		{
-			getManager()->getLog()->error("Could not open file \"%s\".",
+			getManager()->getLog()->error("Could not open image \"%s\".",
 			                              path.c_str());
 			finishLoading(false);
 			return false;
 		}
-		// Read the file content
-		unsigned int filesize = file->getSize();
-		unsigned char *buffer = new unsigned char[filesize];
-		if (file->read(filesize, buffer) != (int)filesize)
-		{
-			getManager()->getLog()->error("%s: Could not read file content.",
-			                              getName().c_str());
-			delete[] buffer;
-			finishLoading(false);
-			return false;
-		}
-		// We have to check the extension of the file first as we have multiple
-		// image loaders for different formats
-		std::string extension = path.substr(path.rfind("."));
-		Image *image = 0;
-		if (extension == ".dds")
-			image = new ImageDDS;
-		else
-			image = new ImageSTB;
-		if (!image->load(path.c_str(), filesize, buffer))
-		{
-			getManager()->getLog()->error("%s: Could not load image.",
-			                              getName().c_str());
-			delete image;
-			delete buffer;
-			finishLoading(false);
-			return false;
-		}
-		delete buffer;
 		set(image->getType(),
 		    image->getWidth(),
 		    image->getHeight(),
