@@ -53,7 +53,12 @@ namespace opengl
 		}
 		// Upload data
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, handle);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, uploaddata->size, uploaddata->data, GL_STATIC_DRAW);
+		unsigned int usage = GL_STATIC_DRAW;
+		if (uploaddata->usage == IndexBufferUsage::Stream)
+			usage = GL_STREAM_DRAW;
+		else if (uploaddata->usage == IndexBufferUsage::Dynamic)
+			usage = GL_DYNAMIC_DRAW;
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, uploaddata->size, uploaddata->data, usage);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		free(uploaddata->data);
 		delete uploaddata;

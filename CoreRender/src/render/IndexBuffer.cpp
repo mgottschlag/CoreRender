@@ -43,8 +43,10 @@ namespace render
 	}
 
 	void IndexBuffer::set(unsigned int size,
-	                      void *data,
-	                      bool copy)
+	                       void *data,
+	                       IndexBufferUsage::List usage,
+	                       bool copy,
+	                       bool discard)
 	{
 		// Copy the data
 		void *datacopy;
@@ -61,6 +63,8 @@ namespace render
 		// Fill in info
 		currentdata.size = size;
 		currentdata.data = datacopy;
+		currentdata.usage = usage;
+		discarddata = discard;
 		// Register for uploading
 		registerUpload();
 	}
@@ -70,16 +74,23 @@ namespace render
 	{
 		// TODO
 	}
-	void IndexBuffer::discardData()
-	{
-		// TODO
-	}
 
 	void *IndexBuffer::getUploadData()
 	{
 		BufferData *uploaddata = new BufferData(currentdata);
-		uploaddata->data = malloc(currentdata.size);
-		memcpy(uploaddata->data, currentdata.data, currentdata.size);
+		if (discarddata)
+		{
+			// If we are allowed to discard the data, we can take a fast path
+			uploaddata->data = currentdata.data;
+			currentdata.data = 0;
+			currentdata.size = 0;
+			discarddata = false;
+		}
+		else
+		{
+			uploaddata->data = malloc(currentdata.size);
+			memcpy(uploaddata->data, currentdata.data, currentdata.size);
+		}
 		return uploaddata;
 	}
 }

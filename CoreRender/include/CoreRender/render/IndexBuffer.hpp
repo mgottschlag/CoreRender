@@ -31,6 +31,31 @@ namespace cr
 namespace render
 {
 	/**
+	 * Hint for the video driver where to store the index buffer.
+	 */
+	struct IndexBufferUsage
+	{
+		enum List
+		{
+			/**
+			 * Static data which is never or rarely modified. Usually stored in
+			 * fast VRAM. This maps to GL_STATIC_DRAW in OpenGL.
+			 */
+			Static,
+			/**
+			 * Data which is written once per frame and then used only once.
+			 * This maps to GL_STREAM_DRAW in OpenGL.
+			 */
+			Stream,
+			/**
+			 * Data which is changed and used multiple times. This maps to
+			 * GL_DYNAMIC_DRAW in OpenGL.
+			 */
+			Dynamic
+		};
+	};
+
+	/**
 	 * Resource holding index data for one or multiple meshes. This directly
 	 * translates into an OpenGL IBO. Multiple meshes even with different
 	 * vertex buffers can be stored within one index buffer to minimize state
@@ -61,14 +86,20 @@ namespace render
 			 * @param size New size of the buffer in bytes.
 			 * @param data New content of the buffer. Must hold at least "size"
 			 * bytes.
+			 * @param usage Usage hint for best performance.
 			 * @param copy If set to false, the buffer creates no copy of the
 			 * data but rather takes over ownership of it and frees it itself
 			 * later. For this, data has to be allocated with malloc() as it is
 			 * later freed with free().
+			 * @param discard If set to true, the data is removed from RAM after
+			 * it has been uploaded to VRAM. Set this to false if you want to
+			 * call update() later.
 			 */
 			void set(unsigned int size,
 			         void *data,
-			         bool copy = true);
+			         IndexBufferUsage::List usage = IndexBufferUsage::Static,
+			         bool copy = true,
+			         bool discard = true);
 			/**
 			 * Updates a part of the index buffer. This can be used if multiple
 			 * meshes share one index buffer.
@@ -79,11 +110,6 @@ namespace render
 			void update(unsigned int offset,
 			            unsigned int size,
 			            const void *data);
-			/**
-			 * Discards the buffer data in RAM and only keeps the copy in VRAM
-			 * if possible.
-			 */
-			void discardData();
 
 			/**
 			 * Returns the handle to this index buffer.
@@ -108,11 +134,14 @@ namespace render
 
 			struct BufferData
 			{
+				IndexBufferUsage::List usage;
 				unsigned int size;
 				void *data;
 			};
 		private:
 			BufferData currentdata;
+
+			bool discarddata;
 	};
 }
 }

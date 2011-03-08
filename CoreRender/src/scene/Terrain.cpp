@@ -490,6 +490,7 @@ namespace scene
 		              false);
 		indices->set(indexoffset,
 		             indexdata,
+		             render::IndexBufferUsage::Static,
 		             false);
 	}
 

@@ -110,8 +110,14 @@ namespace rocket
 		// Update buffers
 		if (indexdatasize > 0)
 		{
-			vertices->set(vertexcount * VERTEXSIZE, vertexdata, render::VertexBufferUsage::Dynamic, false);
-			indices->set(indexdatasize, indexdata, false);
+			vertices->set(vertexcount * VERTEXSIZE,
+			              vertexdata,
+			              render::VertexBufferUsage::Stream,
+			              false);
+			indices->set(indexdatasize,
+			             indexdata,
+			             render::IndexBufferUsage::Stream,
+			             false);
 			reset();
 		}
 	}

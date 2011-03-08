@@ -352,7 +352,10 @@ namespace scene
 		              vertexdata,
 		              render::VertexBufferUsage::Static,
 		              false);
-		indices->set(header.indexdatasize, indexdata, false);
+		indices->set(header.indexdatasize,
+		             indexdata,
+		             render::IndexBufferUsage::Static,
+		             false);
 		// Read batch info
 		std::vector<GeometryFile::Batch> batchdata(header.batchcount);
 		for (unsigned int i = 0; i < header.batchcount; i++)
