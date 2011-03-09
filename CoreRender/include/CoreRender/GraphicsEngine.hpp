@@ -42,6 +42,7 @@ namespace cr
 	{
 		class VideoDriver;
 		class FrameData;
+		class Image;
 	}
 
 	/**
@@ -98,6 +99,15 @@ namespace cr
 			render::Pipeline::Ptr getPipeline(const std::string name);
 			render::Material::Ptr getMaterial(const std::string name);
 			render::Mesh::Ptr createMesh();
+
+			/**
+			 * Creates a screenshot with the current screen content.
+			 *
+			 * This must be called from the frame which does the rendering.
+			 *
+			 * @return Resulting screenshot image.
+			 */
+			render::Image *takeScreenshot(int x, int y, int width, int height);
 
 			/**
 			 * Sets a user-specified file system for the engine. This can be

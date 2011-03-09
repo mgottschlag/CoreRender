@@ -49,6 +49,7 @@ namespace render
 	class Material;
 	struct TextureBinding;
 	struct LightUniforms;
+	class Image;
 
 	/**
 	 * Render system backend. This is used to create backend-specific classes
@@ -234,6 +235,12 @@ namespace render
 			 * Executes a single render command.
 			 */
 			void executeCommand(RenderCommand *command);
+
+			/**
+			 * Takes a screenshot.
+			 * @return Resulting screenshot image.
+			 */
+			virtual render::Image *takeScreenshot(int x, int y, int width, int height) = 0;
 
 			/**
 			 * Returns the render stats of the running frame.

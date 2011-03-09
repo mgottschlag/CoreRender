@@ -81,6 +81,8 @@ namespace opengl
 			                         math::Mat4f viewmat,
 			                         math::Vec3f viewer);
 
+			virtual render::Image *takeScreenshot(int x, int y, int width, int height);
+
 			virtual VideoDriverType::List getType()
 			{
 				return VideoDriverType::OpenGL;

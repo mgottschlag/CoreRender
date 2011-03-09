@@ -414,6 +414,11 @@ namespace cr
 		return driver->createMesh(uploadmgr);
 	}
 
+	render::Image *GraphicsEngine::takeScreenshot(int x, int y, int width, int height)
+	{
+		return driver->takeScreenshot(x, y, width, height);
+	}
+
 	void GraphicsEngine::setFileSystem(core::FileSystem::Ptr fs)
 	{
 		this->fs = fs;

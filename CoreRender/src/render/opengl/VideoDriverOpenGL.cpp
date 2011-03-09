@@ -31,6 +31,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/render/Material.hpp"
 #include "CoreRender/render/RenderTarget.hpp"
 #include "CoreRender/res/ResourceManager.hpp"
+#include "CoreRender/render/Image.hpp"
 
 #include <GL/glew.h>
 
@@ -976,6 +977,31 @@ namespace opengl
 			glUniform1i(samplerhandle, i);
 			// TODO: Take care of unbinding textures later?
 		}
+	}
+
+	render::Image *VideoDriverOpenGL::takeScreenshot(int x, int y, int width, int height)
+	{
+		// TODO: Use RGB8 here
+		unsigned int imagesize = width * height * 4;
+		void *imagedata = std::malloc(imagesize);
+		glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, imagedata);
+		unsigned int *pixels = (unsigned int*)imagedata;
+		// HACK: Fill in alpha=1
+		for (int i = 0; i < width * height; i++)
+			pixels[i] |= 0xFF000000;
+		// Flip the image vertically
+		for (int y = 0; y < height / 2; y++)
+		{
+			unsigned int *row1 = &pixels[y * width];
+			unsigned int *row2 = &pixels[(height - y - 1) * width];
+			for (int x = 0; x < width; x++)
+			{
+				unsigned int tmp = row1[x];
+				row1[x] = row2[x];
+				row2[x] = tmp;
+			}
+		}
+		return Image::create2D(width, height, TextureFormat::RGBA8, imagedata, false);
 	}
 }
 }
