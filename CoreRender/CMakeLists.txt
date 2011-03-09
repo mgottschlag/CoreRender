@@ -2,6 +2,8 @@
 project(CoreRender)
 cmake_minimum_required(VERSION 2.6.0)
 
+find_library(OpenGL REQUIRED)
+
 # Main CoreRender library
 
 set(SRC
@@ -133,10 +135,8 @@ set(LIB
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(LIB
 		${LIB}
-		OpenGL32
 		ws2_32
 		glew32
-		glu32
 	)
 else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -Woverloaded-virtual")
@@ -144,7 +144,6 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(LIB
 		${LIB}
 		pthread
-		GL
 		GLEW
 	)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -157,7 +156,7 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	add_library(CoreRender SHARED ${SRC})
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-target_link_libraries(CoreRender ${LIB})
+target_link_libraries(CoreRender ${LIB} ${OPENGL_LIBRARIES})
 
 # Installation of files
 
