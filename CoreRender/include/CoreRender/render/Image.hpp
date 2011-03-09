@@ -25,8 +25,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Texture.hpp"
 #include "../core/FileSystem.hpp"
 
-#include <cstdlib>
-
 namespace cr
 {
 namespace render
@@ -40,36 +38,37 @@ namespace render
 			/**
 			 * Constructor.
 			 */
-			Image()
-				: width(0), height(0), depth(0), type(TextureType::Texture2D),
-				format(TextureFormat::Invalid), deletedata(true), imagedata(0),
-				imagesize(0), hasmipmaps(false)
-			{
-			}
+			Image();
 			/**
 			 * Destructor.
 			 */
-			virtual ~Image()
-			{
-				if (imagedata && deletedata)
-					std::free(imagedata);
-			}
+			~Image();
 
 			/**
-			 * Creates an image from data in RAM.
+			 * Creates a 2D image from image data.
 			 *
-			 * This should not be used, load the image using one of the static
-			 * methods instead which automatically select the correct image
-			 * loader.
-			 *
-			 * @param filename File name of the image.
-			 * @param datasize Size of the file contents.
-			 * @param data File contents.
-			 * @return True if the image could be loaded.
+			 * @param width Width of the image.
+			 * @param height Height of the image.
+			 * @param format Format of the image data.
+			 * @param data Image data.
+			 * @param createmipmaps If true, mipmaps are created for the image.
+			 * @return Created image.
 			 */
-			virtual bool create(const std::string &filename,
-			                    unsigned int datasize,
-			                    unsigned char *data) = 0;
+			static Image *create2D(unsigned int width,
+			                       unsigned int height,
+			                       TextureFormat::List format,
+			                       void *data,
+			                       bool copy = true);
+
+			void set(unsigned int width,
+			         unsigned int height,
+			         unsigned int depth,
+			         TextureType::List type,
+			         TextureFormat::List format,
+			         bool deletedata,
+			         void *imagedata,
+			         unsigned int imagesize,
+			         bool hasmipmaps);
 
 			/**
 			 * Loads an image from a file.
@@ -90,6 +89,17 @@ namespace render
 			static Image *load(const std::string &filename,
 			                   unsigned int datasize,
 			                   unsigned char *data);
+
+			/**
+			 * Saves the image to a file.
+			 *
+			 * The format is chosen based on the file extension.
+			 *
+			 * @param fs File system to use.
+			 * @param filename Output file name.
+			 * @return True if the file could be saved.
+			 */
+			bool save(core::FileSystem::Ptr fs, const std::string &filename);
 
 			unsigned int getWidth()
 			{

@@ -88,8 +88,8 @@ set(SRC
 	src/GraphicsEngine.cpp
 	src/render/FrameBuffer.cpp
 	src/render/Image.cpp
-	src/render/ImageDDS.cpp
-	src/render/ImageSTB.cpp
+	src/render/ImageLoaderDDS.cpp
+	src/render/ImageLoaderSTB.cpp
 	src/render/IndexBuffer.cpp
 	src/render/Material.cpp
 	src/render/Mesh.cpp

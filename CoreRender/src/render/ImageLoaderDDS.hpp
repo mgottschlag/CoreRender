@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2010, Mathias Gottschlag
+Copyright (C) 2011, Mathias Gottschlag
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -19,8 +19,8 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef _CORERENDER_RENDER_IMAGESTB_HPP_INCLUDED_
-#define _CORERENDER_RENDER_IMAGESTB_HPP_INCLUDED_
+#ifndef _CORERENDER_RENDER_IMAGELOADERDDS_HPP_INCLUDED_
+#define _CORERENDER_RENDER_IMAGELOADERDDS_HPP_INCLUDED_
 
 #include "CoreRender/render/Image.hpp"
 
@@ -28,15 +28,13 @@ namespace cr
 {
 namespace render
 {
-	class ImageSTB : public Image
+	class ImageLoaderDDS
 	{
 		public:
-			ImageSTB();
-			virtual ~ImageSTB();
-
-			virtual bool create(const std::string &filename,
-			                    unsigned int datasize,
-			                    unsigned char *data);
+			static bool load(Image *image,
+			                 const std::string &filename,
+			                 unsigned int datasize,
+			                 unsigned char *data);
 	};
 }
 }

@@ -19,7 +19,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "ImageDDS.hpp"
+#include "ImageLoaderDDS.hpp"
 
 #include <cstring>
 #include <algorithm>
@@ -90,16 +90,10 @@ namespace render
 		unsigned int reserved2;
 	};
 
-	ImageDDS::ImageDDS()
-	{
-	}
-	ImageDDS::~ImageDDS()
-	{
-	}
-
-	bool ImageDDS::create(const std::string &filename,
-	                      unsigned int datasize,
-	                      unsigned char *data)
+	bool ImageLoaderDDS::load(Image *image,
+	                          const std::string &filename,
+	                          unsigned int datasize,
+	                          unsigned char *data)
 	{
 		assert(sizeof(DDSHeader) == 128);
 		if (datasize < sizeof(DDSHeader))
@@ -114,16 +108,17 @@ namespace render
 			return false;
 		if ((header->flags & DDSD_PIXELFORMAT) == 0)
 			return false;
-		width = header->width;
-		height = header->height;
-		depth = 1;
+		unsigned int width = header->width;
+		unsigned int height = header->height;
+		unsigned int depth = 1;
 		unsigned int slices = 1;
 		// TODO: Mipmaps
 		unsigned int mipmapcount = header->mipmapcount;
 		if ((header->flags & DDSD_MIPMAPCOUNT) == 0)
 			mipmapcount = 1;
-		hasmipmaps = mipmapcount > 1;
+		bool hasmipmaps = mipmapcount > 1;
 		// Get texture type
+		TextureType::List type;
 		if (header->caps.caps2 & DDSCAPS2_CUBEMAP)
 		{
 			if ((header->caps.caps2 & DDSCAPS2_CUBEMAP_COMPLETE) != DDSCAPS2_CUBEMAP_COMPLETE)
@@ -145,6 +140,7 @@ namespace render
 		// Get pixel format
 		bool componentsswapped = false;
 		bool createalpha = false;
+		TextureFormat::List format;
 		if (header->pixelformat.flags & DDPF_FOURCC)
 		{
 			if (header->pixelformat.fourcc == FORMAT_DXT1)
@@ -197,7 +193,7 @@ namespace render
 			return false;
 		}
 		// Calculate texture data size
-		imagesize = 0;
+		unsigned int imagesize = 0;
 		unsigned int currentwidth = width;
 		unsigned int currentheight = height;
 		unsigned int currentdepth = depth;
@@ -221,7 +217,7 @@ namespace render
 		if (datasize < sizeof(DDSHeader) + imagesize)
 			return false;
 		// Get texture data
-		imagedata = malloc(imagesize);
+		void *imagedata = std::malloc(imagesize);
 		if (!createalpha)
 		{
 			void *srcdata = (char*)data + sizeof(DDSHeader);
@@ -289,6 +285,15 @@ namespace render
 				}
 			}
 		}
+		image->set(width,
+		           height,
+		           depth,
+		           type,
+		           format,
+		           true,
+		           imagedata,
+		           imagesize,
+		           hasmipmaps);
 		return true;
 	}
 }

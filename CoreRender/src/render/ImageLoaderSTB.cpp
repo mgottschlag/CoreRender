@@ -19,7 +19,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "ImageSTB.hpp"
+#include "ImageLoaderSTB.hpp"
 
 #include "../3rdparty/stb_image.h"
 
@@ -29,49 +29,42 @@ namespace cr
 {
 namespace render
 {
-	ImageSTB::ImageSTB()
-	{
-	}
-	ImageSTB::~ImageSTB()
-	{
-	}
-
-	bool ImageSTB::create(const std::string &filename,
-	                      unsigned int datasize,
-	                      unsigned char *data)
+	bool ImageLoaderSTB::load(Image *image,
+	                          const std::string &filename,
+	                          unsigned int datasize,
+	                          unsigned char *data)
 	{
 		bool ishdr = stbi_is_hdr_from_memory(data, datasize);
 		// Load the image from the buffer provided by the caller
 		int width;
 		int height;
-		void *image;
+		void *stbimage;
 		int availablecomponents = 0;
 		if (ishdr)
 		{
-			image = stbi_loadf_from_memory(data,
-			                               datasize,
-			                               &width,
-			                               &height,
-			                               &availablecomponents,
-			                               4);
+			stbimage = stbi_loadf_from_memory(data,
+			                                 datasize,
+			                                 &width,
+			                                 &height,
+			                                 &availablecomponents,
+			                                 4);
 		}
 		else
 		{
-			image = stbi_load_from_memory(data,
-			                              datasize,
-			                              &width,
-			                              &height,
-			                              &availablecomponents,
-			                              4);
+			stbimage = stbi_load_from_memory(data,
+			                                datasize,
+			                                &width,
+			                                &height,
+			                                &availablecomponents,
+			                                4);
 		}
 		// If we do not get any image data, this can mean either that the
 		// image is corrupt or that it is in a format we do not support here
-		if (!image)
+		if (!stbimage)
 			return false;
-		this->width = width;
-		this->height = height;
-		this->depth = 0;
-		type = TextureType::Texture2D;
+		TextureType::List type = TextureType::Texture2D;
+		TextureFormat::List format;
+		unsigned int imagesize;
 		// TODO: Smaller formats, e.g. RGB, to save memory
 		if (ishdr)
 		{
@@ -83,10 +76,18 @@ namespace render
 			format = TextureFormat::RGBA8;
 			imagesize = width * height * 4;
 		}
-		imagedata = malloc(imagesize);
-		memcpy(imagedata, image, imagesize);
-		deletedata = true;
-		stbi_image_free(image);
+		void *imagedata = std::malloc(imagesize);
+		memcpy(imagedata, stbimage, imagesize);
+		image->set(width,
+		           height,
+		           0,
+		           type,
+		           format,
+		           true,
+		           imagedata,
+		           imagesize,
+		           false);
+		stbi_image_free(stbimage);
 		return true;
 	}
 }
