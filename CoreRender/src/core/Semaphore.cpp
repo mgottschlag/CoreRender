@@ -27,7 +27,10 @@ namespace core
 {
 	Semaphore::Semaphore(int value)
 	{
-#if defined(CORERENDER_UNIX)
+		// Unnamed semaphores not implemented on Mac OSX
+#if defined(CORERENDER_MACOSX)
+		semaphore_create(mach_task_self(), &sem, SYNC_POLICY_FIFO, value);
+#elif defined(CORERENDER_UNIX)
 		sem_init(&sem, 0, value);
 #elif defined(CORERENDER_WINDOWS)
 		// TODO: Maximum number?
@@ -36,7 +39,9 @@ namespace core
 	}
 	Semaphore::~Semaphore()
 	{
-#if defined(CORERENDER_UNIX)
+#if defined(CORERENDER_MACOSX)
+		semaphore_destroy(mach_task_self(), sem);
+#elif defined(CORERENDER_UNIX)
 		sem_destroy(&sem);
 #elif defined(CORERENDER_WINDOWS)
 		CloseHandle(sem);
@@ -45,7 +50,9 @@ namespace core
 
 	void Semaphore::wait()
 	{
-#if defined(CORERENDER_UNIX)
+#if defined(CORERENDER_MACOSX)
+		semaphore_wait(sem);
+#elif defined(CORERENDER_UNIX)
 		sem_wait(&sem);
 #elif defined(CORERENDER_WINDOWS)
 		WaitForSingleObject(sem, INFINITE);
@@ -53,21 +60,12 @@ namespace core
 	}
 	void Semaphore::post()
 	{
-#if defined(CORERENDER_UNIX)
+#if defined(CORERENDER_MACOSX)
+		semaphore_signal(sem);
+#elif defined(CORERENDER_UNIX)
 		sem_post(&sem);
 #elif defined(CORERENDER_WINDOWS)
 		ReleaseSemaphore(sem, 1, NULL);
-#endif
-	}
-
-	int Semaphore::get()
-	{
-#if defined(CORERENDER_UNIX)
-		int value;
-		sem_getvalue(&sem, &value);
-		return value;
-#elif defined(CORERENDER_WINDOWS)
-		return -1;
 #endif
 	}
 }

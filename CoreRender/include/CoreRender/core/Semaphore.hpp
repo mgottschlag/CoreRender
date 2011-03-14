@@ -19,7 +19,11 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "Platform.hpp"
 
-#if defined(CORERENDER_UNIX)
+#if defined(CORERENDER_MACOSX)
+	#include <mach/semaphore.h>
+	#include <mach/task.h>
+	#include <mach/mach_init.h>
+#elif defined(CORERENDER_UNIX)
 	#include <semaphore.h>
 #elif defined(CORERENDER_WINDOWS)
 	#include <Windows.h>
@@ -29,18 +33,39 @@ namespace cr
 {
 namespace core
 {
+	/**
+	 * Counting semaphore.
+	 */
 	class Semaphore
 	{
 		public:
+			/**
+			 * Initializes the semaphore with the specified value.
+			 *
+			 * @todo Under Windows, the semaphore value is limited to a maximum
+			 * of 20.
+			 *
+			 * @param value Initial value of the semaphore.
+			 */
 			Semaphore(int value = 0);
+			/**
+			 * Destructor.
+			 */
 			~Semaphore();
 
+			/**
+			 * Waits until the semaphore value is positive and then decreases
+			 * the value.
+			 */
 			void wait();
+			/**
+			 * Increases the semaphore value.
+			 */
 			void post();
-
-			int get();
 		private:
-#if defined(CORERENDER_UNIX)
+#if defined(CORERENDER_MACOSX)
+			semaphore_t sem;
+#elif defined(CORERENDER_UNIX)
 			sem_t sem;
 #elif defined(CORERENDER_WINDOWS)
 			HANDLE sem;

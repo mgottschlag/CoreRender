@@ -22,6 +22,10 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_CORE_PLATFORM_HPP_INCLUDED_
 #define _CORERENDER_CORE_PLATFORM_HPP_INCLUDED_
 
+#if defined(__APPLE__) && defined(__MACH__)
+	#define CORERENDER_MACOSX
+#endif
+
 #if defined(_MSC_VER) || defined(_WINDOWS_) || defined(_WIN32)
 	#define CORERENDER_WINDOWS
 #elif defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__) && defined(__MACH__)
