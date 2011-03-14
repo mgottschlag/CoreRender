@@ -4,6 +4,13 @@ cmake_minimum_required(VERSION 2.6.0)
 
 find_library(OpenGL REQUIRED)
 
+if(APPLE)
+	include(FindOpenGL)
+	find_library(COCOA_LIB Cocoa)
+	find_library(GLFW_LIB GLFW)
+	set(MAC_LIBRARIES ${GLFW_LIB} ${COCOA_LIB})
+endif(APPLE)
+
 # Main CoreRender library
 
 set(SRC
@@ -156,7 +163,7 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	add_library(CoreRender SHARED ${SRC})
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-target_link_libraries(CoreRender ${LIB} ${OPENGL_LIBRARIES})
+target_link_libraries(CoreRender ${LIB} ${OPENGL_LIBRARIES} ${MAC_LIBRARIES})
 
 # Installation of files
 
