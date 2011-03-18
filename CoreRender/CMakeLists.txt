@@ -13,7 +13,7 @@ endif(APPLE)
 
 # Main CoreRender library
 
-set(SRC
+set(INCLUDE
 	include/CoreRender/core/Color.hpp
 	include/CoreRender/core/File.hpp
 	include/CoreRender/core/FileList.hpp
@@ -82,6 +82,10 @@ set(SRC
 	include/CoreRender/scene/Scene.hpp
 	include/CoreRender/scene/SpotLight.hpp
 	include/CoreRender/scene/Terrain.hpp
+)
+
+set(SRC
+	${INCLUDE}
 	src/3rdparty/stb_image.c
 	src/3rdparty/tinystr.cpp
 	src/3rdparty/tinyxml.cpp
@@ -164,6 +168,11 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 target_link_libraries(CoreRender ${LIB} ${OPENGL_LIBRARIES} ${MAC_LIBRARIES})
+
+if(APPLE)
+	set_property(PROPERTY FRAMEWORK)
+	set_property(TARGET CoreRender PROPERTY PUBLIC_HEADERS ${INCLUDE})
+endif(APPLE)
 
 # Installation of files
 
