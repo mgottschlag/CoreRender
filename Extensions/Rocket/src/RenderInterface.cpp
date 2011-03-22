@@ -217,7 +217,7 @@ namespace rocket
 	{
 		if (!renderable)
 			return;
-		renderable->setScissorRegion(x, y, width, height);
+		renderable->setScissorRegion(x, GetContext()->GetDimensions().y - y - height, width, height);
 	}
 
 	bool RenderInterface::LoadTexture(Rocket::Core::TextureHandle &texturehandle,

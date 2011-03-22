@@ -268,6 +268,18 @@ namespace opengl
 	{
 		if (batch->shader->programobject == 0)
 			return;
+		if (batch->scissor)
+		{
+			glScissor(batch->scissor->x,
+			          batch->scissor->y,
+			          batch->scissor->width,
+			          batch->scissor->height);
+			glEnable(GL_SCISSOR_TEST);
+		}
+		else
+		{
+			glDisable(GL_SCISSOR_TEST);
+		}
 		// Change blend mode if necessary
 		setBlendMode(batch->shader->uploadeddata.blendmode);
 		// Change depth test

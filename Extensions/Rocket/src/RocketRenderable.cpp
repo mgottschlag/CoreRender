@@ -56,6 +56,18 @@ namespace rocket
 	                              math::Mat4f transmat)
 	{
 		renderinterface->finish();
+		// Scissor rects
+		core::MemoryPool *memory = queue.memory;
+		void *ptr = memory->allocate(sizeof(render::ScissorRect) * scissorentries.size());
+		render::ScissorRect *scissorrects = (render::ScissorRect*)ptr;
+		for (unsigned int i = 0; i < scissorentries.size(); i++)
+		{
+			scissorrects[i].x = scissorentries[i].x;
+			scissorrects[i].y = scissorentries[i].y;
+			scissorrects[i].width = scissorentries[i].width;
+			scissorrects[i].height = scissorentries[i].height;
+		}
+		// Render meshes
 		for (unsigned int i = 0; i < renderentries.size(); i++)
 		{
 			render::Batch *batch = queue.prepareBatch(renderentries[i].material.get(),
@@ -68,7 +80,6 @@ namespace rocket
 			// Translation
 			// TODO: This overwrites existing material uniforms
 			//std::cout << "translation: " << renderentries[i].translation.x << "/" << renderentries[i].translation.y << std::endl;
-			core::MemoryPool *memory = queue.memory;
 			batch->customuniformcount = 1;
 			void *ptr = memory->allocate(sizeof(render::CustomUniform));
 			render::CustomUniform *uniform = (render::CustomUniform*)ptr;
@@ -81,6 +92,8 @@ namespace rocket
 			uniform->size = 2;
 			uniform->data = uniformdata;
 			batch->customuniforms = uniform;
+			if (renderentries[i].scissor != -1)
+				batch->scissor = &scissorrects[renderentries[i].scissor];
 			// Add batch to the render queue
 			tbb::mutex::scoped_lock lock(queue.batchmutex);
 			queue.batches.push_back(batch);
