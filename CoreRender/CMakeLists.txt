@@ -76,6 +76,7 @@ set(INCLUDE
 	include/CoreRender/scene/Animation.hpp
 	include/CoreRender/scene/Camera.hpp
 	include/CoreRender/scene/GeometryFile.hpp
+	include/CoreRender/scene/HeightMap.hpp
 	include/CoreRender/scene/Light.hpp
 	include/CoreRender/scene/Model.hpp
 	include/CoreRender/scene/PointLight.hpp
@@ -131,6 +132,7 @@ set(SRC
 	src/scene/AnimationBinding.cpp
 	src/scene/Animation.cpp
 	src/scene/Camera.cpp
+	src/scene/HeightMap.cpp
 	src/scene/Light.cpp
 	src/scene/Model.cpp
 	src/scene/PointLight.cpp

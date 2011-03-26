@@ -23,7 +23,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_SCENE_TERRAIN_HPP_INCLUDED_
 
 #include "../res/Resource.hpp"
-#include <GameMath.hpp>
 #include "../render/Texture.hpp"
 #include "../render/VertexBuffer.hpp"
 #include "../render/IndexBuffer.hpp"
@@ -31,6 +30,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "../render/Material.hpp"
 #include "../render/VertexLayout.hpp"
 #include "../render/Mesh.hpp"
+#include "HeightMap.hpp"
+
+#include <GameMath.hpp>
 
 namespace cr
 {
@@ -53,6 +55,9 @@ namespace scene
 			         unsigned int sizez,
 			         unsigned int patchsize = 33,
 			         float *displacement = 0);
+
+			void set(HeightMap::Ptr hmap,
+			         unsigned int patchsize = 33);
 
 			void setDisplacement(unsigned int x,
 			                     unsigned int z,

@@ -184,6 +184,14 @@ namespace scene
 		// TODO
 	}
 
+
+	void Terrain::set(HeightMap::Ptr hmap,
+	                  unsigned int patchsize)
+	{
+		set(hmap->getWidth(), hmap->getHeight(), patchsize, hmap->getData());
+	}
+
+
 	void Terrain::setDisplacement(unsigned int x,
 	                              unsigned int z,
 	                              math::Vec3f displacement)
