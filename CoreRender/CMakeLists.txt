@@ -38,9 +38,6 @@ set(INCLUDE
 	include/CoreRender/core/Time.hpp
 	include/CoreRender/GraphicsEngine.hpp
 	include/CoreRender.hpp
-	include/CoreRender/math/BoundingBox.hpp
-	include/CoreRender/math/Frustum.hpp
-	include/CoreRender/math/ScreenPosition.hpp
 	include/CoreRender/render/BlendMode.hpp
 	include/CoreRender/render/DepthTest.hpp
 	include/CoreRender/render/FrameBuffer.hpp
