@@ -487,7 +487,6 @@ unsigned char *stbi_write_png_to_mem(unsigned char *pixels, int stride_bytes, in
 
 int stbi_write_png(core::File::Ptr file, int x, int y, int comp, const void *data, int stride_bytes)
 {
-   FILE *f;
    int len;
    unsigned char *png = stbi_write_png_to_mem((unsigned char *) data, stride_bytes, x, y, comp, &len);
    if (!png) return 0;

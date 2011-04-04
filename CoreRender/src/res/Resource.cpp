@@ -37,7 +37,7 @@ namespace res
 	{
 		rmgr->removeResource(this);
 	}
-	
+
 	std::string Resource::getName()
 	{
 		return name;
@@ -108,7 +108,6 @@ namespace res
 	bool Resource::loadResourceFile(TiXmlDocument &xml)
 	{
 		std::string path = getPath();
-		std::string directory = core::FileSystem::getDirectory(path);
 		// Open file
 		core::FileSystem::Ptr fs = getManager()->getFileSystem();
 		core::File::Ptr file = fs->open(path,
