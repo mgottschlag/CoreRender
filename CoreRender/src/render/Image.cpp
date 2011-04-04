@@ -132,7 +132,7 @@ namespace render
 		}
 		// Load the image
 		Image *image = load(filename, filesize, buffer);
-		delete buffer;
+		delete[] buffer;
 		return image;
 	}
 
