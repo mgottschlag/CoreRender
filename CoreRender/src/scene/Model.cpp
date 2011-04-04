@@ -530,7 +530,7 @@ namespace scene
 			                   0,
 			                   4,
 			                   attribs.jointoffset,
-			                   render::VertexElementType::Byte,
+			                   render::VertexElementType::UnsignedByte,
 			                   attribs.stride);
 			elemidx++;
 		}

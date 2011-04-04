@@ -58,7 +58,8 @@ namespace rocket
 		                   4,
 		                   2 * sizeof(float),
 		                   render::VertexElementType::UnsignedByte,
-		                   VERTEXSIZE);
+		                   VERTEXSIZE,
+		                   true);
 		layout->setElement(2,
 		                   names.getAttrib("texcoord0"),
 		                   0,

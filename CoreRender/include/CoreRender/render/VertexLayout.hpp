@@ -78,6 +78,11 @@ namespace cr
 			 * Stride of the vertex data in the vertex slot.
 			 */
 			unsigned int stride;
+			/**
+			 * True if an integer value shall be normalized before being passed
+			 * to the shader.
+			 */
+			bool normalize;
 		};
 
 		/**
@@ -151,7 +156,8 @@ namespace cr
 				                unsigned int components,
 				                unsigned int offset,
 				                VertexElementType::List type,
-				                unsigned int stride = 0)
+				                unsigned int stride = 0,
+				                bool normalize = false)
 				{
 					elements[element].name = name;
 					elements[element].vbslot = vbslot;
@@ -159,6 +165,7 @@ namespace cr
 					elements[element].offset = offset;
 					elements[element].type = type;
 					elements[element].stride = stride;
+					elements[element].normalize = normalize;
 
 					changecounter++;
 				}

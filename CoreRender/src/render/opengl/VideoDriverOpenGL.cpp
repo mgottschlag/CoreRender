@@ -310,21 +310,18 @@ namespace opengl
 			if (!layoutelem)
 				continue;
 			unsigned int opengltype = GL_FLOAT;
-			int normalize = GL_TRUE;
+			int normalize = layoutelem->normalize ? GL_TRUE : GL_FALSE;
 			switch (layoutelem->type)
 			{
 				case VertexElementType::Float:
 					opengltype = GL_FLOAT;
-					normalize = GL_FALSE;
 					break;
 				case VertexElementType::DoubleFloat:
 					opengltype = GL_DOUBLE;
-					normalize = GL_FALSE;
 					break;
 				case VertexElementType::HalfFloat:
 					// TODO
 					opengltype = GL_FLOAT;
-					normalize = GL_FALSE;
 					break;
 				case VertexElementType::Integer:
 					opengltype = GL_INT;
