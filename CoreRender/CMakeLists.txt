@@ -2,7 +2,11 @@
 project(CoreRender)
 cmake_minimum_required(VERSION 2.6.0)
 
-find_library(OpenGL REQUIRED)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/../CMake/")
+
+find_package(OpenGL REQUIRED)
+find_package(TBB REQUIRED)
+find_package(GameMath REQUIRED)
 
 if(APPLE)
 	include(FindOpenGL)
@@ -141,13 +145,8 @@ set(SRC
 	src/scene/Terrain.cpp
 )
 
-set(LIB
-	tbb
-)
-
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(LIB
-		${LIB}
 		ws2_32
 		glew32
 	)
@@ -155,13 +154,12 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -Woverloaded-virtual")
 
 	set(LIB
-		${LIB}
 		pthread
 		GLEW
 	)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-include_directories(include)
+include_directories(include ${TBB_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR} ${GAMEMATH_INCLUDE_DIR})
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	add_library(CoreRender STATIC ${SRC})
@@ -169,7 +167,7 @@ else(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	add_library(CoreRender SHARED ${SRC})
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-target_link_libraries(CoreRender ${LIB} ${OPENGL_LIBRARIES} ${MAC_LIBRARIES})
+target_link_libraries(CoreRender ${LIB} ${OPENGL_LIBRARIES} ${MAC_LIBRARIES} ${TBB_LIBRARIES} ${GAMEMATH_LIBRARIES})
 
 if(APPLE)
 	set_property(PROPERTY FRAMEWORK)
