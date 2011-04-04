@@ -53,7 +53,7 @@ namespace core
 		{
 			// Split time
 			unsigned int hours = duration / 3600000000000LL;
-			int64_t remaining = duration % 3600000000000LL;
+			math::int64 remaining = duration % 3600000000000LL;
 			unsigned int minutes = remaining / 60000000000LL;
 			remaining = remaining % 60000000000LL;
 			double seconds = remaining;
@@ -81,7 +81,7 @@ namespace core
 		return t;
 #elif defined(CORERENDER_WINDOWS)
 		Time t;
-		t.time = (int64_t)GetTickCount() * 1000000;
+		t.time = (math::int64)GetTickCount() * 1000000;
 		return t;
 #else
 	#error Unimplemented!
@@ -100,7 +100,7 @@ namespace core
 	{
 		sleep(duration.getNanoseconds());
 	}
-	void Time::sleep(uint64_t nanoseconds)
+	void Time::sleep(math::uint64 nanoseconds)
 	{
 #if defined(CORERENDER_UNIX)
 		usleep(nanoseconds / 1000);

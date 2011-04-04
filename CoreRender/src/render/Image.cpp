@@ -25,6 +25,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <cstdlib>
 #include <cstring>
+#include <cctype>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "../3rdparty/stb_image_write.h"
