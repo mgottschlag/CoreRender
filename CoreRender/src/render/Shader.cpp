@@ -217,10 +217,11 @@ namespace render
 		}
 		if (!ctx)
 		{
-			std::string ctxstr = getManager()->getNameRegistry().getContext(context);
-			getManager()->getLog()->error("%s: Context %s not found.",
+			// TODO: Optionally show this for debugging
+			/*std::string ctxstr = getManager()->getNameRegistry().getContext(context);
+			getManager()->getLog()->debug("%s: Context %s not found.",
 			                              getName().c_str(),
-			                              ctxstr.c_str());
+			                              ctxstr.c_str());*/
 			return false;
 		}
 		tbb::mutex::scoped_lock lock(combinationmutex);
