@@ -36,7 +36,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/core/StandardFileSystem.hpp"
 #include "CoreRender/core/Time.hpp"
 #include "CoreRender/core/Log.hpp"
-#include "CoreRender/math/ScreenPosition.hpp"
 #include "CoreRender/res/LoadingThread.hpp"
 #include "CoreRender/res/Resource.hpp"
 #include "CoreRender/res/ResourceManager.hpp"

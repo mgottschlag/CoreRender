@@ -22,14 +22,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORERENDER_RENDER_FRAMEDATA_HPP_INCLUDED_
 #define _CORERENDER_RENDER_FRAMEDATA_HPP_INCLUDED_
 
-#include "GameMath.hpp"
-#include "../math/Frustum.hpp"
 #include "FrameBuffer.hpp"
 #include "Material.hpp"
 #include "Mesh.hpp"
 #include "../core/MemoryPool.hpp"
 #include "CoreRender/core/Time.hpp"
 
+#include <GameMath.hpp>
 #include <tbb/spin_mutex.h>
 #include <tbb/mutex.h>
 #include <cstring>

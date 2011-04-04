@@ -23,7 +23,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORERENDER_SCENE_MODEL_HPP_INCLUDED_
 
 #include "../res/Resource.hpp"
-#include "../math/BoundingBox.hpp"
 #include "../render/VertexBuffer.hpp"
 #include "../render/IndexBuffer.hpp"
 #include "../render/VertexLayout.hpp"

@@ -54,22 +54,6 @@ namespace scene
 			delete[] normals;
 	}
 
-	static bool isPowerOfTwo(unsigned int n)
-	{
-		// http://graphics.stanford.edu/~seander/bithacks.html#DetermineIfPowerOf2
-		return (n & (n - 1)) == 0;
-	}
-	static unsigned int log2(unsigned int n)
-	{
-		// http://graphics.stanford.edu/~seander/bithacks.html#IntegerLogDeBruijn
-		static const int MultiplyDeBruijnBitPosition2[32] =
-		{
-		  0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
-		  31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
-		};
-		return MultiplyDeBruijnBitPosition2[(uint32_t)(n * 0x077CB531U) >> 27];
-	}
-
 	void Terrain::render(render::RenderQueue &queue,
 	                     math::Mat4f transmat,
 	                     math::Vec3f camerapos)
@@ -95,7 +79,7 @@ namespace scene
 		math::Mat4f transmatinv = transmat.inverse();
 		math::Vec3f localcamerapos = transmatinv.transformPoint(camerapos);
 
-		unsigned int maxdepth = log2((sizex - 1) / (patchsize - 1));
+		unsigned int maxdepth = math::Math::log2((sizex - 1) / (patchsize - 1));
 
 		float offsetscale[4] = {0, 0, 1, 1};
 		renderRecursively(queue,
@@ -123,8 +107,8 @@ namespace scene
 			delete[] normals;
 		// The size has to be (2^n)+1 (the resulting terrain is 2^n units long)
 		if (sizex < 3 || sizez == 3
-		 || !isPowerOfTwo(sizex - 1)
-		 || !isPowerOfTwo(sizez - 1))
+		 || !math::Math::isPowerOfTwoOrNull(sizex - 1)
+		 || !math::Math::isPowerOfTwoOrNull(sizez - 1))
 		{
 			getManager()->getLog()->error("%s: Invalid terrain size: %dx%d",
 			                              getName().c_str(), sizex, sizez);
@@ -133,7 +117,7 @@ namespace scene
 		// Compute a fitting patch size
 		if (sizex < patchsize || sizez < patchsize)
 			patchsize = std::min<unsigned int>(sizex, sizez);
-		else if (patchsize < 3 || !isPowerOfTwo(sizex - 1))
+		else if (patchsize < 3 || !math::Math::isPowerOfTwoOrNull(sizex - 1))
 		{
 			getManager()->getLog()->error("%s: Invalid patch size: %d",
 			                              getName().c_str(), patchsize);
