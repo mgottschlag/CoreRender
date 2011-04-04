@@ -50,6 +50,14 @@ namespace scene
 			bool load(core::FileSystem::Ptr fs, const std::string &filename);
 
 			/**
+			 * Loads the height map from memory.
+			 */
+			void set(unsigned int width,
+			         unsigned int height,
+			         float *data,
+			         bool copy = true);
+
+			/**
 			 * Returns the width of the height map.
 			 */
 			unsigned int getWidth()
@@ -70,6 +78,15 @@ namespace scene
 			{
 				return data;
 			}
+
+			float getMin(unsigned int x,
+			             unsigned int y,
+			             unsigned int width,
+			             unsigned int height);
+			float getMax(unsigned int x,
+			             unsigned int y,
+			             unsigned int width,
+			             unsigned int height);
 
 			/**
 			 * Returns the height at a certain point using linear interpolation.

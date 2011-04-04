@@ -22,6 +22,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "CoreRender/scene/HeightMap.hpp"
 
 #include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <cassert>
 
 namespace cr
 {
@@ -68,6 +71,65 @@ namespace scene
 		if (file->read(datasize, data) != datasize)
 			return false;
 		return true;
+	}
+
+	void HeightMap::set(unsigned int width,
+	                    unsigned int height,
+	                    float *data,
+	                    bool copy)
+	{
+		if (this->data)
+		{
+			delete[] this->data;
+		}
+		if (copy && data)
+		{
+			this->data = new float[width * height];
+			std::memcpy(this->data, data, width * height * sizeof(float));
+		}
+		else
+			this->data = data;
+		this->width = width;
+		this->height = height;
+	}
+
+	float HeightMap::getMin(unsigned int x,
+	                        unsigned int y,
+	                        unsigned int width,
+	                        unsigned int height)
+	{
+		assert(width > 0 && height > 0);
+		unsigned int index = x + y * this->width;
+		float min = data[index];
+		for (unsigned int i = 0; i < height; i++)
+		{
+			for (unsigned int j = 0; j < width; j++)
+			{
+				index = x + j + (y + i) * this->width;
+				if (data[index] < min)
+					min = data[index];
+			}
+		}
+		return min;
+	}
+	float HeightMap::getMax(unsigned int x,
+	                        unsigned int y,
+	                        unsigned int width,
+	                        unsigned int height)
+	{
+		assert(width > 0 && height > 0);
+		unsigned int index = x + y * this->width;
+		float max = data[index];
+		for (unsigned int i = 0; i < height; i++)
+		{
+			for (unsigned int j = 0; j < width; j++)
+			{
+				index = x + j + (y + i) * this->width;
+				if (data[index] > max)
+					max = data[index];
+			}
+		}
+		return max;
 	}
 
 	float HeightMap::getHeight(float x, float y)
