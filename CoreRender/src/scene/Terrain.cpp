@@ -493,6 +493,8 @@ namespace scene
 	                          render::CustomUniform &texcoordscale)
 	{
 		render::Batch *batch = queue.prepareBatch(material.get(), patches[lod].mesh.get(), false, false);
+		if (!batch)
+			return;
 		// TODO: This overwrites existing material uniforms
 		core::MemoryPool *memory = queue.memory;
 		batch->customuniformcount = 2;
