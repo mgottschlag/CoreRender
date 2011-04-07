@@ -47,6 +47,12 @@ namespace opengl
 		std::string fs = combination->uploadeddata.fs;
 		std::string gs = combination->uploadeddata.gs;
 		std::string ts = combination->uploadeddata.ts;
+		// Resize location info even if compilation fails
+		combination->attriblocations.resize(uploadedinfo.attribs.size());
+		for (unsigned int i = 0; i < combination->attriblocations.size(); i++)
+		{
+			combination->attriblocations[i] = -1;
+		}
 		// Make sure no error happened before
 		int error = glGetError();
 		if (error != GL_NO_ERROR)
@@ -163,7 +169,6 @@ namespace opengl
 		printProgramInfoLog(program);
 		// Get attrib locations
 		res::NameRegistry &names = getManager()->getNameRegistry();
-		combination->attriblocations.resize(uploadedinfo.attribs.size());
 		for (unsigned int i = 0; i < uploadedinfo.attribs.size(); i++)
 		{
 			std::string attribname = names.getAttrib(uploadedinfo.attribs[i]);

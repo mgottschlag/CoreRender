@@ -60,7 +60,7 @@ namespace render
 			texts[name] = text;
 		}
 		// Register the resource for reuploading
-		registerUpload();
+		reupload();
 		return true;
 	}
 
@@ -81,7 +81,7 @@ namespace render
 		// Store context info
 		contexts.push_back(context);
 		// Register the resource for reuploading
-		registerUpload();
+		reupload();
 		return true;
 	}
 
@@ -197,6 +197,7 @@ namespace render
 	                                              bool instancing,
 	                                              bool skinning)
 	{
+		// Check whether this shader can support skinning/instancing at all
 		// TODO: Also check capabilities
 		if (!supportsInstancing())
 			instancing = false;
